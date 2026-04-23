@@ -49,5 +49,35 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Onboarding redirect: if user hasn't completed onboarding, redirect to /onboarding
+  if (user && !pathname.startsWith("/onboarding") && !isPublicRoute) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .single();
+
+    if (profile && !profile.onboarding_completed) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // If onboarding is done, don't allow going back to /onboarding
+  if (user && pathname.startsWith("/onboarding")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.onboarding_completed) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return supabaseResponse;
 }

@@ -8,35 +8,79 @@ import {
   UtensilsCrossed,
   CalendarDays,
   User,
+  Target,
+  Moon,
+  Briefcase,
+  ClipboardCheck,
   Plus,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { ModuleId } from "@/types/modules";
 
-const navItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/training", label: "Trénink", icon: Dumbbell },
-  { href: "/nutrition", label: "Jídlo", icon: UtensilsCrossed },
-  { href: "/calendar", label: "Kalendář", icon: CalendarDays },
-  { href: "/profile", label: "Profil", icon: User },
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  moduleId?: ModuleId;
+  alwaysVisible?: boolean;
+}
+
+const ALL_NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard, alwaysVisible: true },
+  { href: "/goals", label: "Cíle", icon: Target, moduleId: "goals_habits" },
+  { href: "/checkin", label: "Check-in", icon: ClipboardCheck, moduleId: "sleep_wellbeing" },
+  { href: "/training", label: "Trénink", icon: Dumbbell, moduleId: "training" },
+  { href: "/nutrition", label: "Jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
+  { href: "/calendar", label: "Kalendář", icon: CalendarDays, moduleId: "calendar" },
+  { href: "/wellbeing", label: "Wellbeing", icon: Moon, moduleId: "sleep_wellbeing" },
+  { href: "/profile", label: "Profil", icon: User, alwaysVisible: true },
 ];
 
-const quickActions = [
-  { href: "/training?action=start", label: "Začni trénink", icon: Dumbbell },
-  { href: "/nutrition?action=log", label: "Zaloguj jídlo", icon: UtensilsCrossed },
-  { href: "/checkin", label: "Check-in", icon: LayoutDashboard },
+interface QuickAction {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  moduleId?: ModuleId;
+}
+
+const ALL_QUICK_ACTIONS: QuickAction[] = [
+  { href: "/checkin", label: "Check-in", icon: ClipboardCheck, moduleId: "sleep_wellbeing" },
+  { href: "/goals", label: "Cíle & návyky", icon: Target, moduleId: "goals_habits" },
+  { href: "/training?action=start", label: "Začni trénink", icon: Dumbbell, moduleId: "training" },
+  { href: "/nutrition?action=log", label: "Zaloguj jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
 ];
 
 export function AppShell({
   user,
+  activeModules,
   children,
 }: {
   user: SupabaseUser;
+  activeModules: ModuleId[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [fabOpen, setFabOpen] = useState(false);
+
+  const navItems = useMemo(() => {
+    return ALL_NAV_ITEMS.filter(
+      (item) =>
+        item.alwaysVisible || (item.moduleId && activeModules.includes(item.moduleId))
+    );
+  }, [activeModules]);
+
+  const quickActions = useMemo(() => {
+    return ALL_QUICK_ACTIONS.filter(
+      (action) =>
+        !action.moduleId || activeModules.includes(action.moduleId)
+    );
+  }, [activeModules]);
+
+  // Mobile: pick first 2 + last 2 for bottom nav (max 4 + FAB)
+  const mobileNavLeft = navItems.slice(0, 2);
+  const mobileNavRight = navItems.length > 2 ? navItems.slice(-2) : [];
 
   return (
     <div className="flex h-full min-h-screen">
@@ -48,7 +92,10 @@ export function AppShell({
 
         <nav className="flex flex-col gap-1 flex-1">
           {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -81,8 +128,11 @@ export function AppShell({
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40">
         <div className="flex items-center justify-around h-16 px-2">
-          {navItems.slice(0, 2).map((item) => {
-            const isActive = pathname.startsWith(item.href);
+          {mobileNavLeft.map((item) => {
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}
@@ -98,14 +148,16 @@ export function AppShell({
           })}
 
           {/* FAB */}
-          <button
-            onClick={() => setFabOpen(!fabOpen)}
-            className="relative -mt-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-          >
-            {fabOpen ? <X size={24} /> : <Plus size={24} />}
-          </button>
+          {quickActions.length > 0 && (
+            <button
+              onClick={() => setFabOpen(!fabOpen)}
+              className="relative -mt-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+            >
+              {fabOpen ? <X size={24} /> : <Plus size={24} />}
+            </button>
+          )}
 
-          {navItems.slice(2, 4).map((item) => {
+          {mobileNavRight.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
               <Link
