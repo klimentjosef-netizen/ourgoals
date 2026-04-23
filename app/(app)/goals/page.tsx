@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { Target, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -9,12 +9,8 @@ import { HabitChecklist } from "@/components/domain/goals/habit-checklist";
 import type { Goal, DailyHabit, HabitCompletion } from "@/types/database";
 
 export default async function GoalsPage() {
+  const user = await getAuthUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   // Fetch goals (exclude abandoned)
   const { data: goals } = await supabase

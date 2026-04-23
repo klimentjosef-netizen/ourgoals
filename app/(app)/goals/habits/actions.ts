@@ -5,14 +5,18 @@ import { revalidatePath } from "next/cache";
 import { awardXP } from "@/lib/logic/xp";
 import { recalculateStreak, evaluateDayStatus } from "@/lib/logic/streaks";
 import { checkAndUnlockAchievements } from "@/lib/logic/achievements";
+import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
 
 export async function createHabit(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
@@ -20,7 +24,7 @@ export async function createHabit(formData: FormData) {
   const xpValue = Number(formData.get("xp_value") || 15);
 
   const { error } = await supabase.from("daily_habits").insert({
-    profile_id: user.id,
+    profile_id: userId,
     goal_id: goalId,
     title,
     description,
@@ -40,18 +44,21 @@ export async function createHabit(formData: FormData) {
 
 export async function toggleHabit(habitId: string, date: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   // Check if completion already exists
   const { data: existing } = await supabase
     .from("habit_completions")
     .select("id")
     .eq("habit_id", habitId)
-    .eq("profile_id", user.id)
+    .eq("profile_id", userId)
     .eq("date", date)
     .maybeSingle();
 
@@ -80,7 +87,7 @@ export async function toggleHabit(habitId: string, date: string) {
   } else {
     // Complete: insert completion
     const { error } = await supabase.from("habit_completions").insert({
-      profile_id: user.id,
+      profile_id: userId,
       habit_id: habitId,
       date,
     });
@@ -94,7 +101,7 @@ export async function toggleHabit(habitId: string, date: string) {
       try {
         await awardXP(
           supabase,
-          user.id,
+          userId,
           habit.xp_value,
           "Návyk splněn",
           "habit",
@@ -110,7 +117,7 @@ export async function toggleHabit(habitId: string, date: string) {
     try {
       achievementsUnlocked = await checkAndUnlockAchievements(
         supabase,
-        user.id,
+        userId,
         "habit_completed"
       );
     } catch {
@@ -120,14 +127,14 @@ export async function toggleHabit(habitId: string, date: string) {
 
   // Update daily_completion status
   try {
-    await updateDailyCompletion(supabase, user.id, date);
+    await updateDailyCompletion(supabase, userId, date);
   } catch {
     // non-critical
   }
 
   // Recalculate streak
   try {
-    await recalculateStreak(supabase, user.id);
+    await recalculateStreak(supabase, userId);
   } catch {
     // non-critical
   }
@@ -213,17 +220,20 @@ async function updateDailyCompletion(
 
 export async function deleteHabit(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const { error } = await supabase
     .from("daily_habits")
     .delete()
     .eq("id", id)
-    .eq("profile_id", user.id);
+    .eq("profile_id", userId);
 
   if (error) {
     return { error: `Chyba při mazání: ${error.message}` };

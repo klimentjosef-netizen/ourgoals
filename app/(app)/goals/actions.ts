@@ -5,14 +5,18 @@ import { revalidatePath } from "next/cache";
 import { awardXP } from "@/lib/logic/xp";
 import { XP_VALUES } from "@/types/gamification";
 import { checkAndUnlockAchievements } from "@/lib/logic/achievements";
+import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
 
 export async function createGoal(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
@@ -31,7 +35,7 @@ export async function createGoal(formData: FormData) {
   const { data: goal, error } = await supabase
     .from("goals")
     .insert({
-      profile_id: user.id,
+      profile_id: userId,
       title,
       description,
       metric,
@@ -54,7 +58,7 @@ export async function createGoal(formData: FormData) {
   try {
     xpResult = await awardXP(
       supabase,
-      user.id,
+      userId,
       XP_VALUES.GOAL_CREATED,
       "Nový cíl vytvořen",
       "goal",
@@ -69,7 +73,7 @@ export async function createGoal(formData: FormData) {
   try {
     achievements = await checkAndUnlockAchievements(
       supabase,
-      user.id,
+      userId,
       "goal_created"
     );
   } catch {
@@ -90,11 +94,14 @@ export async function createGoal(formData: FormData) {
 
 export async function updateGoal(id: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
@@ -123,7 +130,7 @@ export async function updateGoal(id: string, formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("profile_id", user.id);
+    .eq("profile_id", userId);
 
   if (error) {
     return { error: `Chyba při aktualizaci: ${error.message}` };
@@ -137,11 +144,14 @@ export async function updateGoal(id: string, formData: FormData) {
 
 export async function completeGoal(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const { error } = await supabase
     .from("goals")
@@ -150,7 +160,7 @@ export async function completeGoal(id: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("profile_id", user.id);
+    .eq("profile_id", userId);
 
   if (error) {
     return { error: `Chyba: ${error.message}` };
@@ -160,7 +170,7 @@ export async function completeGoal(id: string) {
   try {
     xpResult = await awardXP(
       supabase,
-      user.id,
+      userId,
       XP_VALUES.GOAL_COMPLETED,
       "Cíl dokončen",
       "goal",
@@ -174,7 +184,7 @@ export async function completeGoal(id: string) {
   try {
     achievements = await checkAndUnlockAchievements(
       supabase,
-      user.id,
+      userId,
       "goal_completed"
     );
   } catch {
@@ -196,11 +206,14 @@ export async function completeGoal(id: string) {
 
 export async function pauseGoal(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const { error } = await supabase
     .from("goals")
@@ -209,7 +222,7 @@ export async function pauseGoal(id: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("profile_id", user.id);
+    .eq("profile_id", userId);
 
   if (error) {
     return { error: `Chyba: ${error.message}` };
@@ -223,17 +236,20 @@ export async function pauseGoal(id: string) {
 
 export async function deleteGoal(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const { error } = await supabase
     .from("goals")
     .delete()
     .eq("id", id)
-    .eq("profile_id", user.id);
+    .eq("profile_id", userId);
 
   if (error) {
     return { error: `Chyba při mazání: ${error.message}` };

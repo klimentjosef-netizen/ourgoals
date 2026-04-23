@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { getXPProgress } from "@/types/gamification";
 import {
   Card,
@@ -29,12 +29,8 @@ import type {
 import type { Achievement } from "@/types/gamification";
 
 export default async function ProfilePage() {
+  const user = await getAuthUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   // Fetch all profile data in parallel
   const [gamRes, achievementsRes, allAchievementsRes, profileRes] =

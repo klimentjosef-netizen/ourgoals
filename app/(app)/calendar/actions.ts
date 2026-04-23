@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { awardXP } from "@/lib/logic/xp";
+import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
 
 export async function getCalendarEvents(
   userId: string,
@@ -29,11 +30,14 @@ export async function getCalendarEvents(
 
 export async function createCalendarEvent(formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const title = formData.get("title") as string;
   const kind = formData.get("kind") as string;
@@ -58,7 +62,7 @@ export async function createCalendarEvent(formData: FormData) {
   const { data: event, error } = await supabase
     .from("calendar_events")
     .insert({
-      owner_id: user.id,
+      owner_id: userId,
       title,
       kind,
       starts_at: startsAt,
@@ -81,7 +85,7 @@ export async function createCalendarEvent(formData: FormData) {
   try {
     xpResult = await awardXP(
       supabase,
-      user.id,
+      userId,
       10,
       "Nový event v kalendáři",
       "calendar_event",
@@ -105,11 +109,14 @@ export async function createCalendarEvent(formData: FormData) {
 
 export async function updateCalendarEvent(id: string, formData: FormData) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const title = formData.get("title") as string;
   const kind = formData.get("kind") as string;
@@ -144,7 +151,7 @@ export async function updateCalendarEvent(id: string, formData: FormData) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", userId);
 
   if (error) {
     return { error: `Chyba při aktualizaci: ${error.message}` };
@@ -158,17 +165,20 @@ export async function updateCalendarEvent(id: string, formData: FormData) {
 
 export async function deleteCalendarEvent(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   const { error } = await supabase
     .from("calendar_events")
     .delete()
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", userId);
 
   if (error) {
     return { error: `Chyba při mazání: ${error.message}` };
@@ -182,18 +192,21 @@ export async function deleteCalendarEvent(id: string) {
 
 export async function toggleEventCompleted(id: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Nepřihlášen");
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
 
   // Fetch current state
   const { data: event, error: fetchError } = await supabase
     .from("calendar_events")
     .select("is_completed")
     .eq("id", id)
-    .eq("owner_id", user.id)
+    .eq("owner_id", userId)
     .single();
 
   if (fetchError || !event) {
@@ -207,7 +220,7 @@ export async function toggleEventCompleted(id: string) {
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", userId);
 
   if (error) {
     return { error: `Chyba: ${error.message}` };

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { format } from "date-fns";
+import { DEV_MODE, MOCK_ACTIVE_MODULES } from "@/lib/dev/mock-user";
 import type {
   GamificationProfile,
   UserSettings,
@@ -26,6 +27,19 @@ interface DashboardData {
 export async function getDashboardData(
   userId: string
 ): Promise<DashboardData> {
+  if (DEV_MODE) {
+    return {
+      gamification: null,
+      coachTone: "friendly_mentor",
+      displayName: "Dev User",
+      activeModules: MOCK_ACTIVE_MODULES,
+      checkin: null,
+      habits: [],
+      completions: [],
+      goals: [],
+    };
+  }
+
   const supabase = await createClient();
   const today = format(new Date(), "yyyy-MM-dd");
 

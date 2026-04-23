@@ -1,17 +1,11 @@
-import { redirect } from "next/navigation";
 import { startOfWeek, endOfWeek, format } from "date-fns";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/auth";
 import { getCalendarEvents } from "@/app/(app)/calendar/actions";
 import { detectConflicts } from "@/lib/calendar/conflicts";
 import { CalendarView } from "@/app/(app)/calendar/calendar-view";
 
 export default async function CalendarPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+  const user = await getAuthUser();
 
   // Compute current week range (Monday to Sunday)
   const now = new Date();

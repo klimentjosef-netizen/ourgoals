@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { XP_VALUES } from "@/types/gamification";
 import { format } from "date-fns";
+import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
 
 interface CheckinResult {
   error?: string;
@@ -17,6 +18,9 @@ function getToday(): string {
 }
 
 async function getCurrentUserId() {
+  if (DEV_MODE) {
+    return MOCK_USER_ID;
+  }
   const supabase = await createClient();
   const {
     data: { user },

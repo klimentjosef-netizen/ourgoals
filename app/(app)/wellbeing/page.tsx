@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { format, subDays } from "date-fns";
 import { cs } from "date-fns/locale";
 import {
@@ -15,12 +15,8 @@ import Link from "next/link";
 import type { SleepLog } from "@/types/database";
 
 export default async function WellbeingPage() {
+  const user = await getAuthUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   const today = new Date();
   const twoWeeksAgo = format(subDays(today, 14), "yyyy-MM-dd");

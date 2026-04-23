@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { format } from "date-fns";
 import { MorningForm } from "./morning-form";
 import { EveningForm } from "./evening-form";
@@ -7,12 +7,8 @@ import { CheckinSummary } from "@/components/domain/checkin/checkin-summary";
 import type { DailyCheckin, SleepLog, GamificationProfile } from "@/types/database";
 
 export default async function CheckinPage() {
+  const user = await getAuthUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   const today = format(new Date(), "yyyy-MM-dd");
   const currentHour = new Date().getHours();

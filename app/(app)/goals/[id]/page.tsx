@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect, notFound } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,12 +42,8 @@ function getProgressPercentage(goal: Goal): number {
 
 export default async function GoalDetailPage({ params }: PageProps) {
   const { id } = await params;
+  const user = await getAuthUser();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   const { data: goal, error } = await supabase
     .from("goals")

@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { getAuthUser } from "@/lib/auth";
 import { getDashboardData } from "./actions";
 import { LevelCard } from "@/components/domain/dashboard/level-card";
 import { StreakCard } from "@/components/domain/dashboard/streak-card";
@@ -16,12 +15,7 @@ import { Target, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
+  const user = await getAuthUser();
 
   const data = await getDashboardData(user.id);
 
