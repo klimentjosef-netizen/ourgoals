@@ -3,7 +3,7 @@
 import { XP_VALUES, getLevelForXP } from "@/types/gamification";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export { XP_VALUES };
+// XP_VALUES imported from types/gamification.ts directly by consumers
 
 interface AwardXPResult {
   newTotal: number;

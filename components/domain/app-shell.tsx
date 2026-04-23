@@ -11,6 +11,7 @@ import {
   Target,
   Moon,
   Briefcase,
+  BookOpen,
   ClipboardCheck,
   Plus,
   X,
@@ -35,6 +36,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/nutrition", label: "Jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
   { href: "/calendar", label: "Kalendář", icon: CalendarDays, moduleId: "calendar" },
   { href: "/wellbeing", label: "Wellbeing", icon: Moon, moduleId: "sleep_wellbeing" },
+  { href: "/founder-log", label: "Founder Log", icon: BookOpen, moduleId: "work_focus" },
   { href: "/profile", label: "Profil", icon: User, alwaysVisible: true },
 ];
 
@@ -50,6 +52,7 @@ const ALL_QUICK_ACTIONS: QuickAction[] = [
   { href: "/goals", label: "Cíle & návyky", icon: Target, moduleId: "goals_habits" },
   { href: "/training?action=start", label: "Začni trénink", icon: Dumbbell, moduleId: "training" },
   { href: "/nutrition?action=log", label: "Zaloguj jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
+  { href: "/calendar?action=new", label: "Nový event", icon: CalendarDays, moduleId: "calendar" },
 ];
 
 export function AppShell({

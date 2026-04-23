@@ -1,16 +1,17 @@
-import { BookOpen } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { getFounderLogEntries } from "@/app/(app)/founder-log/actions";
+import { LogList } from "@/components/domain/founder-log/log-list";
 
-export default function FounderLogPage() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-4">
-      <BookOpen size={48} className="text-primary" />
-      <h1 className="text-2xl font-bold">Founder Log</h1>
-      <p className="text-muted-foreground font-mono text-sm">
-        Poznámky k produktu, UX, rodinnému rozšíření
-      </p>
-      <p className="text-xs text-muted-foreground/60 font-mono">
-        Coming soon — PROMPT 5
-      </p>
-    </div>
-  );
+export default async function FounderLogPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const entries = await getFounderLogEntries(user.id);
+
+  return <LogList entries={entries} />;
 }

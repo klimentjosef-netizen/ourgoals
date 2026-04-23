@@ -12,7 +12,7 @@ import type {
 } from "@/types/database";
 import type { CoachTone } from "@/types/gamification";
 
-export interface DashboardData {
+interface DashboardData {
   gamification: GamificationProfile | null;
   coachTone: CoachTone;
   displayName: string;

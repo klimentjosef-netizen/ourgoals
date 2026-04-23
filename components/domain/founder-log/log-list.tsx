@@ -1,0 +1,166 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { BookOpen, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { LogEntry } from "@/components/domain/founder-log/log-entry";
+import { LogForm } from "@/components/domain/founder-log/log-form";
+import { deleteFounderLogEntry } from "@/app/(app)/founder-log/actions";
+import { toast } from "sonner";
+import type { FounderLogEntry } from "@/types/founder-log";
+import {
+  FOUNDER_LOG_CATEGORIES,
+  type FounderLogCategory,
+} from "@/types/founder-log";
+
+interface LogListProps {
+  entries: FounderLogEntry[];
+}
+
+export function LogList({ entries }: LogListProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<FounderLogEntry | undefined>(
+    undefined
+  );
+  const [activeFilter, setActiveFilter] = useState<FounderLogCategory | null>(
+    null
+  );
+
+  const filteredEntries = activeFilter
+    ? entries.filter((e) => e.category === activeFilter)
+    : entries;
+
+  const handleEdit = useCallback((entry: FounderLogEntry) => {
+    setEditingEntry(entry);
+    setDialogOpen(true);
+  }, []);
+
+  const handleDelete = useCallback(async (id: string) => {
+    const result = await deleteFounderLogEntry(id);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Zaznam smazan");
+    }
+  }, []);
+
+  const handleFormSuccess = useCallback(() => {
+    setDialogOpen(false);
+    setEditingEntry(undefined);
+  }, []);
+
+  const openNewForm = useCallback(() => {
+    setEditingEntry(undefined);
+    setDialogOpen(true);
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BookOpen size={24} className="text-primary" />
+          <h1 className="text-xl font-bold">Founder Log</h1>
+        </div>
+        <Button size="sm" onClick={openNewForm}>
+          <Plus size={16} />
+          Novy zaznam
+        </Button>
+      </div>
+
+      {/* Category filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Badge
+          variant={activeFilter === null ? "default" : "outline"}
+          className="cursor-pointer"
+          onClick={() => setActiveFilter(null)}
+        >
+          Vse ({entries.length})
+        </Badge>
+        {FOUNDER_LOG_CATEGORIES.map((cat) => {
+          const count = entries.filter(
+            (e) => e.category === cat.value
+          ).length;
+          if (count === 0) return null;
+          return (
+            <Badge
+              key={cat.value}
+              variant={activeFilter === cat.value ? "default" : "outline"}
+              className={`cursor-pointer ${
+                activeFilter !== cat.value ? cat.color : ""
+              }`}
+              onClick={() =>
+                setActiveFilter(
+                  activeFilter === cat.value ? null : cat.value
+                )
+              }
+            >
+              {cat.label} ({count})
+            </Badge>
+          );
+        })}
+      </div>
+
+      {/* Entries list */}
+      {filteredEntries.length > 0 ? (
+        <div className="grid gap-3">
+          {filteredEntries.map((entry) => (
+            <LogEntry
+              key={entry.id}
+              entry={entry}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      ) : entries.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+          <BookOpen size={48} className="text-muted-foreground/30" />
+          <div>
+            <h2 className="text-lg font-semibold">
+              Zatim zadne zaznamy
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Zacni psat poznamky k produktu.
+            </p>
+          </div>
+          <Button onClick={openNewForm}>
+            <Plus size={16} />
+            Pridat prvni zaznam
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Zadne zaznamy v teto kategorii.
+          </p>
+        </div>
+      )}
+
+      {/* Form dialog */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditingEntry(undefined);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingEntry ? "Upravit zaznam" : "Novy zaznam"}
+            </DialogTitle>
+          </DialogHeader>
+          <LogForm entry={editingEntry} onSuccess={handleFormSuccess} />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

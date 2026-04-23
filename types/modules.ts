@@ -61,7 +61,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
     label: "Práce & focus",
     description: "Deep work bloky, meetingy, produktivita, priority",
     icon: Briefcase,
-    routes: [],
+    routes: ["/founder-log"],
     onboardingStep: true,
   },
   {

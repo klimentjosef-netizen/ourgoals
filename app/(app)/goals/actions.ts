@@ -2,7 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { awardXP, XP_VALUES } from "@/lib/logic/xp";
+import { awardXP } from "@/lib/logic/xp";
+import { XP_VALUES } from "@/types/gamification";
 import { checkAndUnlockAchievements } from "@/lib/logic/achievements";
 
 export async function createGoal(formData: FormData) {
