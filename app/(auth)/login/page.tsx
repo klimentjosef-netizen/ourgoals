@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { DEV_MODE } from "@/lib/dev/mock-user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -123,6 +125,23 @@ export default function LoginPage() {
             <p className="mt-4 text-sm text-center text-muted-foreground font-mono">
               {message}
             </p>
+          )}
+
+          {DEV_MODE && (
+            <div className="mt-6 pt-4 border-t border-border">
+              <Button
+                type="button"
+                variant="default"
+                className="w-full"
+                onClick={() => window.location.href = "/dashboard"}
+              >
+                Přeskočit přihlášení
+                <ArrowRight size={16} />
+              </Button>
+              <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono">
+                Dev mode — prohlížení bez účtu
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>
