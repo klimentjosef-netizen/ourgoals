@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OurGoals
 
-## Getting Started
+Life management app — training, nutrition, sleep, calendar, check-in, goals & family.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router, TypeScript, Server Components)
+- **Supabase** (Postgres, Auth, RLS, Storage)
+- **Tailwind CSS v4** + shadcn/ui
+- **Zustand** (client state)
+- **Zod** (validation)
+- **date-fns** (dates)
+
+## Setup
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy env (fill in your Supabase keys)
+cp .env.example .env.local
+
+# Run Supabase migration
+# Option A: paste supabase/migrations/0001_init.sql into Supabase SQL Editor
+# Option B: npx supabase db push --db-url postgresql://...
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/(auth)/login     — Authentication
+app/(app)/           — Protected app pages
+  dashboard          — Daily overview, XP, streak, coach
+  training           — Workout plans & logging
+  nutrition          — Food logging & macros
+  calendar           — Agenda, events, conflicts
+  checkin            — Morning & evening rituals
+  body               — Body metrics & trends
+  settings           — User settings
+  founder-log        — Product notes
+  profile            — Gamification, achievements
+components/ui/       — shadcn primitives
+components/domain/   — App-specific components
+lib/supabase/        — Supabase client setup
+lib/logic/           — Business logic (macros, overload, streak)
+lib/calendar/        — Calendar utilities
+lib/flags/           — Feature flags
+types/               — Zod schemas & TS types
+supabase/migrations/ — Database migrations
+tests/               — Vitest tests
+```
 
-## Learn More
+## Design
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Colors: Green (#22c55e) + Gold (#d4a017)
+- Fonts: Sora (headings & UI) + DM Mono (data)
+- Theme: Auto (follows system preference)
+- Mobile-first, bottom tab bar + FAB
