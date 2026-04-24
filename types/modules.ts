@@ -87,7 +87,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
     icon: Users,
     routes: [],
     featureFlag: "FAMILY_MODULE_ENABLED",
-    onboardingStep: true,
+    onboardingStep: false,
   },
 ];
 

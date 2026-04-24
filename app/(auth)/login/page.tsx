@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"login" | "magic">("login");
+  const [mode, setMode] = useState<"login" | "magic" | "reset">("login");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -21,6 +21,17 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    if (mode === "reset") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setMessage("Odkaz pro reset hesla odeslán na email.");
+      }
+      setLoading(false);
+      return;
+    }
 
     if (mode === "magic") {
       const { error } = await supabase.auth.signInWithOtp({ email });
@@ -91,9 +102,11 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading
                 ? "..."
-                : mode === "magic"
-                  ? "Poslat magic link"
-                  : "Přihlásit se"}
+                : mode === "reset"
+                  ? "Odeslat odkaz pro reset"
+                  : mode === "magic"
+                    ? "Poslat magic link"
+                    : "Přihlásit se"}
             </Button>
 
             {mode === "login" && (
@@ -109,16 +122,34 @@ export default function LoginPage() {
             )}
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-1">
             <button
               type="button"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono block mx-auto"
               onClick={() => setMode(mode === "login" ? "magic" : "login")}
             >
               {mode === "login"
                 ? "→ Přihlásit se přes magic link"
                 : "→ Přihlásit se heslem"}
             </button>
+            {mode === "login" && (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono block mx-auto"
+                onClick={() => setMode("reset")}
+              >
+                Zapomněl jsi heslo?
+              </button>
+            )}
+            {mode === "reset" && (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-primary transition-colors font-mono block mx-auto"
+                onClick={() => setMode("login")}
+              >
+                ← Zpět na přihlášení
+              </button>
+            )}
           </div>
 
           {message && (

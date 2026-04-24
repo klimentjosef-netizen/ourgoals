@@ -199,7 +199,7 @@ export async function saveMorningCheckin(
   const achievementsUnlocked = await checkFirstCheckinAchievement(profileId);
 
   // Update daily_completion
-  await supabase.from("daily_completions").upsert(
+  await supabase.from("daily_completion").upsert(
     {
       profile_id: profileId,
       date: today,
@@ -309,7 +309,7 @@ export async function saveEveningCheckin(
   const dayTotalXP = habitXP + checkinXP;
 
   // Update daily_completion
-  await supabase.from("daily_completions").upsert(
+  await supabase.from("daily_completion").upsert(
     {
       profile_id: profileId,
       date: today,

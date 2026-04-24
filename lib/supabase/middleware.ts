@@ -40,6 +40,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute =
     pathname === "/login" ||
     pathname.startsWith("/invite/") ||
+    pathname.startsWith("/auth/callback") ||
     pathname === "/";
 
   if (!user && !isPublicRoute) {

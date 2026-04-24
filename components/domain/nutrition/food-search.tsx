@@ -82,7 +82,7 @@ export function FoodSearch({ mealId, userId, onItemAdded }: FoodSearchProps) {
   }
 
   function handleAdd() {
-    if (!selectedFood || selectedFood.id.startsWith("off_")) return;
+    if (!selectedFood) return;
     startAdd(async () => {
       await addMealItem(mealId, selectedFood.id, grams);
       toast.success("Potravina přidána");
