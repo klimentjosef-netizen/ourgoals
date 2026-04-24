@@ -9,6 +9,7 @@ export const XP_VALUES = {
   PERFECT_DAY_BONUS: 0, // calculated as sum of day's XP (2x effect)
   EVENT_CREATED: 10,
   FOUNDER_LOG_ENTRY: 15,
+  MEAL_LOGGED: 10,
 } as const;
 
 export interface LevelDefinition {

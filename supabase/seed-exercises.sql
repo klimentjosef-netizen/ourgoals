@@ -1,0 +1,55 @@
+-- OurGoals — Exercise Catalog Seed (40+ exercises)
+INSERT INTO exercises (name, category, primary_muscle, secondary_muscles, equipment) VALUES
+  -- PUSH
+  ('Bench press', 'push', 'Hrudník', ARRAY['Triceps','Přední delta'], 'Lavička + činka'),
+  ('Incline bench press', 'push', 'Horní hrudník', ARRAY['Triceps','Přední delta'], 'Šikmá lavička + činka'),
+  ('Flat dumbbell press', 'push', 'Hrudník', ARRAY['Triceps'], 'Jednoručky'),
+  ('OHP (overhead press)', 'push', 'Přední delta', ARRAY['Triceps','Horní hrudník'], 'Činka'),
+  ('Seated DB shoulder press', 'push', 'Přední delta', ARRAY['Triceps'], 'Jednoručky'),
+  ('Dips', 'push', 'Hrudník', ARRAY['Triceps','Přední delta'], 'Bradla'),
+  ('Cable lateral raise', 'push', 'Boční delta', ARRAY[], 'Kladka'),
+  ('Cable triceps pushdown', 'push', 'Triceps', ARRAY[], 'Kladka'),
+  ('Overhead DB triceps extension', 'push', 'Triceps', ARRAY[], 'Jednoručka'),
+  ('Close-grip bench press', 'push', 'Triceps', ARRAY['Hrudník'], 'Lavička + činka'),
+  ('Skull crushers', 'push', 'Triceps', ARRAY[], 'EZ činka'),
+  -- PULL
+  ('Pull-ups', 'pull', 'Latissimus', ARRAY['Biceps','Střed zad'], 'Hrazda'),
+  ('Chin-ups', 'pull', 'Biceps', ARRAY['Latissimus'], 'Hrazda'),
+  ('Barbell row', 'pull', 'Střed zad', ARRAY['Latissimus','Biceps'], 'Činka'),
+  ('Chest-supported row', 'pull', 'Střed zad', ARRAY['Zadní delta'], 'Lavička + jednoručky'),
+  ('Lat pulldown', 'pull', 'Latissimus', ARRAY['Biceps'], 'Kladka'),
+  ('T-bar row', 'pull', 'Střed zad', ARRAY['Latissimus'], 'T-bar'),
+  ('Face pull', 'pull', 'Zadní delta', ARRAY['Střed zad'], 'Kladka'),
+  ('Hammer curl', 'pull', 'Biceps', ARRAY['Předloktí'], 'Jednoručky'),
+  ('Barbell curl', 'pull', 'Biceps', ARRAY[], 'Činka'),
+  ('EZ bar curl', 'pull', 'Biceps', ARRAY[], 'EZ činka'),
+  ('Incline DB curl', 'pull', 'Biceps', ARRAY[], 'Jednoručky'),
+  ('Cable rope hammer curl', 'pull', 'Biceps', ARRAY['Předloktí'], 'Kladka'),
+  -- LEGS
+  ('Back squat', 'legs', 'Quadriceps', ARRAY['Gluteus','Hamstring'], 'Činka + stojan'),
+  ('Front squat', 'legs', 'Quadriceps', ARRAY['Core'], 'Činka'),
+  ('Bulgarian split squat', 'legs', 'Quadriceps', ARRAY['Gluteus'], 'Jednoručky'),
+  ('Leg press', 'legs', 'Quadriceps', ARRAY['Gluteus'], 'Leg press stroj'),
+  ('Romanian deadlift', 'legs', 'Hamstring', ARRAY['Gluteus','Spodní záda'], 'Činka'),
+  ('Hip thrust', 'legs', 'Gluteus', ARRAY['Hamstring'], 'Lavička + činka'),
+  ('Walking lunge', 'legs', 'Quadriceps', ARRAY['Gluteus'], 'Jednoručky'),
+  ('Lying leg curl', 'legs', 'Hamstring', ARRAY[], 'Stroj'),
+  ('Seated leg curl', 'legs', 'Hamstring', ARRAY[], 'Stroj'),
+  ('Leg extension', 'legs', 'Quadriceps', ARRAY[], 'Stroj'),
+  ('Standing calf raise', 'legs', 'Lýtka', ARRAY[], 'Stroj/činka'),
+  ('Seated calf raise', 'legs', 'Lýtka', ARRAY[], 'Stroj'),
+  -- CORE
+  ('Plank', 'core', 'Core', ARRAY['Ramena'], 'Vlastní váha'),
+  ('Hanging leg raise', 'core', 'Spodní břicho', ARRAY['Hip flexory'], 'Hrazda'),
+  ('Cable crunch', 'core', 'Břicho', ARRAY[], 'Kladka'),
+  ('Hanging windshield wiper', 'core', 'Šikmé břišní', ARRAY['Core'], 'Hrazda'),
+  ('Back extension', 'core', 'Spodní záda', ARRAY['Gluteus'], 'Lavička'),
+  ('Farmer carry', 'core', 'Core', ARRAY['Předloktí','Trapézy'], 'Jednoručky'),
+  -- COMPOUND
+  ('Deadlift', 'compound', 'Spodní záda', ARRAY['Hamstring','Gluteus','Trapézy'], 'Činka'),
+  -- CARDIO
+  ('Chůze', 'cardio', 'Kardio', ARRAY[], 'Žádné'),
+  ('Běh', 'cardio', 'Kardio', ARRAY[], 'Žádné'),
+  -- MOBILITY
+  ('Mobility T-spine', 'mobility', 'Hrudní páteř', ARRAY[], 'Žádné'),
+  ('Mobility hips', 'mobility', 'Kyčle', ARRAY[], 'Žádné');
