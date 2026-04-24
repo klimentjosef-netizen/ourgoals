@@ -117,7 +117,7 @@ export function CoachMessage({
   const message = getDailyMessage(tone, streak, morningDone, eveningDone);
 
   return (
-    <Card className="bg-primary/5 border-primary/20">
+    <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
       <CardContent className="pt-2">
         <div className="flex gap-3">
           <MessageCircle

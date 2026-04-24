@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { XP_VALUES } from "@/types/gamification";
 import type { DailyHabit, HabitCompletion } from "@/types/database";
 import { format } from "date-fns";
+import Link from "next/link";
 
 interface TodayChecklistProps {
   morningDone: boolean;
@@ -112,13 +113,18 @@ export function TodayChecklist({
             ) : (
               <Circle size={16} className="text-muted-foreground" />
             )}
-            <span
-              className={`text-sm ${
-                morningDone ? "line-through text-muted-foreground" : ""
-              }`}
-            >
-              Ranní check-in
-            </span>
+            {morningDone ? (
+              <span className="text-sm line-through text-muted-foreground">
+                Ranní check-in
+              </span>
+            ) : (
+              <Link
+                href="/checkin"
+                className="text-sm text-primary hover:underline"
+              >
+                Ranní check-in
+              </Link>
+            )}
           </div>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Zap size={10} />
@@ -133,13 +139,18 @@ export function TodayChecklist({
             ) : (
               <Circle size={16} className="text-muted-foreground" />
             )}
-            <span
-              className={`text-sm ${
-                eveningDone ? "line-through text-muted-foreground" : ""
-              }`}
-            >
-              Večerní check-in
-            </span>
+            {eveningDone ? (
+              <span className="text-sm line-through text-muted-foreground">
+                Večerní check-in
+              </span>
+            ) : (
+              <Link
+                href="/checkin"
+                className="text-sm text-primary hover:underline"
+              >
+                Večerní check-in
+              </Link>
+            )}
           </div>
           <span className="text-xs text-muted-foreground flex items-center gap-1">
             <Zap size={10} />

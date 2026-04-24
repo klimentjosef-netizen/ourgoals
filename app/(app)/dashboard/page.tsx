@@ -4,6 +4,10 @@ import { LevelCard } from "@/components/domain/dashboard/level-card";
 import { StreakCard } from "@/components/domain/dashboard/streak-card";
 import { CoachMessage } from "@/components/domain/dashboard/coach-message";
 import { TodayChecklist } from "@/components/domain/dashboard/today-checklist";
+import { TrainingWidget } from "@/components/domain/dashboard/training-widget";
+import { NutritionWidget } from "@/components/domain/dashboard/nutrition-widget";
+import { CalendarWidget } from "@/components/domain/dashboard/calendar-widget";
+import { QuickActions } from "@/components/domain/dashboard/quick-actions";
 import {
   Card,
   CardContent,
@@ -13,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Target, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { DashboardGreeting } from "./greeting";
 
 export default async function DashboardPage() {
   const user = await getAuthUser();
@@ -25,10 +30,14 @@ export default async function DashboardPage() {
   // Determine which modules are active
   const hasGoals = data.activeModules.includes("goals_habits");
   const hasSleepWellbeing = data.activeModules.includes("sleep_wellbeing");
+  const hasTraining = data.activeModules.includes("training");
+  const hasNutrition = data.activeModules.includes("nutrition");
+  const hasCalendar = data.activeModules.includes("calendar");
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      {/* Personalized greeting */}
+      <DashboardGreeting displayName={data.displayName} />
 
       {/* Coach message */}
       <CoachMessage
@@ -58,6 +67,25 @@ export default async function DashboardPage() {
           profileId={user.id}
         />
       ) : null}
+
+      {/* Module widgets — 2 col on sm+ */}
+      {(hasTraining || hasNutrition || hasCalendar) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {hasTraining && (
+            <TrainingWidget
+              workout={data.todayWorkout}
+              latestWeight={data.latestWeight}
+            />
+          )}
+          {hasNutrition && (
+            <NutritionWidget
+              macros={data.todayMacros}
+              targets={data.macroTargets}
+            />
+          )}
+          {hasCalendar && <CalendarWidget events={data.todayEvents} />}
+        </div>
+      )}
 
       {/* Active goals */}
       {hasGoals && data.goals.length > 0 && (
@@ -105,8 +133,11 @@ export default async function DashboardPage() {
         </Card>
       )}
 
+      {/* Quick actions */}
+      <QuickActions activeModules={data.activeModules} />
+
       {/* Quick links when no modules active */}
-      {!hasGoals && !hasSleepWellbeing && data.habits.length === 0 && (
+      {!hasGoals && !hasSleepWellbeing && !hasTraining && !hasNutrition && !hasCalendar && data.habits.length === 0 && (
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-muted-foreground text-sm mb-3">
