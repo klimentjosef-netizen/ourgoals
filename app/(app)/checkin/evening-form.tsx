@@ -14,7 +14,54 @@ import {
 import { SliderField } from "@/components/domain/checkin/slider-field";
 import { saveEveningCheckin } from "./actions";
 import { toast } from "sonner";
-import { MoonStar, Loader2 } from "lucide-react";
+import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus } from "lucide-react";
+
+/* ---- Tap counter ---- */
+function TapCounter({
+  name,
+  label,
+  icon,
+}: {
+  name: string;
+  label: string;
+  icon: React.ReactNode;
+}) {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <Label className="text-sm">{label}</Label>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setCount((c) => Math.max(0, c - 1))}
+          className="h-9 w-9 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+          aria-label={`Sn\u00ed\u017eit ${label}`}
+        >
+          <Minus size={16} />
+        </button>
+
+        <span className="text-2xl font-bold tabular-nums w-8 text-center">
+          {count}
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setCount((c) => Math.min(20, c + 1))}
+          className="h-9 w-9 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+          aria-label={`Zv\u00fd\u0161it ${label}`}
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+      <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+        {icon}
+        n\u00e1poj\u016f
+      </div>
+      <input type="hidden" name={name} value={count} />
+    </div>
+  );
+}
 
 export function EveningForm() {
   const [isPending, startTransition] = useTransition();
@@ -31,17 +78,20 @@ export function EveningForm() {
         return;
       }
       if (result?.xpAwarded) {
-        toast.success(`+${result.xpAwarded} XP za večerní check-in!`, {
-          description:
-            result.streak && result.streak > 1
-              ? `Streak: ${result.streak} dní v řadě!`
-              : "Dobrá práce!",
-        });
+        toast.success(
+          `+${result.xpAwarded} XP za ve\u010dern\u00ed check-in!`,
+          {
+            description:
+              result.streak && result.streak > 1
+                ? `Streak: ${result.streak} dn\u00ed v \u0159ad\u011b!`
+                : "Dobr\u00e1 pr\u00e1ce!",
+          },
+        );
       }
       if (result?.achievementsUnlocked?.length) {
         for (const a of result.achievementsUnlocked) {
-          toast.success(`Achievement odemčen: ${a}`, {
-            description: "Nový achievement!",
+          toast.success(`Achievement odem\u010den: ${a}`, {
+            description: "Nov\u00fd achievement!",
           });
         }
       }
@@ -49,27 +99,31 @@ export function EveningForm() {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
+    <form action={handleSubmit} className="space-y-5">
+      <div className="flex items-center gap-2 mb-1">
         <MoonStar size={24} className="text-indigo-400" />
-        <h2 className="text-xl font-bold">Večerní check-in</h2>
+        <h2 className="text-xl font-bold">Ve\u010dern\u00ed check-in</h2>
       </div>
 
+      {/* ---- Hodnocen\u00ed dne ---- */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Hodnocení dne</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Star size={18} className="text-yellow-500" />
+            Hodnocen\u00ed dne
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <SliderField
             name="day_rating"
-            label="Známka dne"
+            label="Zn\u00e1mka dne"
             value={dayRating}
             onChange={setDayRating}
           />
 
           <SliderField
             name="mood"
-            label="Nálada"
+            label="N\u00e1lada"
             value={mood}
             onChange={setMood}
           />
@@ -83,77 +137,71 @@ export function EveningForm() {
         </CardContent>
       </Card>
 
+      {/* ---- Reflexe ---- */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Reflexe</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Brain size={18} className="text-purple-500" />
+            Reflexe
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="best_thing">Co bylo dnes nejlepší?</Label>
+            <Label htmlFor="best_thing">Co bylo dnes nejlep\u0161\u00ed?</Label>
             <Textarea
               id="best_thing"
               name="best_thing"
-              placeholder="Nejlepší moment dne..."
-              rows={2}
+              placeholder="Nap\u0159. Skv\u011bl\u00fd tr\u00e9nink, produktivn\u00ed meeting..."
+              rows={3}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="worst_thing">Co bylo nejhorší?</Label>
+            <Label htmlFor="worst_thing">Co bylo nejhor\u0161\u00ed?</Label>
             <Textarea
               id="worst_thing"
               name="worst_thing"
-              placeholder="Co se nepovedlo..."
-              rows={2}
+              placeholder="Co se nepovedlo nebo t\u011b mrzelo..."
+              rows={3}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tomorrow_risk">Největší riziko zítřka?</Label>
+            <Label htmlFor="tomorrow_risk">Nejv\u011bt\u0161\u00ed riziko z\u00edt\u0159ka?</Label>
             <Textarea
               id="tomorrow_risk"
               name="tomorrow_risk"
-              placeholder="Na co si dát pozor..."
-              rows={2}
+              placeholder="Na co si d\u00e1t pozor, co m\u016f\u017ee pokazit z\u00edt\u0159ek..."
+              rows={3}
             />
           </div>
         </CardContent>
       </Card>
 
+      {/* ---- Sledov\u00e1n\u00ed ---- */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Metriky</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Coffee size={18} className="text-amber-600" />
+            Sledov\u00e1n\u00ed
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="caffeine">Kofein</Label>
-              <Input
-                type="number"
-                id="caffeine"
-                name="caffeine"
-                min={0}
-                max={20}
-                defaultValue={0}
-                className="w-full"
-              />
-              <p className="text-[10px] text-muted-foreground">nápojů</p>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="alcohol">Alkohol</Label>
-              <Input
-                type="number"
-                id="alcohol"
-                name="alcohol"
-                min={0}
-                max={20}
-                defaultValue={0}
-                className="w-full"
-              />
-              <p className="text-[10px] text-muted-foreground">nápojů</p>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="screen_time">Screen time</Label>
+            <TapCounter
+              name="caffeine"
+              label="Kofein"
+              icon={<Coffee size={10} />}
+            />
+            <TapCounter
+              name="alcohol"
+              label="Alkohol"
+              icon={<span className="text-[10px]">\ud83c\udf77</span>}
+            />
+            <div className="flex flex-col items-center gap-1.5">
+              <Label htmlFor="screen_time" className="text-sm">
+                Screen time
+              </Label>
               <Input
                 type="number"
                 id="screen_time"
@@ -161,22 +209,22 @@ export function EveningForm() {
                 min={0}
                 max={600}
                 defaultValue={0}
-                className="w-full"
+                className="h-11 w-20 text-center"
               />
-              <p className="text-[10px] text-muted-foreground">min</p>
+              <p className="text-[10px] text-muted-foreground">minut</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button type="submit" className="w-full h-12 text-base" disabled={isPending}>
         {isPending ? (
           <>
-            <Loader2 size={16} className="animate-spin mr-2" />
-            Ukládám...
+            <Loader2 size={18} className="animate-spin mr-2" />
+            Ukl\u00e1d\u00e1m...
           </>
         ) : (
-          "Uložit večerní check-in"
+          "Ulo\u017eit ve\u010dern\u00ed check-in"
         )}
       </Button>
     </form>

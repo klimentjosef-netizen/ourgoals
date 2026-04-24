@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -7,9 +8,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle2, Moon, Zap, Smile, Flame, Star } from "lucide-react";
-import type { DailyCheckin, SleepLog, GamificationProfile } from "@/types/database";
+import {
+  CheckCircle2,
+  Moon,
+  Zap,
+  Smile,
+  Flame,
+  Star,
+  Battery,
+  AlertTriangle,
+  ArrowRight,
+} from "lucide-react";
+import type {
+  DailyCheckin,
+  SleepLog,
+  GamificationProfile,
+} from "@/types/database";
 
 interface CheckinSummaryProps {
   checkin: DailyCheckin;
@@ -17,140 +33,237 @@ interface CheckinSummaryProps {
   gamification: GamificationProfile | null;
 }
 
+function getDayStatus(checkin: DailyCheckin): {
+  label: string;
+  color: string;
+  bg: string;
+} {
+  const hasMorning = checkin.mood_1_10 != null;
+  const hasEvening = checkin.day_rating_1_10 != null;
+
+  if (hasMorning && hasEvening) {
+    return {
+      label: "Perfektn\u00ed den!",
+      color: "text-emerald-700 dark:text-emerald-400",
+      bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800",
+    };
+  }
+  if (hasMorning || hasEvening) {
+    return {
+      label: "Dobr\u00fd den",
+      color: "text-amber-700 dark:text-amber-400",
+      bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
+    };
+  }
+  return {
+    label: "Zme\u0161k\u00e1no",
+    color: "text-red-700 dark:text-red-400",
+    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800",
+  };
+}
+
 export function CheckinSummary({
   checkin,
   sleepLog,
   gamification,
 }: CheckinSummaryProps) {
+  const status = getDayStatus(checkin);
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-green-600">
-        <CheckCircle2 size={24} />
-        <h2 className="text-lg font-bold">Dnešní check-in hotový!</h2>
+    <div className="space-y-5">
+      {/* ---- Status badge ---- */}
+      <div
+        className={`rounded-xl border p-4 flex items-center gap-3 ${status.bg}`}
+      >
+        <CheckCircle2 size={28} className={status.color} />
+        <div>
+          <p className={`text-lg font-bold ${status.color}`}>{status.label}</p>
+          <p className="text-sm text-muted-foreground">
+            Dne\u0161n\u00ed check-in hotov\u00fd
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Smile size={18} />
-            Nálada & energie
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold">{checkin.mood_1_10 ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">Nálada</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{checkin.energy_1_10 ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">Energie</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{checkin.stress_1_10 ?? "—"}</p>
-              <p className="text-xs text-muted-foreground">Stres</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {sleepLog && (
+      {/* ---- XP breakdown ---- */}
+      {gamification && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Moon size={18} />
-              Spánek
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Zap size={18} className="text-yellow-500" />
+              XP dne\u0161n\u00edho dne
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold">
-                  {sleepLog.sleep_hours != null
-                    ? `${sleepLog.sleep_hours.toFixed(1)}h`
-                    : "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">Hodin</p>
+          <CardContent className="space-y-3">
+            <div className="space-y-1.5 text-sm">
+              {checkin.mood_1_10 != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Rann\u00ed check-in
+                  </span>
+                  <span className="font-medium">+10 XP</span>
+                </div>
+              )}
+              {checkin.day_rating_1_10 != null && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Ve\u010dern\u00ed check-in
+                  </span>
+                  <span className="font-medium">+10 XP</span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between font-bold">
+                <span>Celkem XP</span>
+                <span>{gamification.total_xp} XP</span>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {sleepLog.quality_1_10 ?? "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">Kvalita</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {sleepLog.wake_count ?? "—"}×
-                </p>
-                <p className="text-xs text-muted-foreground">Probuzení</p>
+            </div>
+
+            {/* Streak */}
+            <div className="flex items-center gap-2 pt-1">
+              <Flame
+                size={22}
+                className={`text-orange-500 ${
+                  gamification.current_streak > 0 ? "animate-pulse" : ""
+                }`}
+              />
+              <span className="text-lg font-bold tabular-nums">
+                {gamification.current_streak}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                dn\u00ed v \u0159ad\u011b
+              </span>
+              <div className="ml-auto">
+                <Badge variant="secondary">
+                  Lv.&nbsp;{gamification.level} &mdash; {gamification.title}
+                </Badge>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {checkin.day_rating_1_10 != null && (
+      {/* ---- Dne\u0161n\u00ed statistiky ---- */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Dne\u0161n\u00ed statistiky</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <StatTile
+              icon={<Smile size={18} className="text-amber-500" />}
+              value={checkin.mood_1_10}
+              label="N\u00e1lada"
+              max={10}
+            />
+            <StatTile
+              icon={<Battery size={18} className="text-green-500" />}
+              value={checkin.energy_1_10}
+              label="Energie"
+              max={10}
+            />
+            <StatTile
+              icon={<Moon size={18} className="text-indigo-400" />}
+              value={
+                sleepLog?.sleep_hours != null
+                  ? Number(sleepLog.sleep_hours.toFixed(1))
+                  : null
+              }
+              label="Sp\u00e1nek"
+              suffix="h"
+            />
+            <StatTile
+              icon={<Star size={18} className="text-yellow-500" />}
+              value={checkin.day_rating_1_10}
+              label="Hodnocen\u00ed"
+              max={10}
+            />
+          </div>
+
+          {checkin.stress_1_10 != null && checkin.stress_1_10 >= 7 && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+              <AlertTriangle size={14} />
+              <span>
+                Vysok\u00fd stres ({checkin.stress_1_10}/10) &mdash; zkus
+                odpo\u010dinek
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ---- Reflexe ---- */}
+      {(checkin.best_thing || checkin.worst_thing) && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star size={18} />
-              Hodnocení dne
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Star size={18} className="text-purple-500" />
+              Reflexe dne
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-center">
-              <p className="text-3xl font-bold">{checkin.day_rating_1_10}/10</p>
-            </div>
-            <Separator />
             {checkin.best_thing && (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Nejlepší moment</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Nejlep\u0161\u00ed moment
+                </p>
                 <p className="text-sm">{checkin.best_thing}</p>
               </div>
             )}
             {checkin.worst_thing && (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Nejhorší moment</p>
-                <p className="text-sm">{checkin.worst_thing}</p>
-              </div>
+              <>
+                <Separator />
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">
+                    Nejhor\u0161\u00ed moment
+                  </p>
+                  <p className="text-sm">{checkin.worst_thing}</p>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
       )}
 
-      {gamification && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap size={18} />
-              Gamifikace
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-around">
-              <div className="text-center">
-                <p className="text-2xl font-bold">{gamification.total_xp}</p>
-                <p className="text-xs text-muted-foreground">XP celkem</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center gap-1 justify-center">
-                  <Flame size={20} className="text-orange-500" />
-                  <p className="text-2xl font-bold">
-                    {gamification.current_streak}
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground">Streak</p>
-              </div>
-              <div className="text-center">
-                <Badge variant="secondary">Lv. {gamification.level}</Badge>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {gamification.title}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* ---- Link na wellbeing ---- */}
+      <Link href="/wellbeing">
+        <Button variant="outline" className="w-full">
+          Wellbeing trendy
+          <ArrowRight size={16} className="ml-2" />
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
+/* ---- Stat tile helper ---- */
+function StatTile({
+  icon,
+  value,
+  label,
+  max,
+  suffix,
+}: {
+  icon: React.ReactNode;
+  value: number | null | undefined;
+  label: string;
+  max?: number;
+  suffix?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1 py-2">
+      {icon}
+      <p className="text-2xl font-bold tabular-nums">
+        {value != null ? value : "\u2014"}
+        {value != null && suffix && (
+          <span className="text-sm font-normal text-muted-foreground">
+            {suffix}
+          </span>
+        )}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {label}
+        {max != null && <span>/{max}</span>}
+      </p>
     </div>
   );
 }
