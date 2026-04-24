@@ -8,6 +8,7 @@ import { TrainingWidget } from "@/components/domain/dashboard/training-widget";
 import { NutritionWidget } from "@/components/domain/dashboard/nutrition-widget";
 import { CalendarWidget } from "@/components/domain/dashboard/calendar-widget";
 import { QuickActions } from "@/components/domain/dashboard/quick-actions";
+import { PushPrompt } from "@/components/domain/notifications/push-prompt";
 import {
   Card,
   CardContent,
@@ -47,6 +48,9 @@ export default async function DashboardPage() {
         eveningDone={eveningDone}
         displayName={data.displayName}
       />
+
+      {/* Push notification prompt */}
+      <PushPrompt />
 
       {/* Level + Streak row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

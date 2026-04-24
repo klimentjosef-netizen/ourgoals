@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   title: "OurGoals",
   description:
     "Life management — training, nutrition, sleep, calendar, check-in, goals & family",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "OurGoals",
+  },
 };
 
 export const viewport: Viewport = {
