@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Circle, Zap } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { toggleHabit as toggleHabitAction } from "@/app/(app)/goals/habits/actions";
 import { XP_VALUES } from "@/types/gamification";
 import type { DailyHabit, HabitCompletion } from "@/types/database";
 import { format } from "date-fns";
@@ -44,51 +44,16 @@ export function TodayChecklist({
     completions.length;
 
   async function toggleHabit(habitId: string, completed: boolean) {
-    const supabase = createClient();
     const today = format(new Date(), "yyyy-MM-dd");
 
-    if (completed) {
-      // Mark as complete
-      await supabase.from("habit_completions").insert({
-        profile_id: profileId,
-        habit_id: habitId,
-        date: today,
-      });
+    const result = await toggleHabitAction(habitId, today);
 
-      // Award XP
-      await supabase.from("xp_ledger").insert({
-        profile_id: profileId,
-        amount: XP_VALUES.HABIT_COMPLETED,
-        reason: "habit_completed",
-        source_type: "habit",
-        source_id: habitId,
-      });
-
-      // Update total XP
-      const { data: profile } = await supabase
-        .from("gamification_profiles")
-        .select("total_xp")
-        .eq("profile_id", profileId)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from("gamification_profiles")
-          .update({ total_xp: profile.total_xp + XP_VALUES.HABIT_COMPLETED })
-          .eq("profile_id", profileId);
-      }
-
-      toast.success(`+${XP_VALUES.HABIT_COMPLETED} XP`, {
+    if (result?.error) {
+      toast.error(result.error);
+    } else if (result?.completed && result?.xpAwarded) {
+      toast.success(`+${result.xpAwarded} XP`, {
         description: "Návyk splněn!",
       });
-    } else {
-      // Remove completion
-      await supabase
-        .from("habit_completions")
-        .delete()
-        .eq("profile_id", profileId)
-        .eq("habit_id", habitId)
-        .eq("date", today);
     }
 
     router.refresh();

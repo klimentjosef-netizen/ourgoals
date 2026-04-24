@@ -215,7 +215,18 @@ export async function saveMorningCheckin(
   if (sleepHours != null) totalXP += XP_VALUES.SLEEP_LOGGED;
   if (weight != null) totalXP += XP_VALUES.WEIGHT_LOGGED;
 
-  return { xpAwarded: totalXP, achievementsUnlocked };
+  // Fetch current streak for toast
+  const { data: gamification } = await supabase
+    .from("gamification_profiles")
+    .select("current_streak")
+    .eq("profile_id", profileId)
+    .single();
+
+  return {
+    xpAwarded: totalXP,
+    achievementsUnlocked,
+    streak: gamification?.current_streak ?? 0,
+  };
 }
 
 export async function saveEveningCheckin(
@@ -347,7 +358,7 @@ export async function saveEveningCheckin(
 
     // Perfect day bonus
     if (dayStatus === "perfect") {
-      await awardXP(profileId, dayTotalXP, "perfect_day_bonus", "bonus", today);
+      await awardXP(profileId, 50, "Perfektní den bonus", "bonus", today);
     }
 
     // Check streak achievements
@@ -361,7 +372,7 @@ export async function saveEveningCheckin(
     revalidatePath("/profile");
 
     return {
-      xpAwarded: xpAwarded + (dayStatus === "perfect" ? dayTotalXP : 0),
+      xpAwarded: xpAwarded + (dayStatus === "perfect" ? 50 : 0),
       streak: newStreak,
       achievementsUnlocked,
     };

@@ -123,10 +123,13 @@ export default async function DashboardPage() {
                     </p>
                   )}
                 </div>
-                {goal.current_value != null && goal.target_value != null && (
+                {goal.current_value != null && goal.target_value != null && goal.start_value != null && (
                   <Badge variant="secondary" className="ml-2 shrink-0">
                     {Math.round(
-                      (goal.current_value / goal.target_value) * 100
+                      goal.target_value === goal.start_value
+                        ? 0
+                        : ((goal.current_value - goal.start_value) /
+                           (goal.target_value - goal.start_value)) * 100
                     )}
                     %
                   </Badge>
