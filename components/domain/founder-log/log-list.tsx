@@ -47,7 +47,7 @@ export function LogList({ entries }: LogListProps) {
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Zaznam smazan");
+      toast.success("Záznam smazán");
     }
   }, []);
 
@@ -71,7 +71,7 @@ export function LogList({ entries }: LogListProps) {
         </div>
         <Button size="sm" onClick={openNewForm}>
           <Plus size={16} />
-          Novy zaznam
+          Nový záznam
         </Button>
       </div>
 
@@ -82,7 +82,7 @@ export function LogList({ entries }: LogListProps) {
           className="cursor-pointer"
           onClick={() => setActiveFilter(null)}
         >
-          Vse ({entries.length})
+          Vše ({entries.length})
         </Badge>
         {FOUNDER_LOG_CATEGORIES.map((cat) => {
           const count = entries.filter(
@@ -125,21 +125,21 @@ export function LogList({ entries }: LogListProps) {
           <BookOpen size={48} className="text-muted-foreground/30" />
           <div>
             <h2 className="text-lg font-semibold">
-              Zatim zadne zaznamy
+              Zatím žádné záznamy
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Zacni psat poznamky k produktu.
+              Začni psát poznámky k produktu.
             </p>
           </div>
           <Button onClick={openNewForm}>
             <Plus size={16} />
-            Pridat prvni zaznam
+            Přidat první záznam
           </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            Zadne zaznamy v teto kategorii.
+            Žádné záznamy v této kategorii.
           </p>
         </div>
       )}
@@ -155,7 +155,7 @@ export function LogList({ entries }: LogListProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingEntry ? "Upravit zaznam" : "Novy zaznam"}
+              {editingEntry ? "Upravit záznam" : "Nový záznam"}
             </DialogTitle>
           </DialogHeader>
           <LogForm entry={editingEntry} onSuccess={handleFormSuccess} />

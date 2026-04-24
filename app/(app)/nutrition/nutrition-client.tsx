@@ -31,7 +31,7 @@ export function NutritionClient({
           size="sm"
         >
           <Plus size={14} />
-          Pridat jidlo
+          Přidat jídlo
         </Button>
       )}
     </div>

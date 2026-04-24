@@ -97,7 +97,7 @@ export function CatalogClient({
             <form action={handleCreate} className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="col-span-2">
-                  <Label className="text-xs">Nazev</Label>
+                  <Label className="text-xs">Název</Label>
                   <Input
                     name="name"
                     required
@@ -184,7 +184,7 @@ export function CatalogClient({
                 ) : (
                   <Plus size={14} />
                 )}
-                Ulozit potravinu
+                Uložit potravinu
               </Button>
             </form>
           </CardContent>
@@ -196,8 +196,8 @@ export function CatalogClient({
         <Card>
           <CardContent className="pt-4 text-center text-muted-foreground text-sm">
             {query
-              ? "Zadne vysledky."
-              : "Katalog je prazdny. Spust seed-foods.sql."}
+              ? "Žádné výsledky."
+              : "Katalog je prázdný. Spusť seed-foods.sql."}
           </CardContent>
         </Card>
       )}

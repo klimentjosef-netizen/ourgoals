@@ -45,7 +45,7 @@ export function AddMeal({ userId, date, onClose }: AddMealProps) {
     <Card className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">
-          Pridat jidlo
+          Přidat jídlo
         </h3>
         {onClose && (
           <Button
@@ -63,7 +63,7 @@ export function AddMeal({ userId, date, onClose }: AddMealProps) {
         <div className="space-y-3">
           <div>
             <label className="text-xs text-muted-foreground">
-              Typ jidla
+              Typ jídla
             </label>
             <Select
               value={mealType}
@@ -100,13 +100,13 @@ export function AddMeal({ userId, date, onClose }: AddMealProps) {
             ) : (
               <Plus size={14} />
             )}
-            Vytvorit jidlo
+            Vytvořit jídlo
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Jidlo vytvoreno. Pridej potraviny:
+            Jídlo vytvořeno. Přidej potraviny:
           </p>
           <FoodSearch
             mealId={createdMealId}

@@ -3,9 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { DEV_MODE } from "@/lib/dev/mock-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, User, Target, Moon, Dumbbell, UtensilsCrossed, CalendarDays, Briefcase, Users } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import { MODULE_REGISTRY } from "@/types/modules";
 import type { ModuleId } from "@/types/modules";
+import { ThemePicker } from "@/components/domain/settings/theme-picker";
 
 export default async function SettingsPage() {
   const user = await getAuthUser();
@@ -74,6 +75,16 @@ export default async function SettingsPage() {
           <p className="text-xs text-muted-foreground mt-3">
             Editace modulů bude v další verzi. Zatím nastav přes onboarding.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* Theme picker */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Vzhled</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ThemePicker />
         </CardContent>
       </Card>
     </div>

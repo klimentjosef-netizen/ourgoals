@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Sora, DM_Mono } from "next/font/google";
+import { ThemeLoader } from "@/components/domain/settings/theme-loader";
 import "./globals.css";
 
 const sora = Sora({
@@ -45,7 +46,10 @@ export default function RootLayout({
       lang="cs"
       className={`${sora.variable} ${dmMono.variable} ${heading.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeLoader />
+        {children}
+      </body>
     </html>
   );
 }

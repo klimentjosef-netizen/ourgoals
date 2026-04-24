@@ -104,7 +104,7 @@ export async function createMeal(formData: FormData) {
         supabase,
         userId,
         MEAL_LOGGED_XP,
-        "Prvni jidlo dne",
+        "První jídlo dne",
         "meal",
         meal.id
       );

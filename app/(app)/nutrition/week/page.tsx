@@ -8,7 +8,7 @@ import {
 } from "@/app/(app)/nutrition/actions";
 import { format, subDays } from "date-fns";
 
-const DAY_NAMES = ["Po", "Ut", "St", "Ct", "Pa", "So", "Ne"];
+const DAY_NAMES = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 
 function TrendIcon({
   value,
@@ -108,7 +108,7 @@ export default async function NutritionWeekPage() {
           <ArrowLeft size={20} />
         </Link>
         <h1 className="text-xl font-bold">
-          Tydenni prehled
+          Týdenní přehled
         </h1>
       </div>
 
@@ -131,7 +131,7 @@ export default async function NutritionWeekPage() {
                   </th>
                 ))}
                 <th className="text-center px-1 pb-2 font-bold">
-                  Prumer
+                  Průměr
                 </th>
               </tr>
             </thead>
@@ -249,7 +249,7 @@ export default async function NutritionWeekPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">
-            Denni prumer vs. cil
+            Denní průměr vs. cíl
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -258,7 +258,7 @@ export default async function NutritionWeekPage() {
               <p className="text-muted-foreground">kcal</p>
               <p className="text-lg font-bold">{avg.kcal}</p>
               <p className="text-[10px] text-muted-foreground">
-                cil: {targetKcal}
+                cíl: {targetKcal}
               </p>
             </div>
             <div>
@@ -267,7 +267,7 @@ export default async function NutritionWeekPage() {
                 {avg.protein}g
               </p>
               <p className="text-[10px] text-muted-foreground">
-                cil: {targetP}g
+                cíl: {targetP}g
               </p>
             </div>
             <div>
@@ -276,7 +276,7 @@ export default async function NutritionWeekPage() {
                 {avg.carbs}g
               </p>
               <p className="text-[10px] text-muted-foreground">
-                cil: {targetC}g
+                cíl: {targetC}g
               </p>
             </div>
             <div>
@@ -285,7 +285,7 @@ export default async function NutritionWeekPage() {
                 {avg.fat}g
               </p>
               <p className="text-[10px] text-muted-foreground">
-                cil: {targetF}g
+                cíl: {targetF}g
               </p>
             </div>
           </div>

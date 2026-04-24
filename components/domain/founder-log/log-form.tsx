@@ -81,7 +81,7 @@ export function LogForm({ entry, onSuccess }: LogFormProps) {
     }
 
     if (state.success) {
-      toast.success(isEditing ? "Zaznam aktualizovan" : "Zaznam vytvoren!");
+      toast.success(isEditing ? "Záznam aktualizován" : "Záznam vytvořen!");
       onSuccess?.();
     }
   }, [state, isEditing, onSuccess]);
@@ -159,11 +159,11 @@ export function LogForm({ entry, onSuccess }: LogFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes">Poznamky</Label>
+        <Label htmlFor="notes">Poznámky</Label>
         <Textarea
           id="notes"
           name="notes"
-          placeholder="Dalsi kontext, detaily..."
+          placeholder="Další kontext, detaily..."
           rows={2}
           defaultValue={entry?.notes ?? ""}
         />
@@ -172,10 +172,10 @@ export function LogForm({ entry, onSuccess }: LogFormProps) {
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={isPending} className="flex-1">
           {isPending
-            ? "Ukladam..."
+            ? "Ukládám..."
             : isEditing
-            ? "Ulozit zmeny"
-            : "Pridat zaznam"}
+            ? "Uložit změny"
+            : "Přidat záznam"}
         </Button>
       </div>
     </form>

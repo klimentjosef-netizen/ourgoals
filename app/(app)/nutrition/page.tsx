@@ -54,7 +54,7 @@ export default async function NutritionPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UtensilsCrossed size={24} className="text-primary" />
-          <h1 className="text-xl font-bold">Jidlo & Makra</h1>
+          <h1 className="text-xl font-bold">Jídlo & Makra</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/nutrition/catalog">
@@ -66,7 +66,7 @@ export default async function NutritionPage() {
           <Link href="/nutrition/week">
             <Button variant="outline" size="sm">
               <CalendarDays size={14} />
-              Tyden
+              Týden
             </Button>
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default async function NutritionPage() {
       {/* Macro progress */}
       <Card className="p-4">
         <h2 className="text-sm font-semibold mb-3">
-          Dnesni makra
+          Dnešní makra
         </h2>
         <MacroSummary totals={totals} targets={targets} />
       </Card>
@@ -83,7 +83,7 @@ export default async function NutritionPage() {
       {/* Remaining widget */}
       <Card className="p-3 bg-muted/50">
         <p className="text-xs font-semibold mb-1">
-          Zbyva do cile
+          Zbývá do cíle
         </p>
         <div className="flex gap-4 text-xs font-mono">
           <span>
@@ -110,11 +110,11 @@ export default async function NutritionPage() {
       {/* Meals list */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          Dnesni jidla
+          Dnešní jídla
         </h2>
         {meals.length === 0 && (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            Zatim zadna jidla. Pridej prvni jidlo dne!
+            Zatím žádná jídla. Přidej první jídlo dne!
           </p>
         )}
         {meals.map((meal) => (

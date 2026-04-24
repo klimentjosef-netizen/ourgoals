@@ -120,7 +120,7 @@ export function FoodSearch({ mealId, userId, onItemAdded }: FoodSearchProps) {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <label className="text-xs text-muted-foreground">
-                Gramaz
+                Gramáž
               </label>
               <Input
                 type="number"
@@ -146,7 +146,7 @@ export function FoodSearch({ mealId, userId, onItemAdded }: FoodSearchProps) {
               ) : (
                 <Plus size={14} />
               )}
-              Pridat
+              Přidat
             </Button>
           </div>
           {preview && (
