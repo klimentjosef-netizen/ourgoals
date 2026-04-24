@@ -14,11 +14,86 @@ import {
   Zap,
   Heart,
   ChevronRight,
+  Quote,
 } from "lucide-react";
 import {
   StickyHeader,
   SmoothScrollLink,
+  AnimatedCounter,
+  AnimatedProgress,
+  CoachToneDemo,
 } from "@/components/domain/landing/landing-client";
+import { AppMockup } from "@/components/domain/landing/app-mockup";
+
+/* ─── DATA ─── */
+
+const personas = [
+  {
+    emoji: "🏋️",
+    title: "Sportovci",
+    desc: "Chceš trénovat pravidelně a sledovat progres",
+  },
+  {
+    emoji: "📊",
+    title: "Produktivní lidé",
+    desc: "Chceš mít den pod kontrolou a neztratit focus",
+  },
+  {
+    emoji: "❤️",
+    title: "Páry a rodiny",
+    desc: "Chcete se lépe organizovat a komunikovat",
+  },
+  {
+    emoji: "🎯",
+    title: "Kdokoliv s cílem",
+    desc: "Máš cíl a potřebuješ systém, který tě udrží",
+  },
+];
+
+const painPoints = [
+  "Stáhneš si 5 appek — a nic z toho nepoužíváš",
+  "Zapíšeš cíl — a za týden na něj zapomeneš",
+  "Nemáš systém — jen dobré úmysly",
+];
+
+const benefits = [
+  {
+    icon: Target,
+    title: "Vyber si co chceš řídit",
+    desc: "Modulární systém. Aktivuj jen to, co potřebuješ.",
+  },
+  {
+    icon: Layers,
+    title: "Všechno na jednom místě",
+    desc: "Cíle, trénink, jídlo, spánek, práce — propojené.",
+  },
+  {
+    icon: Flame,
+    title: "Gamifikace tě udrží",
+    desc: "XP, levely, streaky, achievementy. Motivace každý den.",
+  },
+];
+
+const steps = [
+  {
+    num: "01",
+    title: "Vyber si moduly",
+    desc: "Trénink? Jídlo? Kalendář? Práce? Vyber jen to, co potřebuješ.",
+    visual: "modules",
+  },
+  {
+    num: "02",
+    title: "Nastav si cíle",
+    desc: "Definuj co chceš dosáhnout. App ti vytvoří denní checklist.",
+    visual: "goal",
+  },
+  {
+    num: "03",
+    title: "Plň a sbírej XP",
+    desc: "Každý den plníš úkoly, sbíráš body, rosteš v levelu.",
+    visual: "xp",
+  },
+];
 
 const modules = [
   {
@@ -58,60 +133,97 @@ const modules = [
   },
 ];
 
-const painPoints = [
-  "Fitness tracker zvlášť",
-  "Todo appka zvlášť",
-  "Kalendář zvlášť",
-];
-
-const benefits = [
+const testimonials = [
   {
-    icon: Target,
-    title: "Vyber si co chceš řídit",
-    desc: "Modulární systém. Aktivuj jen to, co potřebuješ.",
+    text: "Konečně jedna app na všechno. Nemusím přepínat mezi 5 appkami.",
+    author: "M.",
+    age: 28,
   },
   {
-    icon: Layers,
-    title: "Všechno na jednom místě",
-    desc: "Cíle, trénink, jídlo, spánek, práce — propojené.",
+    text: "Streak mě drží. 47 dní v řadě a nechci přestat.",
+    author: "T.",
+    age: 34,
   },
   {
-    icon: Flame,
-    title: "Gamifikace tě udrží",
-    desc: "XP, levely, streaky, achievementy. Motivace každý den.",
+    text: "Gamifikace funguje. Cítím se jako v RPG, jen místo questů plním reálné cíle.",
+    author: "K.",
+    age: 26,
   },
 ];
 
-const steps = [
-  {
-    num: "01",
-    title: "Vyber si moduly",
-    desc: "Trénink? Jídlo? Kalendář? Práce? Vyber jen to, co potřebuješ.",
-  },
-  {
-    num: "02",
-    title: "Nastav si cíle",
-    desc: "Definuj co chceš dosáhnout. App ti vytvoří denní checklist.",
-  },
-  {
-    num: "03",
-    title: "Plň a sbírej XP",
-    desc: "Každý den plníš úkoly, sbíráš body, rosteš v levelu.",
-  },
-];
+/* ─── STEP VISUALS ─── */
+
+function StepModulesVisual() {
+  const colors = [
+    "bg-primary/20 text-primary",
+    "bg-gold/20 text-gold",
+    "bg-son/20 text-son",
+    "bg-destructive/20 text-destructive",
+    "bg-primary/20 text-primary",
+    "bg-gold/20 text-gold",
+  ];
+  const icons = [Target, Dumbbell, UtensilsCrossed, CalendarDays, Moon, Briefcase];
+
+  return (
+    <div className="grid grid-cols-3 gap-1.5 mt-4 max-w-[120px]">
+      {icons.map((Icon, i) => (
+        <div
+          key={i}
+          className={`size-9 rounded-lg flex items-center justify-center ${colors[i]}`}
+        >
+          <Icon className="size-4" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StepGoalVisual() {
+  return (
+    <div className="mt-4 rounded-lg border border-border bg-card p-3 max-w-[200px]">
+      <div className="text-xs font-medium mb-1.5">Zhubnout 5 kg</div>
+      <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <div className="h-full w-3/5 rounded-full bg-primary" />
+      </div>
+      <div className="text-[10px] text-muted-foreground mt-1">60 %</div>
+    </div>
+  );
+}
+
+function StepXpVisual() {
+  return (
+    <div className="mt-4 flex items-center gap-3">
+      <div className="flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1.5">
+        <Zap className="size-3.5 text-primary" />
+        <span className="text-xs font-bold">+50 XP</span>
+      </div>
+      <div className="flex items-center gap-1.5 rounded-full bg-gold/10 border border-gold/20 px-3 py-1.5">
+        <Flame className="size-3.5 text-gold" />
+        <span className="text-xs font-bold">12 dní</span>
+      </div>
+    </div>
+  );
+}
+
+const stepVisuals: Record<string, React.ReactNode> = {
+  modules: <StepModulesVisual />,
+  goal: <StepGoalVisual />,
+  xp: <StepXpVisual />,
+};
+
+/* ─── PAGE ─── */
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground scroll-smooth">
       <StickyHeader />
 
-      {/* ======== HERO ======== */}
+      {/* ======== 1. HERO ======== */}
       <section className="relative overflow-hidden">
-        {/* Gradient background */}
         <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-primary/3 to-transparent pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-5xl mx-auto px-4 pt-16 pb-24 md:pt-24 md:pb-32">
+        <div className="relative max-w-5xl mx-auto px-4 pt-16 pb-8 md:pt-24 md:pb-12">
           {/* Logo */}
           <div className="mb-12 md:mb-16">
             <span className="font-heading text-xl font-bold tracking-tight">
@@ -120,14 +232,14 @@ export default function LandingPage() {
           </div>
 
           <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-6">
-            Jeden plán
+            Cíle. Návyky. Trénink.
             <br />
-            <span className="text-primary">na celý život.</span>
+            <span className="text-primary">Jídlo. Kalendář.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
-            Cíle, návyky, trénink, jídlo, kalendář, spánek — vše na jednom
-            místě. S gamifikací, která tě udrží.
+            Vše propojené na jednom místě. S&nbsp;XP, levely a&nbsp;streaky,
+            které tě udrží.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -139,22 +251,54 @@ export default function LandingPage() {
               <ChevronRight className="ml-1 size-4" />
             </Link>
             <SmoothScrollLink
-              href="#problem"
+              href="#pro-koho"
               className="inline-flex items-center justify-center rounded-lg border border-border px-8 h-12 text-base font-medium hover:bg-muted transition-colors"
             >
-              Zjistit víc ↓
+              Podívat se ↓
             </SmoothScrollLink>
+          </div>
+
+          <AppMockup />
+        </div>
+      </section>
+
+      {/* ======== 2. PRO KOHO ======== */}
+      <section id="pro-koho" className="py-20 md:py-28">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-12">
+            Pro koho je OurGoals?
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+            {personas.map((p) => (
+              <div
+                key={p.title}
+                className="flex items-start gap-4 rounded-2xl border border-border bg-card p-5 md:p-6 hover:border-primary/20 transition-colors"
+              >
+                <div className="flex-shrink-0 size-12 rounded-full bg-primary/10 flex items-center justify-center text-xl">
+                  {p.emoji}
+                </div>
+                <div>
+                  <h3 className="font-heading text-base md:text-lg font-semibold mb-1">
+                    {p.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {p.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ======== PROBLEM ======== */}
+      {/* ======== 3. PROBLEM ======== */}
       <section id="problem" className="py-20 md:py-28 bg-muted/30">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-12 max-w-3xl">
-            Máš cíle v 5 appkách
+            Znáš to. Začneš v&nbsp;lednu,
             <br />
-            <span className="text-muted-foreground">a neplníš žádné?</span>
+            <span className="text-muted-foreground">v&nbsp;únoru to vzdáš.</span>
           </h2>
 
           <div className="grid gap-4 sm:grid-cols-3 mb-10">
@@ -166,19 +310,19 @@ export default function LandingPage() {
                 <div className="flex-shrink-0 size-8 rounded-full bg-destructive/10 flex items-center justify-center">
                   <X className="size-4 text-destructive" />
                 </div>
-                <span className="font-medium">{point}</span>
+                <span className="font-medium text-sm md:text-base">{point}</span>
               </div>
             ))}
           </div>
 
-          <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
-            A výsledek? Nic z toho nefunguje, protože to není propojené.
-            Přepínáš mezi appkami, ztrácíš motivaci, a po týdnu to vzdáš.
+          <p className="text-lg text-primary font-semibold max-w-2xl leading-relaxed">
+            OurGoals je systém, který funguje. Protože je propojený
+            a&nbsp;protože tě baví.
           </p>
         </div>
       </section>
 
-      {/* ======== SOLUTION ======== */}
+      {/* ======== 4. SOLUTION ======== */}
       <section className="py-20 md:py-28">
         <div className="max-w-5xl mx-auto px-4">
           <div className="mb-12">
@@ -211,7 +355,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== HOW IT WORKS ======== */}
+      {/* ======== 5. HOW IT WORKS ======== */}
       <section className="py-20 md:py-28 bg-muted/30">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-14">
@@ -230,13 +374,14 @@ export default function LandingPage() {
                 <p className="text-muted-foreground leading-relaxed">
                   {s.desc}
                 </p>
+                {stepVisuals[s.visual]}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ======== MODULES ======== */}
+      {/* ======== 6. MODULES ======== */}
       <section className="py-20 md:py-28">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
@@ -267,7 +412,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== GAMIFICATION ======== */}
+      {/* ======== 7. GAMIFICATION ======== */}
       <section className="py-20 md:py-28 bg-muted/30">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
@@ -277,10 +422,10 @@ export default function LandingPage() {
           </h2>
           <p className="text-lg text-muted-foreground mb-12 max-w-xl">
             Každá splněná úloha ti přinese body zkušeností. Rosteš, odemykáš
-            achievementy a udržuješ si streak.
+            achievementy a&nbsp;udržuješ si streak.
           </p>
 
-          {/* XP bar mockup */}
+          {/* Animated XP bar */}
           <div className="max-w-lg mb-10">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -295,15 +440,10 @@ export default function LandingPage() {
                 2 450 / 3 000 XP
               </span>
             </div>
-            <div className="h-3 rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70 transition-all"
-                style={{ width: "82%" }}
-              />
-            </div>
+            <AnimatedProgress value={82} />
           </div>
 
-          {/* Badges mockup */}
+          {/* Badges */}
           <div className="flex flex-wrap gap-4 mb-10">
             <div className="flex items-center gap-2 rounded-full bg-gold/10 border border-gold/20 px-4 py-2">
               <Trophy className="size-4 text-gold" />
@@ -319,40 +459,69 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-muted-foreground">
+          {/* Animated streak counter */}
+          <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm text-muted-foreground mb-8">
             <span>
-              <strong className="text-foreground">50</strong> levelů
+              <AnimatedCounter
+                target={50}
+                className="text-foreground font-bold"
+              />{" "}
+              levelů
             </span>
             <span>
-              <strong className="text-foreground">12</strong> achievementů
+              <AnimatedCounter
+                target={12}
+                className="text-foreground font-bold"
+              />{" "}
+              achievementů
             </span>
             <span>
-              <strong className="text-foreground">Denní</strong> streak
+              <AnimatedCounter
+                target={47}
+                className="text-foreground font-bold"
+                suffix=" dní"
+              />{" "}
+              streak
             </span>
           </div>
 
-          <div className="mt-8 rounded-xl border border-border bg-card p-5 max-w-md">
-            <p className="text-sm text-muted-foreground mb-2">
-              Vyber si tón kouče:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {["Přísný", "Kamarádský", "Klidný", "Energický", "Minimální"].map(
-                (tone) => (
-                  <span
-                    key={tone}
-                    className="rounded-full bg-muted px-3 py-1 text-xs font-medium"
-                  >
-                    {tone}
-                  </span>
-                )
-              )}
-            </div>
-          </div>
+          {/* Coach tone selector */}
+          <CoachToneDemo />
         </div>
       </section>
 
-      {/* ======== COUPLES / FAMILY TEASER ======== */}
+      {/* ======== 8. SOCIAL PROOF ======== */}
       <section className="py-20 md:py-28">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-12">
+            Co říkají uživatelé
+          </h2>
+
+          <div className="grid gap-6 sm:grid-cols-3 mb-10">
+            {testimonials.map((t) => (
+              <div
+                key={t.author}
+                className="rounded-2xl border border-border bg-card p-6 md:p-8 flex flex-col"
+              >
+                <Quote className="size-6 text-primary/30 mb-4" />
+                <p className="text-foreground leading-relaxed mb-6 flex-1">
+                  &ldquo;{t.text}&rdquo;
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  — {t.author}, {t.age}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-lg md:text-xl font-heading font-semibold text-primary">
+            Sleduj. Plň. Level up.
+          </p>
+        </div>
+      </section>
+
+      {/* ======== 9. COUPLES / FAMILY TEASER ======== */}
+      <section className="py-20 md:py-28 bg-muted/30">
         <div className="max-w-5xl mx-auto px-4">
           <div className="rounded-2xl border border-border bg-card/50 p-8 md:p-12 text-center max-w-2xl mx-auto">
             <div className="size-14 rounded-2xl bg-son/10 flex items-center justify-center mx-auto mb-6">
@@ -374,8 +543,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== FINAL CTA ======== */}
-      <section className="py-20 md:py-28 bg-muted/30">
+      {/* ======== 10. FINAL CTA ======== */}
+      <section className="py-20 md:py-28">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
             Připraven změnit
@@ -398,12 +567,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== FOOTER ======== */}
+      {/* ======== 11. FOOTER ======== */}
       <footer className="py-10 border-t border-border">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-heading text-sm font-bold tracking-tight">
             <span className="text-primary">Our</span>Goals
           </span>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <a href="#" className="hover:text-foreground transition-colors">
+              Ochrana soukromí
+            </a>
+            <span className="text-border">|</span>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Podmínky
+            </a>
+            <span className="text-border">|</span>
+            <a href="#" className="hover:text-foreground transition-colors">
+              Kontakt
+            </a>
+          </div>
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} OurGoals. Všechna práva vyhrazena.
           </p>
