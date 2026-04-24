@@ -1,8 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 import type { ModuleId } from "@/types/modules";
 
-// Hardcoded true for preview — change to false for production
-export const DEV_MODE = true;
+export const DEV_MODE = process.env.NEXT_PUBLIC_DEV_MODE === "true";
 
 export const MOCK_USER_ID = "00000000-0000-0000-0000-000000000001";
 
