@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,12 @@ interface StepCompleteProps {
 export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps) {
   const router = useRouter();
   const reset = useOnboarding((s) => s.reset);
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   function handleGo() {
     reset();
@@ -23,7 +30,7 @@ export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps)
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 relative overflow-hidden">
       {/* Confetti */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+      {showConfetti && <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
         {Array.from({ length: 24 }).map((_, i) => (
           <div
             key={i}
@@ -43,7 +50,7 @@ export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps)
             }}
           />
         ))}
-      </div>
+      </div>}
 
       <style>{`
         @keyframes confetti-fall {

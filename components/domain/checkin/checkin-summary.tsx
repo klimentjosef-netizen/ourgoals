@@ -26,6 +26,7 @@ import type {
   SleepLog,
   GamificationProfile,
 } from "@/types/database";
+import { XP_VALUES } from "@/types/gamification";
 
 interface CheckinSummaryProps {
   checkin: DailyCheckin;
@@ -100,7 +101,7 @@ export function CheckinSummary({
                   <span className="text-muted-foreground">
                     Rann\u00ed check-in
                   </span>
-                  <span className="font-medium">+10 XP</span>
+                  <span className="font-medium">+{XP_VALUES.MORNING_CHECKIN} XP</span>
                 </div>
               )}
               {checkin.day_rating_1_10 != null && (
@@ -108,7 +109,7 @@ export function CheckinSummary({
                   <span className="text-muted-foreground">
                     Ve\u010dern\u00ed check-in
                   </span>
-                  <span className="font-medium">+10 XP</span>
+                  <span className="font-medium">+{XP_VALUES.EVENING_CHECKIN} XP</span>
                 </div>
               )}
               <Separator />

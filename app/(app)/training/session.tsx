@@ -52,7 +52,7 @@ export function TrainingSession({ workoutId, exercises }: Props) {
       return;
     }
 
-    await logSet(
+    const result = await logSet(
       sessionId,
       currentEx.exercise_id,
       setIdx,
@@ -61,6 +61,11 @@ export function TrainingSession({ workoutId, exercises }: Props) {
       rpe ? parseFloat(rpe) : null,
       false
     );
+
+    if (result?.error) {
+      toast.error("Nepodařilo se uložit sérii");
+      return;
+    }
 
     toast.success(`Série ${setIdx + 1} uložena: ${w}kg × ${r}`);
 

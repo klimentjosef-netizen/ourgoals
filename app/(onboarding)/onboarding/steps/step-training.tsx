@@ -66,7 +66,7 @@ export function StepTraining() {
           <Input id="daysPerWeek" className="h-11" type="number" min={1} max={7} placeholder="4" value={data.daysPerWeek ?? ""} onChange={(e) => update({ daysPerWeek: e.target.value ? Number(e.target.value) : undefined })} />
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-2">
             <Label htmlFor="weight">Váha (kg)</Label>
             <Input id="weight" className="h-11" type="number" placeholder="80" value={data.weightKg ?? ""} onChange={(e) => update({ weightKg: e.target.value ? Number(e.target.value) : undefined })} />

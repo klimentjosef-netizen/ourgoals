@@ -6,6 +6,7 @@ import type { ModuleId } from "@/types/modules";
 import { updateModules } from "@/app/(app)/settings/actions";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2 } from "lucide-react";
 
 interface ModuleToggleProps {
   activeModules: ModuleId[];
@@ -78,6 +79,12 @@ export function ModuleToggle({ activeModules }: ModuleToggleProps) {
           </button>
         );
       })}
+      {isPending && (
+        <div className="col-span-full flex items-center justify-center gap-2 text-sm text-muted-foreground py-2">
+          <Loader2 size={14} className="animate-spin" />
+          Ukládám...
+        </div>
+      )}
     </div>
   );
 }

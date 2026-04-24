@@ -98,6 +98,15 @@ export function EventForm({
       formData.delete("all_day");
     }
 
+    // Validace: začátek musí být před koncem
+    if (!allDay) {
+      const startTime = formData.get("starts_at_time") as string;
+      const endTime = formData.get("ends_at_time") as string;
+      if (startTime && endTime && startTime >= endTime) {
+        return { error: "Začátek musí být před koncem" };
+      }
+    }
+
     try {
       if (isEditing) {
         const result = await updateCalendarEvent(event.id, formData);

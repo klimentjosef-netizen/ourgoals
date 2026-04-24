@@ -118,6 +118,9 @@ export function AddMealForm({ userId, date, onDone }: AddMealProps) {
               <p className="text-xs text-muted-foreground">
                 Jídlo vytvořeno. Hledej a přidávej potraviny:
               </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Tip: Přidej alespoň jednu potravinu.
+              </p>
               <FoodSearch mealId={createdMealId} userId={userId} />
               <Button variant="outline" className="w-full h-11" onClick={onDone}>
                 Hotovo

@@ -64,7 +64,7 @@ export default function LoginPage() {
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage("Účet vytvořen. Ověř email a přihlaš se.");
+      setMessage("✓ Účet vytvořen! Zkontroluj email a klikni na potvrzovací odkaz pro aktivaci.");
     }
 
     setLoading(false);
