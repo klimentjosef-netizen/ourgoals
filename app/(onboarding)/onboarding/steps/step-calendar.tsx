@@ -3,8 +3,8 @@
 import { useOnboarding } from "@/lib/hooks/use-onboarding";
 import { StepContainer } from "@/components/domain/onboarding/step-container";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { CalendarDays } from "lucide-react";
 import type { CalendarSetupData } from "@/types/onboarding";
 
 const DAYS = [
@@ -20,10 +20,7 @@ const DAYS = [
 export function StepCalendar() {
   const { moduleSetups, setModuleSetup, nextStep, prevStep } = useOnboarding();
 
-  const data = (moduleSetups.calendar ?? {
-    workDays: [1, 2, 3, 4, 5],
-  }) as Partial<CalendarSetupData>;
-
+  const data = (moduleSetups.calendar ?? { workDays: [1, 2, 3, 4, 5] }) as Partial<CalendarSetupData>;
   const workDays = data.workDays ?? [1, 2, 3, 4, 5];
 
   const update = (partial: Partial<CalendarSetupData>) => {
@@ -41,6 +38,8 @@ export function StepCalendar() {
     <StepContainer
       title="Kalendář & čas"
       subtitle="Nastav si pracovní dny a stálé závazky."
+      helperText="Které dny obvykle pracuješ? Pomůže nám to s plánováním."
+      icon={CalendarDays}
       onNext={nextStep}
       onPrev={prevStep}
       canSkip={false}
@@ -51,28 +50,30 @@ export function StepCalendar() {
           <Label>Pracovní dny</Label>
           <div className="flex flex-wrap gap-3">
             {DAYS.map((day) => (
-              <div key={day.value} className="flex items-center gap-2">
-                <Checkbox
-                  id={`day-${day.value}`}
-                  checked={workDays.includes(day.value)}
-                  onCheckedChange={() => toggleDay(day.value)}
-                />
-                <Label htmlFor={`day-${day.value}`} className="font-normal">
-                  {day.label}
-                </Label>
-              </div>
+              <button
+                key={day.value}
+                type="button"
+                onClick={() => toggleDay(day.value)}
+                className={`w-11 h-11 rounded-lg text-sm font-medium transition-all ${
+                  workDays.includes(day.value)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {day.label}
+              </button>
             ))}
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="commitments">Stálé závazky</Label>
+          <Label htmlFor="commitments">Stálé závazky (nepovinné)</Label>
           <Textarea
             id="commitments"
-            placeholder="Např. Pondělí 18:00 - anglicky, Středa 7:00 - crossfit..."
+            placeholder="Např. Pondělí 18:00 — angličtina, Středa 7:00 — crossfit..."
             value={data.fixedCommitments ?? ""}
             onChange={(e) => update({ fixedCommitments: e.target.value })}
-            rows={4}
+            rows={3}
           />
         </div>
       </div>

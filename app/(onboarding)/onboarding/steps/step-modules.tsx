@@ -4,6 +4,7 @@ import { useOnboarding } from "@/lib/hooks/use-onboarding";
 import { StepContainer } from "@/components/domain/onboarding/step-container";
 import { ModuleCard } from "@/components/domain/onboarding/module-card";
 import { getAvailableModules } from "@/lib/logic/modules";
+import { Layers } from "lucide-react";
 
 export function StepModules() {
   const { selectedModules, toggleModule, nextStep, prevStep } =
@@ -14,7 +15,9 @@ export function StepModules() {
   return (
     <StepContainer
       title="Vyber si moduly"
-      subtitle="Co chceš sledovat a zlepšovat? Můžeš přidat nebo odebrat kdykoliv."
+      subtitle="Co chceš sledovat a zlepšovat?"
+      helperText="Vyber si oblasti, které chceš mít pod kontrolou. Můžeš je kdykoliv změnit."
+      icon={Layers}
       onNext={nextStep}
       onPrev={prevStep}
       canSkip={false}
