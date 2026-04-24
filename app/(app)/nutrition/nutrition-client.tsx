@@ -2,38 +2,32 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import { AddMeal } from "@/app/(app)/nutrition/add-meal";
+import { AddMealForm } from "@/app/(app)/nutrition/add-meal";
 
 interface NutritionClientProps {
   userId: string;
   date: string;
 }
 
-export function NutritionClient({
-  userId,
-  date,
-}: NutritionClientProps) {
-  const [showAddMeal, setShowAddMeal] = useState(false);
+export function NutritionClient({ userId, date }: NutritionClientProps) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      {showAddMeal ? (
-        <AddMeal
-          userId={userId}
-          date={date}
-          onClose={() => setShowAddMeal(false)}
-        />
-      ) : (
-        <Button
-          onClick={() => setShowAddMeal(true)}
-          className="w-full"
-          size="sm"
-        >
-          <Plus size={14} />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger>
+        <Button className="w-full h-11">
+          <Plus size={16} />
           Přidat jídlo
         </Button>
-      )}
-    </div>
+      </DialogTrigger>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Přidat jídlo</DialogTitle>
+        </DialogHeader>
+        <AddMealForm userId={userId} date={date} onDone={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
   );
 }
