@@ -236,3 +236,115 @@ export async function getUserTargets(
     fat_g: data?.fat_g ?? 70,
   };
 }
+
+// Search OpenFoodFacts + local DB
+export async function searchFoodsHybrid(
+  query: string,
+  userId: string
+): Promise<{ local: FoodItem[]; off: FoodItem[] }> {
+  const { searchOFF, offToFoodItem } = await import("@/lib/nutrition/openfoodfacts");
+
+  // Search local DB
+  const local = await searchFoods(query, userId);
+
+  // Search OpenFoodFacts
+  const offResult = await searchOFF(query);
+  const off = offResult.products.map((p) => ({
+    id: `off_${p.code}`,
+    ...offToFoodItem(p),
+    owner_id: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  })) as FoodItem[];
+
+  return { local, off };
+}
+
+// Save OFF product to local DB for future use
+export async function saveOFFFood(product: {
+  name: string;
+  brand: string | null;
+  kcal_per_100g: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  fiber_g: number | null;
+  off_code: string;
+}) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+
+  const { data, error } = await supabase
+    .from("food_items")
+    .insert({
+      name: product.name,
+      brand: product.brand,
+      kcal_per_100g: product.kcal_per_100g,
+      protein_g: product.protein_g,
+      carbs_g: product.carbs_g,
+      fat_g: product.fat_g,
+      fiber_g: product.fiber_g,
+      source: "openfoodfacts",
+      owner_id: userId,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  return { food: data };
+}
+
+// Quick-add: just kcal + macros, no food search
+export async function quickAddMeal(formData: FormData) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+  const date = (formData.get("date") as string) || new Date().toISOString().split("T")[0];
+  const mealType = (formData.get("meal_type") as MealType) || "snack";
+  const kcal = Number(formData.get("kcal")) || 0;
+  const protein = Number(formData.get("protein")) || 0;
+  const carbs = Number(formData.get("carbs")) || 0;
+  const fat = Number(formData.get("fat")) || 0;
+  const notes = (formData.get("notes") as string) || null;
+
+  // Create a "quick add" food item
+  const { data: food } = await supabase
+    .from("food_items")
+    .insert({
+      name: notes || `Rychlý zápis (${kcal} kcal)`,
+      kcal_per_100g: kcal,
+      protein_g: protein,
+      carbs_g: carbs,
+      fat_g: fat,
+      source: "manual",
+      owner_id: userId,
+    })
+    .select()
+    .single();
+
+  if (!food) return { error: "Nepodařilo se vytvořit potravinu" };
+
+  // Create meal with 100g (so macros match exactly)
+  const { data: meal } = await supabase
+    .from("meals")
+    .insert({
+      profile_id: userId,
+      date,
+      meal_type: mealType,
+      consumed_at: new Date().toISOString(),
+      notes,
+      visibility: "private",
+    })
+    .select()
+    .single();
+
+  if (!meal) return { error: "Nepodařilo se vytvořit jídlo" };
+
+  await supabase.from("meal_items").insert({
+    meal_id: meal.id,
+    food_id: food.id,
+    grams: 100,
+  });
+
+  revalidatePath("/nutrition");
+  return { success: true };
+}
