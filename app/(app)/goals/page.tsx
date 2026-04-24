@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/auth";
 import { Target, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { GoalCard } from "@/components/domain/goals/goal-card";
 import { HabitChecklist } from "@/components/domain/goals/habit-checklist";
@@ -101,21 +102,22 @@ export default async function GoalsPage() {
 
       {/* Empty state */}
       {typedGoals.length === 0 && typedHabits.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <Target size={48} className="text-muted-foreground/30" />
-          <div>
-            <h2 className="text-lg font-semibold">Zatím žádné cíle</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Vytvoř si první cíl a začni sledovat svůj pokrok.
-            </p>
-          </div>
-          <Link href="/goals/new">
-            <Button>
-              <Plus size={16} />
-              Vytvořit první cíl
-            </Button>
-          </Link>
-        </div>
+        <Card>
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
+              <Target size={32} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Nastav si první cíl</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                Definuj co chceš dosáhnout a sleduj svůj pokrok. Za vytvoření cíle dostaneš 25 XP.
+              </p>
+            </div>
+            <Link href="/goals/new">
+              <Button>Vytvořit cíl &rarr;</Button>
+            </Link>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

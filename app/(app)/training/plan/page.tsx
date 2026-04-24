@@ -5,7 +5,7 @@ import { DEV_MODE } from "@/lib/dev/mock-user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Dumbbell, Clock } from "lucide-react";
+import { ArrowLeft, Dumbbell, Clock, PenLine } from "lucide-react";
 import Link from "next/link";
 
 export default async function TrainingPlanPage() {
@@ -39,16 +39,27 @@ export default async function TrainingPlanPage() {
             <p className="text-sm text-muted-foreground">
               Nemáš žádný tréninkový plán. Vytvoř si ho nebo vyber šablonu.
             </p>
-            <p className="text-xs text-muted-foreground">
-              (Editor plánu bude v další iteraci)
-            </p>
+            <Link href="/training/plan/edit">
+              <Button size="sm">
+                <PenLine size={14} />
+                Vytvořit plán
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (
         <>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">{plans[0].name}</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">{plans[0].name}</CardTitle>
+                <Link href="/training/plan/edit">
+                  <Button variant="outline" size="sm">
+                    <PenLine size={14} />
+                    Upravit
+                  </Button>
+                </Link>
+              </div>
               <p className="text-xs text-muted-foreground font-mono">
                 {plans[0].start_date} → {plans[0].end_date ?? "bez konce"}
                 {plans[0].days_per_week && ` • ${plans[0].days_per_week}×/týden`}

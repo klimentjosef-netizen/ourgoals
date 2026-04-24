@@ -2,7 +2,7 @@ import Link from "next/link";
 import { UtensilsCrossed, CalendarDays, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth";
 import { getDailyMacros, getUserTargets } from "@/app/(app)/nutrition/actions";
 import { MacroSummary } from "@/components/domain/nutrition/macro-summary";
@@ -113,9 +113,19 @@ export default async function NutritionPage() {
           Dnešní jídla
         </h2>
         {meals.length === 0 && (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            Zatím žádná jídla. Přidej první jídlo dne!
-          </p>
+          <Card>
+            <CardContent className="pt-8 pb-8 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
+                <UtensilsCrossed size={32} className="text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Začni sledovat co jíš</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Loguj jídla a sleduj makra v reálném čase. Hledej v databázi 3M+ potravin.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         )}
         {meals.map((meal) => (
           <MealCard key={meal.id} meal={meal} />

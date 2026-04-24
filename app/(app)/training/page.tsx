@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dumbbell, Play, Clock, History, ListChecks } from "lucide-react";
+import { Dumbbell, Play, Clock, History, ListChecks, LayoutTemplate, PenLine, Zap } from "lucide-react";
 import Link from "next/link";
 import { TrainingSession } from "./session";
+import { PLAN_TEMPLATES } from "./plan/templates";
 import type { WorkoutExercise } from "@/types/training";
 
 export default async function TrainingPage() {
@@ -90,20 +91,71 @@ export default async function TrainingPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="pt-6 text-center space-y-3">
-            <Dumbbell size={32} className="mx-auto text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Nemáš aktivní tréninkový plán.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <Link href="/training/plan">
-                <Button size="sm">Vytvořit plán</Button>
-              </Link>
-              <TrainingSession workoutId={null} exercises={[]} />
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="text-center space-y-2 py-2">
+            <div className="w-14 h-14 rounded-full bg-primary/10 mx-auto flex items-center justify-center">
+              <Dumbbell size={28} className="text-primary" />
             </div>
-          </CardContent>
-        </Card>
+            <h3 className="font-semibold text-lg">Začni trénovat podle plánu</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Vyber šablonu nebo si vytvoř vlastní plán na míru.
+            </p>
+          </div>
+
+          {/* Template cards */}
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Vyber šablonu
+            </p>
+            {PLAN_TEMPLATES.map((t) => (
+              <Link key={t.id} href={`/training/plan/edit`}>
+                <Card className="hover:border-primary/50 transition-colors">
+                  <CardContent className="pt-3 pb-3 flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <LayoutTemplate size={16} className="text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold">{t.name}</p>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {t.daysPerWeek}×/týden
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Other options */}
+          <div className="grid grid-cols-2 gap-2">
+            <Link href="/training/plan/edit">
+              <Card className="hover:border-primary/50 transition-colors h-full">
+                <CardContent className="pt-4 pb-4 text-center space-y-2">
+                  <div className="w-9 h-9 rounded-lg bg-muted mx-auto flex items-center justify-center">
+                    <PenLine size={16} className="text-muted-foreground" />
+                  </div>
+                  <p className="text-xs font-semibold">Vytvořit vlastní</p>
+                  <p className="text-[10px] text-muted-foreground">Plán na míru</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Card className="hover:border-primary/50 transition-colors h-full">
+              <CardContent className="pt-4 pb-4 text-center space-y-2">
+                <div className="w-9 h-9 rounded-lg bg-muted mx-auto flex items-center justify-center">
+                  <Zap size={16} className="text-muted-foreground" />
+                </div>
+                <p className="text-xs font-semibold">Trénovat bez plánu</p>
+                <div className="pt-1">
+                  <TrainingSession workoutId={null} exercises={[]} />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
 
       {/* Recent sessions */}

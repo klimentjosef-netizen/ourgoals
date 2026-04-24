@@ -89,9 +89,16 @@ export default async function BodyPage() {
         </Card>
       ) : (
         <Card>
-          <CardContent className="pt-6 text-center space-y-3">
-            <Scale size={32} className="mx-auto text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Zatím žádné měření.</p>
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
+              <Scale size={32} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Začni sledovat tělesné metriky</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                Měř váhu, body fat a obvody. Sleduj trendy a pokrok.
+              </p>
+            </div>
             <BodyMetricForm />
           </CardContent>
         </Card>

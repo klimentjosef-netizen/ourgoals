@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Moon, AlertTriangle, TrendingDown, Clock } from "lucide-react";
+import { Moon, AlertTriangle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import type { SleepLog } from "@/types/database";
 
@@ -125,12 +126,19 @@ export default async function WellbeingPage() {
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Clock size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Zatím žádné záznamy o spánku.</p>
-              <p className="text-xs mt-1">
-                Zaloguj spánek v ranním check-inu.
-              </p>
+            <div className="text-center py-8 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
+                <Moon size={32} className="text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Začni sledovat svůj spánek</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Sleduj kvalitu spánku a najdi vzorce. Lepší spánek = lepší výkon.
+                </p>
+              </div>
+              <Link href="/checkin">
+                <Button>Udělat ranní check-in &rarr;</Button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-2">

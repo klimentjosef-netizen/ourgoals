@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { BookOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -121,21 +122,23 @@ export function LogList({ entries }: LogListProps) {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <BookOpen size={48} className="text-muted-foreground/30" />
-          <div>
-            <h2 className="text-lg font-semibold">
-              Zatím žádné záznamy
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Začni psát poznámky k produktu.
-            </p>
-          </div>
-          <Button onClick={openNewForm}>
-            <Plus size={16} />
-            Přidat první záznam
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-muted mx-auto flex items-center justify-center">
+              <BookOpen size={32} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Zapiš si první myšlenku</h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                Dokumentuj rozhodnutí, nápady a lekce. Tvůj budoucí já ti poděkuje.
+              </p>
+            </div>
+            <Button onClick={openNewForm}>
+              <Plus size={16} />
+              Přidat první záznam
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
           <p className="text-sm text-muted-foreground">
