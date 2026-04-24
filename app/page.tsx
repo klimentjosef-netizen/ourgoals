@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { DEV_MODE } from "@/lib/dev/mock-user";
 import { createClient } from "@/lib/supabase/server";
+import LandingPage from "./(marketing)/page";
 
 export default async function Home() {
   if (DEV_MODE) {
@@ -14,7 +15,7 @@ export default async function Home() {
 
   if (user) {
     redirect("/dashboard");
-  } else {
-    redirect("/login");
   }
+
+  return <LandingPage />;
 }
