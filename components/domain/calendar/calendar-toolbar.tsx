@@ -4,9 +4,10 @@ import { format, addWeeks, subWeeks, endOfWeek } from "date-fns";
 import { cs } from "date-fns/locale/cs";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronLeft, ChevronRight, Plus, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Download, Link2 } from "lucide-react";
 import { generateICS, downloadICSBlob } from "@/lib/calendar/ics";
 import type { CalendarEvent } from "@/types/calendar";
+import Link from "next/link";
 
 type CalendarView = "agenda" | "week";
 
@@ -93,6 +94,14 @@ export function CalendarToolbar({
           <Download size={14} className="mr-1" />
           ICS
         </Button>
+
+        {/* FEATURE 9: Připojit kalendář */}
+        <Link href="/calendar/connect">
+          <Button variant="outline" size="sm">
+            <Link2 size={14} className="mr-1" />
+            <span className="hidden sm:inline">Připojit</span>
+          </Button>
+        </Link>
 
         <Button size="sm" onClick={onNewEvent}>
           <Plus size={14} className="mr-1" />

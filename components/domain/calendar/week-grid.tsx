@@ -65,7 +65,14 @@ export function WeekGrid({ weekStart, events, onEventClick }: WeekGridProps) {
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-[700px]">
+      {/* FEATURE 8: Mobilní upozornění */}
+      <div className="block sm:hidden text-center py-4 text-sm text-muted-foreground">
+        <p>Týdenní pohled je dostupný na větší obrazovce.</p>
+        <p className="text-xs text-muted-foreground/50 mt-1">
+          Na mobilu doporučujeme pohled Agenda.
+        </p>
+      </div>
+      <div className="min-w-[700px] hidden sm:block">
         {/* Day headers */}
         <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b">
           <div className="p-2 text-xs text-muted-foreground" />

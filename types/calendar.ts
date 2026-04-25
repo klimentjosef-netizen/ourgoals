@@ -38,8 +38,12 @@ export interface CalendarEvent {
   linked_entity_type: string | null;
   linked_entity_id: string | null;
   is_completed: boolean;
+  reminder_minutes: number | null;
   created_at: string;
   updated_at: string;
+  /** Příznak pro virtuální/expandované eventy (neukládá se do DB) */
+  _virtual?: boolean;
+  _recurring_source_id?: string;
 }
 
 export interface EventKindConfig {

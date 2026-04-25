@@ -29,6 +29,7 @@ import {
 } from "@/app/(app)/calendar/actions";
 import { EVENT_KIND_OPTIONS, type CalendarEvent, type EventKind } from "@/types/calendar";
 import { format } from "date-fns";
+import { Bell } from "lucide-react";
 
 interface EventFormProps {
   event?: CalendarEvent;
@@ -54,6 +55,14 @@ const RRULE_OPTIONS = [
   { value: "FREQ=MONTHLY", label: "Měsíčně" },
 ];
 
+const REMINDER_OPTIONS = [
+  { value: "none", label: "Žádné připomenutí" },
+  { value: "5", label: "5 min před" },
+  { value: "15", label: "15 min před" },
+  { value: "30", label: "30 min před" },
+  { value: "60", label: "1 hodinu před" },
+];
+
 export function EventForm({
   event,
   open,
@@ -65,12 +74,18 @@ export function EventForm({
   const [kind, setKind] = useState(event?.kind ?? "custom");
   const [rrule, setRrule] = useState(event?.rrule ?? "none");
   const [allDay, setAllDay] = useState(event?.all_day ?? false);
+  const [reminderMinutes, setReminderMinutes] = useState(
+    event?.reminder_minutes ? String(event.reminder_minutes) : "none"
+  );
 
   // Reset state when event changes
   useEffect(() => {
     setKind(event?.kind ?? "custom");
     setRrule(event?.rrule ?? "none");
     setAllDay(event?.all_day ?? false);
+    setReminderMinutes(
+      event?.reminder_minutes ? String(event.reminder_minutes) : "none"
+    );
   }, [event]);
 
   const defaultDateValue = event?.starts_at
@@ -92,6 +107,7 @@ export function EventForm({
     // Inject controlled values into formData
     formData.set("kind", kind);
     formData.set("rrule", rrule);
+    formData.set("reminder_minutes", reminderMinutes);
     if (allDay) {
       formData.set("all_day", "on");
     } else {
@@ -251,6 +267,30 @@ export function EventForm({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1">
+              <Bell size={14} />
+              Připomenout
+            </Label>
+            <Select value={reminderMinutes} onValueChange={(val) => { if (val !== null) setReminderMinutes(val); }}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {REMINDER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {reminderMinutes !== "none" && (
+              <p className="text-xs text-muted-foreground/70">
+                Push notifikace budou brzy dostupné. Připomenutí se zatím uloží k eventu.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
