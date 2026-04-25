@@ -23,6 +23,48 @@ import {
 
 type AuthMode = "tabs" | "reset" | "magic";
 
+function PasswordField({
+  value,
+  onChange,
+  placeholder,
+  show,
+  onToggle,
+  id,
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  show: boolean;
+  onToggle: () => void;
+  id: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="relative">
+      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input
+        id={id}
+        type={show ? "text" : "password"}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 pl-10 pr-10"
+        disabled={disabled}
+        required
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        onClick={onToggle}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -145,63 +187,24 @@ export default function LoginPage() {
     );
   }
 
-  function PasswordInput({
-    value,
-    onChange,
-    placeholder,
-    show,
-    onToggle,
-    id,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-    placeholder: string;
-    show: boolean;
-    onToggle: () => void;
-    id: string;
-  }) {
-    return (
-      <div className="relative">
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          id={id}
-          type={show ? "text" : "password"}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-11 pl-10 pr-10"
-          disabled={loading}
-          required
-        />
-        <button
-          type="button"
-          tabIndex={-1}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={onToggle}
-        >
-          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-      </div>
-    );
-  }
+  // PasswordInput moved outside component as PasswordField to prevent re-render focus loss
 
-  function EmailInput() {
-    return (
-      <div className="relative">
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          id="email"
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="h-11 pl-10"
-          disabled={loading}
-          required
-        />
-      </div>
-    );
-  }
+  // EmailInput inlined to prevent re-render focus loss
+  const emailInput = (
+    <div className="relative">
+      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <Input
+        id="email"
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="h-11 pl-10"
+        disabled={loading}
+        required
+      />
+    </div>
+  );
 
   function SubmitButton({ children }: { children: React.ReactNode }) {
     return (
@@ -257,7 +260,7 @@ export default function LoginPage() {
         <form onSubmit={handleReset} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <EmailInput />
+            {emailInput}
           </div>
           <SubmitButton>Odeslat odkaz pro reset</SubmitButton>
         </form>
@@ -290,7 +293,7 @@ export default function LoginPage() {
         <form onSubmit={handleMagicLink} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <EmailInput />
+            {emailInput}
           </div>
           <SubmitButton>Poslat magic link</SubmitButton>
         </form>
@@ -331,17 +334,18 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <EmailInput />
+              {emailInput}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Heslo</Label>
-              <PasswordInput
+              <PasswordField
                 id="password"
                 value={password}
                 onChange={setPassword}
                 placeholder="Heslo"
                 show={showPassword}
                 onToggle={() => setShowPassword(!showPassword)}
+                disabled={loading}
               />
             </div>
             <SubmitButton>Přihlásit se</SubmitButton>
@@ -369,17 +373,18 @@ export default function LoginPage() {
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <EmailInput />
+              {emailInput}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Heslo</Label>
-              <PasswordInput
+              <PasswordField
                 id="password"
                 value={password}
                 onChange={setPassword}
                 placeholder="Heslo"
                 show={showPassword}
                 onToggle={() => setShowPassword(!showPassword)}
+                disabled={loading}
               />
               {password.length > 0 && (
                 <div className="flex items-center gap-2 text-xs mt-1">
@@ -396,13 +401,14 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password-confirm">Potvrzení hesla</Label>
-              <PasswordInput
+              <PasswordField
                 id="password-confirm"
                 value={passwordConfirm}
                 onChange={setPasswordConfirm}
                 placeholder="Heslo znovu"
                 show={showPasswordConfirm}
                 onToggle={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                disabled={loading}
               />
               {passwordConfirm.length > 0 && (
                 <div className="flex items-center gap-2 text-xs mt-1">
