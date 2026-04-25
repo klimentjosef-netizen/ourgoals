@@ -1,7 +1,53 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+
+/* ================================================
+   FadeInSection — IntersectionObserver wrapper
+   ================================================ */
+export function FadeInSection({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      } ${className}`}
+      style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /* ================================================
    StickyHeader
@@ -32,7 +78,7 @@ export function StickyHeader() {
           </span>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-4 h-9 text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-5 h-9 text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20"
           >
             Začít zdarma
           </Link>
@@ -120,7 +166,6 @@ export function AnimatedCounter({
   useEffect(() => {
     if (!inView) return;
 
-    let start = 0;
     const startTime = performance.now();
 
     const tick = (now: number) => {
@@ -174,57 +219,92 @@ export function AnimatedProgress({
 }
 
 /* ================================================
-   CoachToneDemo
-   5 clickable pills — shows example quote for tone.
+   CoachToneDemo — prominent section with chat bubble
    ================================================ */
-const coachTones: { label: string; quote: string }[] = [
+const coachTones: { id: string; label: string; emoji: string; quote: string }[] = [
   {
+    id: "strict",
     label: "Přísný",
-    quote: "Žádné výmluvy. Dnes máš 3 nesplněné úkoly. Jdi na to.",
+    emoji: "🎖️",
+    quote: "Žádné výmluvy. Dnes máš 3 nesplněné úkoly a streak ti visí na vlásku. Vstávej a jdi na to. Teď.",
   },
   {
+    id: "friendly",
     label: "Kamarádský",
-    quote: "Hej, zbývají ti 2 úkoly — dáš to! 💪",
+    emoji: "😊",
+    quote: "Hej, zbývají ti jen 2 úkoly a den ještě nekončí! Věřím, že to dáš. Pojď, ať máš večer klid. 💪",
   },
   {
+    id: "calm",
     label: "Klidný",
-    quote: "Dnes je dobrý den. Udělej, co můžeš. Zbytek počká.",
+    emoji: "🧘",
+    quote: "Dnes je dobrý den. Udělej, co zvládneš — i malý krok je pokrok. Zbytek klidně počká na zítřek.",
   },
   {
+    id: "energetic",
     label: "Energický",
-    quote: "LEVEL UP blízko! Ještě 200 XP a jsi tam! LET'S GO! 🔥",
+    emoji: "🔥",
+    quote: "LEVEL UP na dosah! Ještě 200 XP a jsi Level 13! Dva úkoly a máš to! LET'S GOOO! 🚀",
   },
   {
+    id: "minimal",
     label: "Minimální",
-    quote: "3 úkoly zbývají.",
+    emoji: "📝",
+    quote: "3 úkoly zbývají. Streak: 47 dní.",
   },
 ];
 
 export function CoachToneDemo() {
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(1); // default to "friendly"
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 max-w-md">
-      <p className="text-sm text-muted-foreground mb-3">Vyber si tón kouče:</p>
-      <div className="flex flex-wrap gap-2 mb-4">
+    <div className="max-w-lg">
+      <h3 className="font-heading text-xl md:text-2xl font-semibold mb-2">
+        Tvůj AI kouč. Tvůj styl.
+      </h3>
+      <p className="text-sm text-muted-foreground mb-5">
+        Vyber si tón, jakým ti kouč píše. Můžeš ho kdykoliv změnit.
+      </p>
+
+      {/* Tone buttons */}
+      <div className="flex flex-wrap gap-2 mb-5">
         {coachTones.map((tone, i) => (
           <button
-            key={tone.label}
+            key={tone.id}
             onClick={() => setSelected(i)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
               selected === i
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted hover:bg-muted/80"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
+                : "bg-muted hover:bg-muted/80 hover:scale-[1.02]"
             }`}
           >
+            <span>{tone.emoji}</span>
             {tone.label}
           </button>
         ))}
       </div>
-      <div className="rounded-lg bg-muted/50 border border-border/50 p-3 min-h-[3rem]">
-        <p className="text-sm text-foreground italic">
-          &ldquo;{coachTones[selected].quote}&rdquo;
-        </p>
+
+      {/* Chat bubble notification */}
+      <div className="relative">
+        {/* Arrow */}
+        <div className="absolute -top-2 left-8 w-4 h-4 bg-card border-l border-t border-border rotate-45" />
+        {/* Bubble */}
+        <div className="rounded-2xl bg-card border border-border p-5 shadow-lg">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 size-9 rounded-full bg-primary/15 flex items-center justify-center text-lg">
+              {coachTones[selected].emoji}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xs font-semibold">OurGoals Kouč</span>
+                <span className="text-[10px] text-muted-foreground">právě teď</span>
+              </div>
+              <p className="text-sm text-foreground leading-relaxed">
+                {coachTones[selected].quote}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

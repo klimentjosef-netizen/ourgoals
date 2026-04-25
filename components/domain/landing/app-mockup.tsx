@@ -28,7 +28,7 @@ export function AppMockup() {
             <span className="size-2 rounded-full bg-white/20" />
             <span className="size-2 rounded-full bg-white/20" />
           </div>
-          <span className="text-[10px] text-white/40 font-mono">9:41 AM</span>
+          <span className="text-[10px] text-white/40 font-mono">9:41</span>
         </div>
 
         {/* Divider */}
@@ -36,13 +36,27 @@ export function AppMockup() {
 
         {/* Content */}
         <div className="px-5 py-4 space-y-4">
-          {/* Greeting */}
-          <p className="text-white/90 text-sm font-semibold">
+          {/* Greeting — delay 0 */}
+          <p
+            className="text-white/90 text-sm font-semibold"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 0.6s ease-out 0.3s, transform 0.6s ease-out 0.3s",
+            }}
+          >
             Dobré ráno, Josef!
           </p>
 
-          {/* Level + Streak cards */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Level + Streak cards — delay 1 */}
+          <div
+            className="grid grid-cols-2 gap-2"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 0.6s ease-out 0.55s, transform 0.6s ease-out 0.55s",
+            }}
+          >
             <div className="rounded-xl bg-white/5 border border-white/10 p-3">
               <span className="text-[10px] text-white/50 block mb-1">
                 Level
@@ -51,7 +65,10 @@ export function AppMockup() {
               <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-green-500 to-green-400"
-                  style={{ width: "65%" }}
+                  style={{
+                    width: mounted ? "65%" : "0%",
+                    transition: "width 1s ease-out 1.2s",
+                  }}
                 />
               </div>
             </div>
@@ -66,8 +83,14 @@ export function AppMockup() {
             </div>
           </div>
 
-          {/* Checklist */}
-          <div>
+          {/* Checklist — delay 2 */}
+          <div
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 0.6s ease-out 0.8s, transform 0.6s ease-out 0.8s",
+            }}
+          >
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/70 text-xs font-medium">
                 Dnešní úkoly
@@ -75,31 +98,42 @@ export function AppMockup() {
               <span className="text-white/40 text-[10px] font-mono">3/5</span>
             </div>
             <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-green-400">✅</span>
-                <span className="text-white/70">Ranní check-in</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-green-400">✅</span>
-                <span className="text-white/70">Trénink — Pull day</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-green-400">✅</span>
-                <span className="text-white/70">Meditace 10 min</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-white/20">⬜</span>
-                <span className="text-white/40">Zalogovat jídla</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-white/20">⬜</span>
-                <span className="text-white/40">Večerní check-in</span>
-              </div>
+              {[
+                { done: true, label: "Ranní check-in", delay: "1.0s" },
+                { done: true, label: "Trénink — Pull day", delay: "1.15s" },
+                { done: true, label: "Meditace 10 min", delay: "1.3s" },
+                { done: false, label: "Zalogovat jídla", delay: "1.45s" },
+                { done: false, label: "Večerní check-in", delay: "1.6s" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center gap-2 text-xs"
+                  style={{
+                    opacity: mounted ? 1 : 0,
+                    transform: mounted ? "translateY(0)" : "translateY(8px)",
+                    transition: `opacity 0.5s ease-out ${item.delay}, transform 0.5s ease-out ${item.delay}`,
+                  }}
+                >
+                  <span className={item.done ? "text-green-400" : "text-white/20"}>
+                    {item.done ? "✅" : "⬜"}
+                  </span>
+                  <span className={item.done ? "text-white/70" : "text-white/40"}>
+                    {item.label}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Macro bar */}
-          <div className="rounded-xl bg-white/5 border border-white/10 p-3">
+          {/* Macro bar — delay 3 */}
+          <div
+            className="rounded-xl bg-white/5 border border-white/10 p-3"
+            style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? "translateY(0)" : "translateY(12px)",
+              transition: "opacity 0.6s ease-out 1.8s, transform 0.6s ease-out 1.8s",
+            }}
+          >
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] text-white/50">Proteiny</span>
               <span className="text-[10px] text-white/40 font-mono">
@@ -109,7 +143,10 @@ export function AppMockup() {
             <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-green-500 to-emerald-400"
-                style={{ width: "72%" }}
+                style={{
+                  width: mounted ? "72%" : "0%",
+                  transition: "width 1s ease-out 2.2s",
+                }}
               />
             </div>
           </div>
