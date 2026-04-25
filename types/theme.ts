@@ -11,6 +11,16 @@ export interface ThemePreset {
 
 export const THEME_PRESETS: ThemePreset[] = [
   {
+    id: "blue",
+    name: "Modrá & zlatá",
+    primary: "oklch(0.65 0.18 260)",
+    primaryFg: "oklch(0.98 0 0)",
+    gold: "oklch(0.78 0.14 85)",
+    goldFg: "oklch(0.13 0 0)",
+    preview: "#3b82f6",
+    previewGold: "#d4a017",
+  },
+  {
     id: "green",
     name: "Zelená & zlatá",
     primary: "oklch(0.72 0.19 150)",
