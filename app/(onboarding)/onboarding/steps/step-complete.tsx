@@ -6,13 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
 import { useOnboarding } from "@/lib/hooks/use-onboarding";
+import { MODULE_REGISTRY, type ModuleId } from "@/types/modules";
 
 interface StepCompleteProps {
   moduleCount: number;
   coachToneLabel: string;
+  selectedModules: ModuleId[];
+  goalTitle?: string;
 }
 
-export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps) {
+export function StepComplete({
+  moduleCount,
+  coachToneLabel,
+  selectedModules,
+  goalTitle,
+}: StepCompleteProps) {
   const router = useRouter();
   const reset = useOnboarding((s) => s.reset);
   const [showConfetti, setShowConfetti] = useState(true);
@@ -26,6 +34,11 @@ export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps)
     reset();
     router.push("/dashboard");
   }
+
+  // Resolve selected modules to their definitions
+  const selectedModuleDefs = selectedModules
+    .map((id) => MODULE_REGISTRY.find((m) => m.id === id))
+    .filter(Boolean);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4 relative overflow-hidden">
@@ -65,10 +78,41 @@ export function StepComplete({ moduleCount, coachToneLabel }: StepCompleteProps)
 
       <h1 className="text-3xl font-bold mb-3">Vše je nastaveno!</h1>
 
-      <p className="text-muted-foreground mb-4">
-        Vybral jsi <span className="font-semibold text-foreground">{moduleCount} modulů</span>.
-        <br />
-        Tvůj kouč: <span className="font-semibold text-foreground">{coachToneLabel}</span>.
+      {/* Detailed summary */}
+      <div className="w-full max-w-xs text-left space-y-3 mb-4">
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-1.5">Vybrané moduly</p>
+          <div className="flex flex-wrap gap-1.5">
+            {selectedModuleDefs.map((mod) => {
+              const Icon = mod!.icon;
+              return (
+                <span
+                  key={mod!.id}
+                  className="inline-flex items-center gap-1 text-xs bg-muted/60 rounded-full px-2.5 py-1"
+                >
+                  <Icon size={12} className="text-primary" />
+                  {mod!.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Kouč:</span>
+          <span className="font-semibold">{coachToneLabel}</span>
+        </div>
+
+        {goalTitle && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">První cíl:</span>
+            <span className="font-semibold">{goalTitle}</span>
+          </div>
+        )}
+      </div>
+
+      <p className="text-[11px] text-muted-foreground/60 mb-4">
+        Toto vše můžeš kdykoli změnit v nastavení.
       </p>
 
       <Badge variant="default" className="text-sm px-4 py-1 mb-10">

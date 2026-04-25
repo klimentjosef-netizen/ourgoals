@@ -35,6 +35,20 @@ type StepId =
   | "coach"
   | "complete";
 
+const STEP_NAMES: Record<StepId, string> = {
+  welcome: "",
+  profile: "Profil",
+  modules: "Moduly",
+  goals_habits: "Cíle",
+  sleep_wellbeing: "Spánek",
+  training: "Trénink",
+  nutrition: "Jídlo",
+  calendar: "Kalendář",
+  work_focus: "Práce",
+  coach: "Kouč",
+  complete: "",
+};
+
 const MODULE_STEP_MAP: Record<string, React.ComponentType> = {
   goals_habits: StepGoals,
   sleep_wellbeing: StepSleep,
@@ -126,13 +140,18 @@ export function OnboardingWizard() {
         return <StepWork />;
       case "coach":
         return <StepCoach onSubmit={handleSubmit} isPending={isPending} />;
-      case "complete":
+      case "complete": {
+        const goalSetup = moduleSetups.goals_habits as Record<string, unknown> | undefined;
+        const goalTitle = goalSetup?.title as string | undefined;
         return (
           <StepComplete
             moduleCount={selectedModules.length}
             coachToneLabel={coachToneLabel}
+            selectedModules={selectedModules}
+            goalTitle={goalTitle}
           />
         );
+      }
       default:
         return <StepProfile />;
     }
@@ -144,6 +163,7 @@ export function OnboardingWizard() {
         <OnboardingProgressBar
           currentStep={progressCurrent}
           totalSteps={progressTotal}
+          stepName={STEP_NAMES[currentStepId]}
         />
       )}
       {renderStep()}

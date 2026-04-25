@@ -38,6 +38,20 @@ export function StepCoach({ onSubmit, isPending }: StepCoachProps) {
           />
         ))}
       </div>
+
+      {/* Live preview */}
+      {coachTone && (() => {
+        const activeTone = COACH_TONES.find((t) => t.id === coachTone);
+        if (!activeTone || activeTone.id === "minimal") return null;
+        return (
+          <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20 animate-in fade-in-0 duration-200">
+            <p className="text-xs text-muted-foreground mb-1.5">Ukázka od kouče:</p>
+            <p className="text-sm font-medium">
+              💬 &ldquo;{activeTone.example}&rdquo;
+            </p>
+          </div>
+        );
+      })()}
     </StepContainer>
   );
 }

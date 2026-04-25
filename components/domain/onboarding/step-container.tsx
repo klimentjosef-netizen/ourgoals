@@ -38,7 +38,13 @@ export function StepContainer({
   isPending = false,
 }: StepContainerProps) {
   return (
-    <div className="flex flex-col min-h-[60vh] animate-in fade-in-0 duration-300">
+    <div className="flex flex-col min-h-[60vh]" style={{ animation: "fadeSlideIn 0.3s ease-out" }}>
+      <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="mb-6">
         {Icon && (
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -85,6 +91,12 @@ export function StepContainer({
           </Button>
         </div>
       </div>
+
+      {!isFirst && !isLast && (
+        <p className="text-[10px] text-muted-foreground/50 text-center mt-4">
+          Vše můžeš později změnit v nastavení.
+        </p>
+      )}
     </div>
   );
 }

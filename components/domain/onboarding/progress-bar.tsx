@@ -3,14 +3,21 @@
 interface OnboardingProgressBarProps {
   currentStep: number;
   totalSteps: number;
+  stepName?: string;
 }
 
 export function OnboardingProgressBar({
   currentStep,
   totalSteps,
+  stepName,
 }: OnboardingProgressBarProps) {
   return (
     <div className="w-full space-y-2">
+      {stepName && (
+        <p className="text-xs font-semibold text-foreground text-center">
+          {stepName}
+        </p>
+      )}
       <div className="flex gap-1.5 justify-center">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
