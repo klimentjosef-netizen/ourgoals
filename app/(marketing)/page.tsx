@@ -265,16 +265,15 @@ export default function LandingPage() {
             </span>
           </div>
 
-          {/* Hero content */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-16">
-            {/* Goalie — above on mobile, left on desktop */}
-            <div className="flex-shrink-0 md:mt-4">
-              <Goalie mood="waving" size={180} className="drop-shadow-2xl" />
-            </div>
+          {/* Hero content — text left, phone right on desktop */}
+          <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            {/* Left: Goalie + Text + CTA */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="flex justify-center lg:justify-start mb-6">
+                <Goalie mood="waving" size={100} className="drop-shadow-2xl" />
+              </div>
 
-            {/* Text content */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="font-heading text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight mb-6 text-foreground">
+              <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight mb-6 text-foreground">
                 Tvůj den.
                 <br />
                 Tvůj plán.
@@ -284,12 +283,12 @@ export default function LandingPage() {
                 </span>
               </h1>
 
-              <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed mx-auto md:mx-0">
+              <p className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed mx-auto lg:mx-0">
                 Jedna app na všechno. Cíle, návyky, trénink, jídlo, kalendář.
                 S&nbsp;kamarádem, který tě drží.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center md:items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
                 <div className="flex flex-col items-center sm:items-start">
                   <PulseGlowButton href="/login" className="px-10 h-16 text-lg">
                     Vyzkoušet zdarma
@@ -308,15 +307,17 @@ export default function LandingPage() {
               </div>
 
               {/* Store badges */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-10">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mt-10">
                 <StoreBadge store="apple" />
                 <StoreBadge store="google" />
               </div>
             </div>
-          </div>
 
-          {/* Phone mockup */}
-          <AppMockup />
+            {/* Right: Phone mockup — visible on all screens */}
+            <div className="flex-shrink-0">
+              <AppMockup />
+            </div>
+          </div>
         </div>
       </section>
 
