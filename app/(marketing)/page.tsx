@@ -26,7 +26,7 @@ import {
   FloatingParticles,
 } from "@/components/domain/landing/landing-client";
 import { AppMockup } from "@/components/domain/landing/app-mockup";
-import { Buddy } from "@/components/domain/buddy/buddy";
+import { Goalie } from "@/components/domain/buddy/buddy";
 
 /* ─── DATA ─── */
 
@@ -164,14 +164,6 @@ const testimonials = [
 /* ─── STEP VISUALS ─── */
 
 function StepModulesVisual() {
-  const colors = [
-    "bg-primary/20 text-primary",
-    "bg-gold/20 text-gold",
-    "bg-son/20 text-son",
-    "bg-destructive/20 text-destructive",
-    "bg-primary/20 text-primary",
-    "bg-gold/20 text-gold",
-  ];
   const icons = [Target, Dumbbell, UtensilsCrossed, CalendarDays, Moon, Briefcase];
 
   return (
@@ -179,7 +171,7 @@ function StepModulesVisual() {
       {icons.map((Icon, i) => (
         <div
           key={i}
-          className={`size-9 rounded-lg flex items-center justify-center ${colors[i]}`}
+          className="size-9 rounded-lg flex items-center justify-center bg-primary/15 text-primary"
         >
           <Icon className="size-4" />
         </div>
@@ -207,8 +199,8 @@ function StepXpVisual() {
         <Zap className="size-3.5 text-primary" />
         <span className="text-xs font-bold">+50 XP</span>
       </div>
-      <div className="flex items-center gap-1.5 rounded-full bg-gold/10 border border-gold/20 px-3 py-1.5">
-        <Flame className="size-3.5 text-gold" />
+      <div className="flex items-center gap-1.5 rounded-full bg-coral/10 border border-coral/20 px-3 py-1.5">
+        <Flame className="size-3.5 text-coral" />
         <span className="text-xs font-bold">12 dní</span>
       </div>
     </div>
@@ -225,13 +217,13 @@ const stepVisuals: Record<string, React.ReactNode> = {
 
 function StoreBadge({ store }: { store: "apple" | "google" }) {
   return (
-    <div className="group relative inline-flex items-center gap-3 rounded-xl border border-border bg-card/50 backdrop-blur-sm px-5 py-3 hover:border-primary/20 hover:bg-card/80 transition-all duration-300 cursor-default">
+    <div className="group relative inline-flex items-center gap-3 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm px-5 py-3 hover:border-primary/20 hover:bg-card/60 transition-all duration-300 cursor-default">
       {store === "apple" ? (
-        <svg className="size-6 text-foreground" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="size-6 text-foreground/70" viewBox="0 0 24 24" fill="currentColor">
           <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
         </svg>
       ) : (
-        <svg className="size-6 text-foreground" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="size-6 text-foreground/70" viewBox="0 0 24 24" fill="currentColor">
           <path d="M3.18 23.71c.36.21.81.21 1.17 0l11.54-6.67-2.56-2.56L3.18 23.71zM.54 1.23C.2 1.56 0 2.07 0 2.72v18.56c0 .65.2 1.16.54 1.49l.08.08L11.92 12l-.08-.08L.54 1.23zM22.36 10.37l-3.07-1.77-2.82 2.82 2.82 2.82 3.12-1.8c.89-.51.89-1.35-.05-2.07zM14.46 14.49l-2.54-2.54-11.38 11.38c.29.31.78.35 1.32.05l12.6-8.89z" />
         </svg>
       )}
@@ -239,12 +231,12 @@ function StoreBadge({ store }: { store: "apple" | "google" }) {
         <span className="text-[10px] text-muted-foreground block leading-none">
           {store === "apple" ? "Stáhnout na" : "Stáhnout z"}
         </span>
-        <span className="text-sm font-semibold leading-tight">
+        <span className="text-sm font-semibold leading-tight text-foreground/80">
           {store === "apple" ? "App Store" : "Google Play"}
         </span>
       </div>
-      {/* Coming soon overlay */}
-      <span className="absolute -top-2 -right-2 text-[9px] font-bold uppercase tracking-wider bg-coral text-coral-foreground px-2 py-0.5 rounded-full">
+      {/* Coming soon tag — gold */}
+      <span className="absolute -top-2 -right-2 text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-sm">
         Brzy
       </span>
     </div>
@@ -258,17 +250,14 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground scroll-smooth">
       <StickyHeader />
 
-      {/* ======== 1. HERO ======== */}
-      <section className="relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-coral/5 pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-primary/[0.07] rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-coral/[0.04] rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gold/[0.03] rounded-full blur-[80px] pointer-events-none" />
+      {/* ======== 1. HERO — Cream bg ======== */}
+      <section className="relative overflow-hidden bg-background">
+        {/* Subtle warm glow — no rainbow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[700px] bg-primary/[0.04] rounded-full blur-[140px] pointer-events-none" />
 
-        <FloatingParticles count={25} />
+        <FloatingParticles count={20} />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-8 md:pt-24 md:pb-12">
+        <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-8 md:pt-28 md:pb-14">
           {/* Logo */}
           <div className="mb-14 md:mb-20">
             <span className="font-heading text-xl font-bold tracking-tight">
@@ -276,22 +265,22 @@ export default function LandingPage() {
             </span>
           </div>
 
-          {/* Hero content: Buddy + Text */}
+          {/* Hero content */}
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-16">
-            {/* Buddy — above on mobile, left on desktop */}
+            {/* Goalie — above on mobile, left on desktop */}
             <div className="flex-shrink-0 md:mt-4">
-              <Buddy mood="waving" size={180} className="drop-shadow-2xl" />
+              <Goalie mood="waving" size={180} className="drop-shadow-2xl" />
             </div>
 
             {/* Text content */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="font-heading text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight mb-6">
+              <h1 className="font-heading text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight mb-6 text-foreground">
                 Tvůj den.
                 <br />
                 Tvůj plán.
                 <br />
-                <span className="bg-gradient-to-r from-primary via-primary to-coral bg-clip-text text-transparent">
-                  Tvůj Buddy.
+                <span className="text-primary">
+                  Tvůj Goalie.
                 </span>
               </h1>
 
@@ -331,19 +320,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 2. PROBLEM ======== */}
-      <section id="problem" className="relative py-24 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-muted/30 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-destructive/[0.02] to-transparent pointer-events-none" />
-
+      {/* ======== 2. PROBLEM — Navy bg ======== */}
+      <section id="problem" className="relative py-28 md:py-36" style={{ backgroundColor: "#0B1120" }}>
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16">
             <div className="flex-1">
               <FadeInSection>
-                <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4 max-w-3xl">
+                <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4 max-w-3xl text-[#F5F0E8]">
                   Znáš to.
                 </h2>
-                <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl leading-relaxed">
+                <p className="text-lg md:text-xl text-[#94A3B8] mb-12 max-w-2xl leading-relaxed">
                   Každý rok stejný scénář. Motivace přijde a&nbsp;zase odejde.
                   A&nbsp;ty zůstaneš tam, kde jsi.
                 </p>
@@ -352,9 +338,9 @@ export default function LandingPage() {
               <div className="grid gap-4 sm:grid-cols-3 mb-10">
                 {painPoints.map((point, i) => (
                   <FadeInSection key={point.text} delay={i * 120}>
-                    <div className="group flex items-start gap-4 rounded-2xl bg-destructive/5 border border-destructive/10 p-6 h-full hover:border-destructive/20 hover:shadow-lg hover:shadow-destructive/5 hover:scale-[1.02] transition-all duration-300">
+                    <div className="group flex items-start gap-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] p-6 h-full hover:border-white/[0.15] hover:bg-white/[0.06] hover:scale-[1.02] transition-all duration-300">
                       <span className="text-2xl flex-shrink-0 mt-0.5">{point.emoji}</span>
-                      <span className="font-semibold text-sm md:text-base leading-relaxed block">
+                      <span className="font-semibold text-sm md:text-base leading-relaxed block text-[#E2D9CC]">
                         {point.text}
                       </span>
                     </div>
@@ -363,10 +349,10 @@ export default function LandingPage() {
               </div>
 
               <FadeInSection delay={400}>
-                <div className="rounded-2xl bg-card border border-primary/20 p-6 md:p-8 max-w-2xl hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300">
-                  <p className="text-lg md:text-xl font-semibold leading-relaxed">
+                <div className="rounded-2xl bg-white/[0.04] border border-[#C8A84E]/20 p-6 md:p-8 max-w-2xl hover:border-[#C8A84E]/30 transition-all duration-300">
+                  <p className="text-lg md:text-xl font-semibold leading-relaxed text-[#F5F0E8]">
                     Není to tvoje chyba.{" "}
-                    <span className="text-primary">
+                    <span className="text-[#C8A84E]">
                       Chybí ti systém, který tě DRŽÍ.
                     </span>
                   </p>
@@ -374,23 +360,21 @@ export default function LandingPage() {
               </FadeInSection>
             </div>
 
-            {/* Buddy sad */}
+            {/* Goalie sad */}
             <FadeInSection delay={300} className="hidden md:flex flex-shrink-0 items-center justify-center mt-12">
-              <Buddy mood="sad" size={140} className="opacity-80" />
+              <Goalie mood="sad" size={140} className="opacity-80" />
             </FadeInSection>
           </div>
         </div>
       </section>
 
-      {/* ======== 3. SOLUTION ======== */}
-      <section className="relative py-24 md:py-32 bg-background">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
-
+      {/* ======== 3. SOLUTION — Cream bg ======== */}
+      <section className="relative py-28 md:py-36 bg-background">
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16">
-            {/* Buddy excited */}
+            {/* Goalie excited */}
             <FadeInSection delay={100} className="hidden md:flex flex-shrink-0 items-start justify-center mt-4">
-              <Buddy mood="excited" size={140} />
+              <Goalie mood="excited" size={140} />
             </FadeInSection>
 
             <div className="flex-1">
@@ -409,7 +393,7 @@ export default function LandingPage() {
               <div className="grid gap-6 sm:grid-cols-3">
                 {benefits.map((b, i) => (
                   <FadeInSection key={b.title} delay={i * 150}>
-                    <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-300 h-full">
+                    <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 h-full">
                       <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                         <b.icon className="size-6 text-primary" />
                       </div>
@@ -428,10 +412,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 4. HOW IT WORKS ======== */}
-      <section id="jak-to-funguje" className="relative py-24 md:py-32">
-        <div className="absolute inset-0 bg-muted/30 pointer-events-none" />
-
+      {/* ======== 4. HOW IT WORKS — Cream bg with muted tint ======== */}
+      <section id="jak-to-funguje" className="relative py-28 md:py-36 bg-muted/30">
         <div className="relative max-w-6xl mx-auto px-4">
           <FadeInSection>
             <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-16">
@@ -446,9 +428,9 @@ export default function LandingPage() {
             {steps.map((s, i) => (
               <FadeInSection key={s.num} delay={i * 200}>
                 <div className="relative md:px-6">
-                  {/* Step number circle */}
-                  <div className="relative z-10 size-14 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mb-5 hover:bg-primary/15 hover:scale-110 transition-all duration-300">
-                    <span className="font-mono text-lg font-bold text-primary">
+                  {/* Gold numbered circle */}
+                  <div className="relative z-10 size-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-5 shadow-lg shadow-primary/20 hover:scale-110 transition-all duration-300">
+                    <span className="font-mono text-lg font-bold">
                       {s.num}
                     </span>
                   </div>
@@ -466,8 +448,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 5. MODULES ======== */}
-      <section className="py-24 md:py-32 bg-background">
+      {/* ======== 5. MODULES — Cream bg ======== */}
+      <section className="py-28 md:py-36 bg-background">
         <div className="max-w-6xl mx-auto px-4">
           <FadeInSection>
             <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
@@ -481,8 +463,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {modules.map((m, i) => (
               <FadeInSection key={m.name} delay={i * 80}>
-                <div className="group rounded-2xl border border-border bg-card p-5 md:p-6 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 h-full">
-                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
+                <div className="group rounded-2xl border border-border bg-card p-5 md:p-6 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 h-full">
+                  <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                     <m.icon className="size-5 text-primary" />
                   </div>
                   <h3 className="font-heading text-sm md:text-base font-semibold mb-1">
@@ -498,12 +480,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 6. GAMIFICATION ======== */}
-      <section className="relative py-24 md:py-32 overflow-hidden">
-        {/* Warm gold tint background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/[0.04] via-gold/[0.06] to-gold/[0.02] pointer-events-none" />
-        <div className="absolute inset-0 bg-muted/30 pointer-events-none" />
-
+      {/* ======== 6. GAMIFICATION — Cream bg with gold tint ======== */}
+      <section className="relative py-28 md:py-36 overflow-hidden bg-muted/30">
         <div className="relative max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16">
             <div className="flex-1">
@@ -511,7 +489,7 @@ export default function LandingPage() {
                 <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
                   Sbírej XP. Level up.
                   <br />
-                  <span className="text-gold">Nepřeruš streak.</span>
+                  <span className="text-primary">Nepřeruš streak.</span>
                 </h2>
                 <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-xl leading-relaxed">
                   Každá splněná úloha ti přinese body zkušeností. Rosteš, odemykáš
@@ -519,7 +497,7 @@ export default function LandingPage() {
                 </p>
               </FadeInSection>
 
-              {/* Animated XP bar */}
+              {/* Gold XP bar */}
               <FadeInSection delay={100}>
                 <div className="max-w-lg mb-10">
                   <div className="flex items-center justify-between mb-2">
@@ -535,23 +513,26 @@ export default function LandingPage() {
                       2 450 / 3 000 XP
                     </span>
                   </div>
-                  <AnimatedProgress value={82} />
+                  <AnimatedProgress
+                    value={82}
+                    barClassName="bg-gradient-to-r from-primary to-primary/70"
+                  />
                 </div>
               </FadeInSection>
 
-              {/* Badges */}
+              {/* Gold badges */}
               <FadeInSection delay={200}>
                 <div className="flex flex-wrap gap-4 mb-10">
-                  <div className="flex items-center gap-2 rounded-full bg-gold/10 border border-gold/20 px-4 py-2 hover:bg-gold/15 hover:scale-105 transition-all duration-300">
-                    <Trophy className="size-4 text-gold" />
+                  <div className="flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 hover:bg-primary/15 hover:scale-105 transition-all duration-300">
+                    <Trophy className="size-4 text-primary" />
                     <span className="text-sm font-medium">7denní streak</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 hover:bg-primary/15 hover:scale-105 transition-all duration-300">
                     <Flame className="size-4 text-primary" />
                     <span className="text-sm font-medium">Streak Master</span>
                   </div>
-                  <div className="flex items-center gap-2 rounded-full bg-son/10 border border-son/20 px-4 py-2 hover:bg-son/15 hover:scale-105 transition-all duration-300">
-                    <Target className="size-4 text-son" />
+                  <div className="flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-4 py-2 hover:bg-primary/15 hover:scale-105 transition-all duration-300">
+                    <Target className="size-4 text-primary" />
                     <span className="text-sm font-medium">First Goal</span>
                   </div>
                 </div>
@@ -586,22 +567,22 @@ export default function LandingPage() {
               </FadeInSection>
             </div>
 
-            {/* Buddy celebrating */}
+            {/* Goalie celebrating */}
             <FadeInSection delay={200} className="hidden md:flex flex-shrink-0 items-center justify-center mt-12">
-              <Buddy mood="celebrating" size={160} />
+              <Goalie mood="celebrating" size={160} />
             </FadeInSection>
           </div>
         </div>
       </section>
 
-      {/* ======== 7. COACH ======== */}
-      <section className="py-24 md:py-32 bg-background">
+      {/* ======== 7. COACH — Cream bg ======== */}
+      <section className="py-28 md:py-36 bg-background">
         <div className="max-w-6xl mx-auto px-4">
           <FadeInSection>
             <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16">
-              {/* Buddy thinking */}
+              {/* Goalie thinking */}
               <div className="hidden md:flex flex-shrink-0 items-start justify-center mt-2">
-                <Buddy mood="thinking" size={120} />
+                <Goalie mood="thinking" size={120} />
               </div>
               <CoachToneDemo />
             </div>
@@ -609,10 +590,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 8. PRO KOHO ======== */}
-      <section id="pro-koho" className="relative py-24 md:py-32">
-        <div className="absolute inset-0 bg-muted/30 pointer-events-none" />
-
+      {/* ======== 8. PRO KOHO — Cream bg with muted tint ======== */}
+      <section id="pro-koho" className="relative py-28 md:py-36 bg-muted/30">
         <div className="relative max-w-6xl mx-auto px-4">
           <FadeInSection>
             <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-4">
@@ -626,7 +605,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
             {personas.map((p, i) => (
               <FadeInSection key={p.title} delay={i * 120}>
-                <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-300 h-full">
+                <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 h-full">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex-shrink-0 size-12 rounded-full bg-primary/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
                       {p.emoji}
@@ -645,8 +624,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 9. SOCIAL PROOF ======== */}
-      <section className="py-24 md:py-32 bg-background">
+      {/* ======== 9. SOCIAL PROOF — Cream bg ======== */}
+      <section className="py-28 md:py-36 bg-background">
         <div className="max-w-6xl mx-auto px-4">
           <FadeInSection>
             <h2 className="font-heading text-3xl md:text-5xl font-bold leading-tight mb-14">
@@ -657,7 +636,7 @@ export default function LandingPage() {
           <div className="grid gap-6 sm:grid-cols-3 mb-10">
             {testimonials.map((t, i) => (
               <FadeInSection key={i} delay={i * 150}>
-                <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 flex flex-col h-full hover:border-primary/15 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02] transition-all duration-300">
+                <div className="group rounded-2xl border border-border bg-card p-6 md:p-8 flex flex-col h-full hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                   <Quote className="size-8 text-primary/20 mb-4 flex-shrink-0 group-hover:text-primary/30 transition-colors" />
                   <p className="text-foreground leading-relaxed text-[15px] flex-1">
                     &ldquo;{t.text}&rdquo;
@@ -669,31 +648,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 10. COUPLES / FAMILY TEASER ======== */}
-      <section className="relative py-24 md:py-32">
-        <div className="absolute inset-0 bg-muted/30 pointer-events-none" />
-
+      {/* ======== 10. COUPLES / FAMILY — Navy bg ======== */}
+      <section className="relative py-28 md:py-36" style={{ backgroundColor: "#0B1120" }}>
         <div className="relative max-w-6xl mx-auto px-4">
           <FadeInSection>
-            <div className="rounded-3xl border border-son/15 bg-card/50 backdrop-blur-sm p-8 md:p-14 text-center max-w-3xl mx-auto hover:border-son/25 hover:shadow-xl hover:shadow-son/5 transition-all duration-300">
-              {/* Two Buddies side by side */}
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <Buddy mood="happy" size={80} />
+            <div className="text-center max-w-3xl mx-auto">
+              {/* Two Goalies with gold heart */}
+              <div className="flex items-center justify-center gap-2 mb-8">
+                <Goalie mood="happy" size={80} />
                 <div className="flex items-center justify-center -mx-3">
-                  <Heart className="size-6 text-coral animate-pulse" />
+                  <Heart className="size-7 text-[#C8A84E] animate-pulse" />
                 </div>
-                <Buddy mood="happy" size={80} />
+                <Goalie mood="happy" size={80} />
               </div>
 
-              <h2 className="font-heading text-2xl md:text-4xl font-bold mb-4">
+              <h2 className="font-heading text-2xl md:text-4xl font-bold mb-4 text-[#F5F0E8]">
                 Pro páry a rodiny
               </h2>
-              <p className="text-muted-foreground leading-relaxed max-w-md mx-auto text-lg">
+              <p className="text-[#94A3B8] leading-relaxed max-w-md mx-auto text-lg">
                 Sdílený kalendář, partnerské vzkazy, společné cíle. Plánujte
                 spolu, motivujte se navzájem. Protože společné cíle drží víc.
               </p>
               <div className="mt-8">
-                <span className="inline-flex items-center rounded-full bg-son/10 border border-son/20 px-5 py-2.5 text-sm font-medium text-son hover:bg-son/15 transition-colors">
+                <span className="inline-flex items-center rounded-full bg-[#C8A84E]/10 border border-[#C8A84E]/20 px-5 py-2.5 text-sm font-medium text-[#C8A84E]">
                   Připravujeme
                 </span>
               </div>
@@ -702,30 +679,26 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 11. FINAL CTA ======== */}
-      <section className="relative py-28 md:py-36 overflow-hidden">
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-primary/5 to-coral/5 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/[0.06] rounded-full blur-[120px] pointer-events-none" />
-
+      {/* ======== 11. FINAL CTA — Navy bg ======== */}
+      <section className="relative py-28 md:py-36 overflow-hidden" style={{ backgroundColor: "#0B1120" }}>
         <FloatingParticles count={15} />
 
         <div className="relative max-w-6xl mx-auto px-4 text-center">
           <FadeInSection>
-            {/* Buddy waving */}
+            {/* Goalie waving */}
             <div className="flex justify-center mb-8">
-              <Buddy mood="waving" size={120} />
+              <Goalie mood="waving" size={120} />
             </div>
 
-            <h2 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+            <h2 className="font-heading text-3xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-[#C8A84E]">
               Přidej se k nám!
               <br />
-              <span className="bg-gradient-to-r from-primary to-coral bg-clip-text text-transparent">
+              <span className="text-[#F5F0E8]">
                 Zítra budeš o den dál.
               </span>
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-lg mx-auto leading-relaxed">
-              Každý den, kdy odkládáš, je den, kdy nerosteš. Začni teď — s&nbsp;Buddym po boku.
+            <p className="text-lg md:text-xl text-[#94A3B8] mb-10 max-w-lg mx-auto leading-relaxed">
+              Každý den, kdy odkládáš, je den, kdy nerosteš. Začni teď — s&nbsp;Goaliem po boku.
             </p>
 
             <PulseGlowButton href="/login" className="px-14 h-16 text-lg">
@@ -733,7 +706,7 @@ export default function LandingPage() {
               <ChevronRight className="size-5" />
             </PulseGlowButton>
 
-            <p className="mt-5 text-sm text-muted-foreground">
+            <p className="mt-5 text-sm text-[#94A3B8]">
               Zdarma &bull; Bez kreditky &bull; Funguje na mobilu i počítači
             </p>
 
@@ -746,20 +719,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ======== 12. FOOTER ======== */}
-      <footer className="py-14 border-t border-border bg-muted/20">
+      {/* ======== 12. FOOTER — Cream bg, minimal ======== */}
+      <footer className="py-14 border-t border-border bg-background">
         <div className="max-w-6xl mx-auto px-4">
           {/* Tagline */}
           <div className="text-center mb-10">
             <p className="font-heading text-xl md:text-2xl font-bold tracking-tight text-muted-foreground/60">
-              Tvůj den. Tvůj plán. Tvůj Buddy.
+              Tvůj den. Tvůj plán. Tvůj Goalie.
             </p>
-          </div>
-
-          {/* Store badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-            <StoreBadge store="apple" />
-            <StoreBadge store="google" />
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -769,7 +736,7 @@ export default function LandingPage() {
                 <span className="text-primary">Our</span>Goals
               </span>
               <span className="text-xs text-muted-foreground border border-border rounded-full px-3 py-1">
-                Vytvořeno v Česku 🇨🇿
+                Vytvořeno v Česku
               </span>
             </div>
 

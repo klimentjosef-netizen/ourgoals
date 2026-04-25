@@ -50,7 +50,7 @@ export function FadeInSection({
 }
 
 /* ================================================
-   StickyHeader
+   StickyHeader — cream/white bg blur, gold CTA
    ================================================ */
 export function StickyHeader() {
   const [visible, setVisible] = useState(false);
@@ -71,14 +71,14 @@ export function StickyHeader() {
           : "-translate-y-full opacity-0"
       }`}
     >
-      <div className="bg-background/80 backdrop-blur-xl border-b border-border">
+      <div className="bg-background/85 backdrop-blur-xl border-b border-border">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <span className="font-heading text-lg font-bold tracking-tight">
             <span className="text-primary">Our</span>Goals
           </span>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground px-5 h-9 text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
+            className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground px-5 h-9 text-sm font-semibold hover:bg-primary/90 transition-all shadow-md shadow-[#C8A84E]/20"
           >
             Začít zdarma
           </Link>
@@ -219,7 +219,7 @@ export function AnimatedProgress({
 }
 
 /* ================================================
-   PulseGlowButton — CTA button with pulsing glow
+   PulseGlowButton — Gold glow CTA button
    ================================================ */
 export function PulseGlowButton({
   href,
@@ -233,19 +233,19 @@ export function PulseGlowButton({
   return (
     <Link
       href={href}
-      className={`relative inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.03] ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-[#C8A84E]/25 hover:shadow-xl hover:shadow-[#C8A84E]/40 hover:scale-[1.03] ${className}`}
     >
-      {/* Animated glow ring */}
+      {/* Animated gold glow ring */}
       <span className="absolute inset-0 rounded-xl animate-pulse-glow pointer-events-none" />
       <span className="relative z-10 flex items-center gap-2">{children}</span>
 
       <style jsx>{`
         @keyframes pulse-glow {
           0%, 100% {
-            box-shadow: 0 0 0 0 oklch(0.65 0.2 270 / 0.4);
+            box-shadow: 0 0 0 0 rgba(200, 168, 78, 0.4);
           }
           50% {
-            box-shadow: 0 0 20px 4px oklch(0.65 0.2 270 / 0.15);
+            box-shadow: 0 0 20px 4px rgba(200, 168, 78, 0.15);
           }
         }
         .animate-pulse-glow {
@@ -257,7 +257,7 @@ export function PulseGlowButton({
 }
 
 /* ================================================
-   FloatingParticles — subtle background dots
+   FloatingParticles — gold and cream dots only
    ================================================ */
 export function FloatingParticles({ count = 30 }: { count?: number }) {
   const [particles, setParticles] = useState<
@@ -289,11 +289,9 @@ export function FloatingParticles({ count = 30 }: { count?: number }) {
             width: `${p.size}px`,
             height: `${p.size}px`,
             opacity: p.opacity,
-            background: p.id % 3 === 0
-              ? "oklch(0.65 0.2 270)"
-              : p.id % 3 === 1
-              ? "oklch(0.7 0.18 30)"
-              : "oklch(0.78 0.14 85)",
+            background: p.id % 2 === 0
+              ? "#C8A84E"
+              : "#F5F0E8",
             animationDuration: `${p.duration}s`,
             animationDelay: `${p.delay}s`,
           }}
@@ -325,7 +323,7 @@ export function FloatingParticles({ count = 30 }: { count?: number }) {
 }
 
 /* ================================================
-   CoachToneDemo — prominent section with chat bubble
+   CoachToneDemo — navy bg pills, gold active state
    ================================================ */
 const coachTones: { id: string; label: string; emoji: string; quote: string }[] = [
   {
@@ -372,7 +370,7 @@ export function CoachToneDemo() {
         Vyber si tón, jakým ti kouč píše. Můžeš ho kdykoliv změnit.
       </p>
 
-      {/* Tone buttons */}
+      {/* Tone buttons — navy pills, gold active */}
       <div className="flex flex-wrap gap-2 mb-5">
         {coachTones.map((tone, i) => (
           <button
@@ -380,8 +378,8 @@ export function CoachToneDemo() {
             onClick={() => setSelected(i)}
             className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
               selected === i
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-105"
-                : "bg-muted hover:bg-muted/80 hover:scale-[1.02]"
+                ? "bg-primary text-primary-foreground shadow-md shadow-[#C8A84E]/25 scale-105"
+                : "bg-[#0B1120] text-[#F5F0E8]/80 hover:bg-[#131B2E] hover:scale-[1.02]"
             }`}
           >
             <span>{tone.emoji}</span>
