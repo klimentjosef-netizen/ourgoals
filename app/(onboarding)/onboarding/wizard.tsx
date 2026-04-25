@@ -19,7 +19,9 @@ import { StepTraining } from "./steps/step-training";
 import { StepNutrition } from "./steps/step-nutrition";
 import { StepCalendar } from "./steps/step-calendar";
 import { StepWork } from "./steps/step-work";
+import { StepFamily } from "./steps/step-family";
 import { StepCoach } from "./steps/step-coach";
+import { StepColors } from "./steps/step-colors";
 import { StepComplete } from "./steps/step-complete";
 
 type StepId =
@@ -32,20 +34,24 @@ type StepId =
   | "nutrition"
   | "calendar"
   | "work_focus"
+  | "family"
   | "coach"
+  | "colors"
   | "complete";
 
 const STEP_NAMES: Record<StepId, string> = {
   welcome: "",
   profile: "Profil",
   modules: "Moduly",
-  goals_habits: "Cíle",
-  sleep_wellbeing: "Spánek",
-  training: "Trénink",
-  nutrition: "Jídlo",
-  calendar: "Kalendář",
-  work_focus: "Práce",
-  coach: "Kouč",
+  goals_habits: "C\u00edle",
+  sleep_wellbeing: "Sp\u00e1nek",
+  training: "Tr\u00e9nink",
+  nutrition: "J\u00eddlo",
+  calendar: "Kalend\u00e1\u0159",
+  work_focus: "Pr\u00e1ce",
+  family: "Rodina",
+  coach: "Kou\u010d",
+  colors: "Barvy",
   complete: "",
 };
 
@@ -56,6 +62,7 @@ const MODULE_STEP_MAP: Record<string, React.ComponentType> = {
   nutrition: StepNutrition,
   calendar: StepCalendar,
   work_focus: StepWork,
+  family: StepFamily,
 };
 
 export function OnboardingWizard() {
@@ -80,7 +87,7 @@ export function OnboardingWizard() {
     });
     ids.push(...(dynamicModules as StepId[]));
 
-    ids.push("coach", "complete");
+    ids.push("coach", "colors", "complete");
     return ids;
   }, [selectedModules]);
 
@@ -138,8 +145,12 @@ export function OnboardingWizard() {
         return <StepCalendar />;
       case "work_focus":
         return <StepWork />;
+      case "family":
+        return <StepFamily />;
       case "coach":
-        return <StepCoach onSubmit={handleSubmit} isPending={isPending} />;
+        return <StepCoach onSubmit={nextStep} isPending={false} />;
+      case "colors":
+        return <StepColors onSubmit={handleSubmit} isPending={isPending} />;
       case "complete": {
         const goalSetup = moduleSetups.goals_habits as Record<string, unknown> | undefined;
         const goalTitle = goalSetup?.title as string | undefined;

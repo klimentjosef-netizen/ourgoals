@@ -26,7 +26,7 @@ interface OnboardingState {
 const initialState = {
   currentStep: 0,
   completed: false,
-  profile: { displayName: "", dateOfBirth: "", timezone: "Europe/Prague" },
+  profile: { displayName: "", dateOfBirth: "", timezone: "Europe/Prague", locale: "cs" },
   selectedModules: [] as ModuleId[],
   moduleSetups: {} as Record<string, Record<string, unknown>>,
   coachTone: "friendly_mentor" as CoachTone,

@@ -30,6 +30,7 @@ export async function completeOnboarding(
         display_name: data.profile.displayName,
         date_of_birth: data.profile.dateOfBirth || null,
         timezone: data.profile.timezone,
+        locale: data.profile.locale || "cs",
         onboarding_completed: true,
       })
       .eq("id", userId);
@@ -48,6 +49,10 @@ export async function completeOnboarding(
       settings.track_mood = sleepSetup.trackMood ?? true;
       settings.track_energy = sleepSetup.trackEnergy ?? true;
       settings.track_stress = sleepSetup.trackStress ?? true;
+      settings.track_meditation = sleepSetup.trackMeditation ?? false;
+      settings.track_screen_time = sleepSetup.trackScreenTime ?? false;
+      settings.track_caffeine = sleepSetup.trackCaffeine ?? false;
+      settings.track_alcohol = sleepSetup.trackAlcohol ?? false;
     }
 
     // Nutrition module
@@ -57,6 +62,10 @@ export async function completeOnboarding(
       settings.carbs_g = nutritionSetup.carbsG || null;
       settings.fat_g = nutritionSetup.fatG || null;
       settings.tdee_override = nutritionSetup.targetKcal || null;
+      settings.nutrition_tracking_level = nutritionSetup.trackingLevel || "macros";
+      settings.allergies = nutritionSetup.allergies || [];
+      settings.diet_type = nutritionSetup.dietType || "none";
+      settings.meals_per_day = nutritionSetup.mealsPerDay || 3;
     }
 
     // Training module
@@ -64,20 +73,42 @@ export async function completeOnboarding(
     if (trainingSetup) {
       settings.training_days_per_week = trainingSetup.daysPerWeek || null;
       settings.experience_level = trainingSetup.experienceLevel || null;
+      settings.training_location = trainingSetup.trainingLocation || "gym";
+      settings.training_goal = trainingSetup.trainingGoal || "maintain";
     }
 
     // Work module
     const workSetup = data.moduleSetups.work_focus;
     if (workSetup) {
+      settings.work_location = workSetup.workLocation || "home";
       settings.work_start_time = workSetup.workStartTime || null;
       settings.work_end_time = workSetup.workEndTime || null;
       settings.deep_work_hours = workSetup.deepWorkHours || null;
+      settings.work_meetings = workSetup.meetings || [];
     }
 
     // Calendar module
     const calendarSetup = data.moduleSetups.calendar;
     if (calendarSetup) {
-      settings.work_days = calendarSetup.workDays || [1, 2, 3, 4, 5];
+      const workDays = calendarSetup.workDays
+        ?? calendarSetup.weekDays
+          ?.filter((d) => d.isWorkDay)
+          .map((d) => d.day)
+        ?? [1, 2, 3, 4, 5];
+      settings.work_days = workDays;
+      settings.week_schedule = calendarSetup.weekDays || null;
+      settings.fixed_commitments = calendarSetup.commitments || [];
+      settings.prefer_training = calendarSetup.preferTraining || null;
+      settings.prefer_deep_work = calendarSetup.preferDeepWork || null;
+    }
+
+    // Family module
+    const familySetup = data.moduleSetups.family;
+    if (familySetup) {
+      settings.has_partner = familySetup.hasPartner ?? false;
+      settings.has_children = familySetup.hasChildren ?? false;
+      settings.children_count = familySetup.childrenCount ?? 0;
+      settings.sharing_preferences = familySetup.sharingPreferences || [];
     }
 
     await supabase
@@ -95,6 +126,7 @@ export async function completeOnboarding(
           profile_id: userId,
           date: new Date().toISOString().split("T")[0],
           weight_kg: trainingSetup.weightKg || null,
+          height_cm: trainingSetup.heightCm || null,
           body_fat_pct: trainingSetup.bodyFatPct || null,
           visibility: "private",
         },
@@ -102,9 +134,41 @@ export async function completeOnboarding(
       );
     }
 
-    // 4. First goal
+    // 4. Goals (multi-goal support)
     const goalsSetup = data.moduleSetups.goals_habits;
-    if (goalsSetup?.title) {
+    if (goalsSetup?.goals && goalsSetup.goals.length > 0) {
+      const goalRows = goalsSetup.goals.map((g) => {
+        const row: Record<string, unknown> = {
+          profile_id: userId,
+          title: g.title,
+          status: "active",
+          visibility: "private",
+        };
+
+        switch (g.type) {
+          case "measurable":
+            row.metric = "value";
+            row.target_value = g.targetWeight || null;
+            break;
+          case "habit":
+            row.metric = "frequency";
+            row.target_value = g.frequency || null;
+            break;
+          case "challenge":
+            row.metric = "days";
+            row.target_value = g.challengeDays || null;
+            break;
+          case "oneoff":
+            row.target_date = g.deadline || null;
+            break;
+        }
+
+        return row;
+      });
+
+      await supabase.from("goals").insert(goalRows);
+    } else if (goalsSetup?.title) {
+      // Backward compat: single goal
       await supabase.from("goals").insert({
         profile_id: userId,
         title: goalsSetup.title,
