@@ -144,6 +144,53 @@ export async function removeWorkout(id: string) {
   return { success: true };
 }
 
+// Feature 7: Reorder exercise within a workout day
+export async function reorderExercise(exerciseId: string, direction: "up" | "down") {
+  if (DEV_MODE) return { error: "Dev mode — databáze nedostupná" };
+  const supabase = await createClient();
+
+  // Načti aktuální cvik
+  const { data: current, error: fetchErr } = await supabase
+    .from("workout_exercises")
+    .select("id, workout_id, order_idx")
+    .eq("id", exerciseId)
+    .single();
+
+  if (fetchErr || !current) return { error: "Cvik nenalezen" };
+
+  // Načti všechny cviky v tomto workoutu
+  const { data: allExercises } = await supabase
+    .from("workout_exercises")
+    .select("id, order_idx")
+    .eq("workout_id", current.workout_id)
+    .order("order_idx", { ascending: true });
+
+  if (!allExercises || allExercises.length < 2) return { error: "Nelze přeřadit" };
+
+  const currentIndex = allExercises.findIndex((e) => e.id === exerciseId);
+  const swapIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+  if (swapIndex < 0 || swapIndex >= allExercises.length) return { error: "Nelze přeřadit" };
+
+  const swapExercise = allExercises[swapIndex];
+
+  // Prohoď order_idx
+  const { error: e1 } = await supabase
+    .from("workout_exercises")
+    .update({ order_idx: swapExercise.order_idx })
+    .eq("id", current.id);
+
+  const { error: e2 } = await supabase
+    .from("workout_exercises")
+    .update({ order_idx: current.order_idx })
+    .eq("id", swapExercise.id);
+
+  if (e1 || e2) return { error: "Chyba při přeřazení" };
+
+  revalidatePath("/training/plan");
+  return { success: true };
+}
+
 export async function createPlanFromTemplate(templateId: string) {
   const userId = await getUserId();
   if (DEV_MODE) return { error: "Dev mode — databáze nedostupná" };

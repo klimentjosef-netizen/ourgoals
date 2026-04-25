@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, GripVertical, Clock } from "lucide-react";
+import { Trash2, Plus, GripVertical, Clock, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import {
   addWorkoutToPlan,
   removeWorkout,
   removeExerciseFromWorkout,
+  reorderExercise,
 } from "@/app/(app)/training/plan/actions";
 import { ExercisePicker } from "@/components/domain/training/exercise-picker";
 import type { Workout, WorkoutExercise, Exercise } from "@/types/training";
@@ -88,6 +89,18 @@ export function PlanEditor({ planId, planName, workouts: initialWorkouts }: Prop
     });
   }
 
+  // Feature 7: Reorder exercise
+  function handleReorder(exerciseId: string, direction: "up" | "down") {
+    startTransition(async () => {
+      const result = await reorderExercise(exerciseId, direction);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        router.refresh();
+      }
+    });
+  }
+
   return (
     <div className="space-y-4">
       {/* Plan header */}
@@ -136,7 +149,7 @@ export function PlanEditor({ planId, planName, workouts: initialWorkouts }: Prop
             <CardContent className="space-y-1 pt-0">
               {workout.workout_exercises
                 .sort((a, b) => a.order_idx - b.order_idx)
-                .map((ex) => (
+                .map((ex, idx, arr) => (
                   <div
                     key={ex.id}
                     className="flex items-center justify-between py-1.5 border-b border-border last:border-0 group"
@@ -154,17 +167,38 @@ export function PlanEditor({ planId, planName, workouts: initialWorkouts }: Prop
                         {ex.rest_sec ? ` • ${ex.rest_sec}s` : ""}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() =>
-                        handleRemoveExercise(ex.id, ex.exercises?.name ?? "cvik")
-                      }
-                      disabled={isPending}
-                      className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive transition-opacity"
-                    >
-                      <Trash2 size={12} />
-                    </Button>
+                    <div className="flex items-center gap-0.5">
+                      {/* Feature 7: Reorder buttons */}
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleReorder(ex.id, "up")}
+                        disabled={isPending || idx === 0}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                      >
+                        <ArrowUp size={12} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => handleReorder(ex.id, "down")}
+                        disabled={isPending || idx === arr.length - 1}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                      >
+                        <ArrowDown size={12} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() =>
+                          handleRemoveExercise(ex.id, ex.exercises?.name ?? "cvik")
+                        }
+                        disabled={isPending}
+                        className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive transition-opacity"
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
                   </div>
                 ))}
 

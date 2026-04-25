@@ -1,5 +1,5 @@
 import { getAuthUser } from "@/lib/auth";
-import { getWorkoutForToday, getSessionHistory } from "./actions";
+import { getWorkoutForToday, getSessionHistory, getNextWorkoutInfo } from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ export default async function TrainingPage() {
   const user = await getAuthUser();
   const workout = await getWorkoutForToday(user.id);
   const recentSessions = await getSessionHistory(user.id, 5);
+  const nextWorkoutLabel = !workout ? await getNextWorkoutInfo(user.id) : null;
 
   const exercises = (workout?.workout_exercises ?? []) as WorkoutExercise[];
 
@@ -92,7 +93,31 @@ export default async function TrainingPage() {
         </Card>
       ) : (
         <div className="space-y-4">
+          {/* Feature 9: Rest day awareness */}
+          {nextWorkoutLabel && (
+            <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
+              <CardContent className="pt-4 pb-4 text-center space-y-2">
+                <p className="text-lg font-semibold">
+                  Dnes: Odpočinkový den 🧘
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Mobilita, procházka, regenerace.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Zítra tě čeká <span className="font-semibold text-foreground">{nextWorkoutLabel}</span>.
+                </p>
+                <div className="pt-2">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Chceš přesto trénovat?
+                  </p>
+                  <TrainingSession userId={user.id} workoutId={null} exercises={[]} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Header */}
+          {!nextWorkoutLabel && (
           <div className="text-center space-y-2 py-2">
             <div className="w-14 h-14 rounded-full bg-primary/10 mx-auto flex items-center justify-center">
               <Dumbbell size={28} className="text-primary" />
@@ -102,8 +127,10 @@ export default async function TrainingPage() {
               Vyber šablonu nebo si vytvoř vlastní plán na míru.
             </p>
           </div>
+          )}
 
-          {/* Template cards */}
+          {/* Template cards — only show when no plan exists (not on rest days) */}
+          {!nextWorkoutLabel && (
           <div className="space-y-2">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Vyber šablonu
@@ -129,8 +156,10 @@ export default async function TrainingPage() {
               </Link>
             ))}
           </div>
+          )}
 
-          {/* Other options */}
+          {/* Other options — only show when no plan exists (not on rest days) */}
+          {!nextWorkoutLabel && (
           <div className="grid grid-cols-2 gap-2">
             <Link href="/training/plan/edit">
               <Card className="hover:border-primary/50 transition-colors h-full">
@@ -155,6 +184,7 @@ export default async function TrainingPage() {
               </CardContent>
             </Card>
           </div>
+          )}
         </div>
       )}
 

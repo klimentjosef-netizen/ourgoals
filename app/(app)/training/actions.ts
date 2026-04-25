@@ -105,7 +105,8 @@ export async function completeSession(
   sessionId: string,
   mood: number | null,
   energy: number | null,
-  notes: string | null
+  notes: string | null,
+  workoutLabel?: string
 ) {
   const userId = await getUserId();
   if (DEV_MODE) return { error: "Dev mode" };
@@ -128,7 +129,27 @@ export async function completeSession(
     await awardXP(supabase, userId, 30, "Trénink dokončen", "workout_session", sessionId);
   } catch {}
 
-  // Auto-complete training habits (Feature 2)
+  // Feature 10: Calendar sync
+  try {
+    const { data: session } = await supabase
+      .from("workout_sessions")
+      .select("started_at, workouts(day_label)")
+      .eq("id", sessionId)
+      .single();
+
+    const rawWorkouts = session?.workouts;
+    const workoutObj = Array.isArray(rawWorkouts) ? rawWorkouts[0] : rawWorkouts;
+    const label = workoutLabel
+      ?? (workoutObj as Record<string, string> | null)?.day_label
+      ?? "Volný trénink";
+    const startedAt = session?.started_at ?? new Date().toISOString();
+
+    await createCalendarEventForSession(userId, sessionId, label, startedAt);
+  } catch {
+    // Non-critical — calendar event failure shouldn't block session completion
+  }
+
+  // Auto-complete training habits
   try {
     const today = format(new Date(), "yyyy-MM-dd");
 
@@ -289,6 +310,192 @@ export async function getExerciseSuggestion(
     reasoning: suggestion.reasoning,
     lastSets: lastSetsStr,
   };
+}
+
+// Feature 5: PR tracking
+export async function checkForPR(
+  userId: string,
+  exerciseId: string,
+  weight: number,
+  reps: number
+): Promise<{ isPR: boolean; previousBest: number | null }> {
+  if (DEV_MODE) {
+    // V dev režimu simulujeme PR pro váhy nad 100 kg
+    return { isPR: weight >= 100, previousBest: weight >= 100 ? 95 : null };
+  }
+
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("set_logs")
+    .select("weight_kg, workout_sessions!inner(profile_id)")
+    .eq("exercise_id", exerciseId)
+    .eq("workout_sessions.profile_id", userId)
+    .eq("is_warmup", false)
+    .order("weight_kg", { ascending: false })
+    .limit(1);
+
+  const previousBest = data?.[0]?.weight_kg ?? null;
+
+  return {
+    isPR: previousBest === null ? true : weight > previousBest,
+    previousBest,
+  };
+}
+
+// Feature 11: Exercise progress data
+export async function getExerciseProgressData(userId: string) {
+  if (DEV_MODE) {
+    return [
+      {
+        exerciseName: "Bench press (tlak na lavičce)",
+        data: [
+          { date: "2026-04-01", maxWeight: 70 },
+          { date: "2026-04-05", maxWeight: 72.5 },
+          { date: "2026-04-09", maxWeight: 72.5 },
+          { date: "2026-04-13", maxWeight: 75 },
+          { date: "2026-04-17", maxWeight: 77.5 },
+          { date: "2026-04-20", maxWeight: 80 },
+        ],
+      },
+      {
+        exerciseName: "Přítahy činky",
+        data: [
+          { date: "2026-04-02", maxWeight: 60 },
+          { date: "2026-04-06", maxWeight: 62.5 },
+          { date: "2026-04-10", maxWeight: 65 },
+          { date: "2026-04-14", maxWeight: 65 },
+          { date: "2026-04-18", maxWeight: 67.5 },
+          { date: "2026-04-22", maxWeight: 70 },
+        ],
+      },
+      {
+        exerciseName: "Dřepy",
+        data: [
+          { date: "2026-04-03", maxWeight: 80 },
+          { date: "2026-04-07", maxWeight: 85 },
+          { date: "2026-04-11", maxWeight: 87.5 },
+          { date: "2026-04-15", maxWeight: 90 },
+          { date: "2026-04-19", maxWeight: 90 },
+          { date: "2026-04-22", maxWeight: 92.5 },
+        ],
+      },
+    ];
+  }
+
+  const supabase = await createClient();
+
+  // Najdi top 3 nejčastější cviky
+  const { data: topExercises } = await supabase
+    .from("set_logs")
+    .select("exercise_id, exercises(name), workout_sessions!inner(profile_id)")
+    .eq("workout_sessions.profile_id", userId)
+    .eq("is_warmup", false);
+
+  if (!topExercises || topExercises.length === 0) return [];
+
+  // Spočítej frekvenci cviků
+  const freqMap = new Map<string, { count: number; name: string }>();
+  for (const log of topExercises) {
+    const id = log.exercise_id;
+    const rawEx = log.exercises;
+    const exObj = Array.isArray(rawEx) ? rawEx[0] : rawEx;
+    const name = (exObj as Record<string, string> | null)?.name ?? "Cvik";
+    const curr = freqMap.get(id) ?? { count: 0, name };
+    curr.count++;
+    freqMap.set(id, curr);
+  }
+
+  const top3 = Array.from(freqMap.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 3);
+
+  const results = [];
+
+  for (const [exerciseId, { name }] of top3) {
+    const { data: logs } = await supabase
+      .from("set_logs")
+      .select("weight_kg, workout_sessions!inner(profile_id, date)")
+      .eq("exercise_id", exerciseId)
+      .eq("workout_sessions.profile_id", userId)
+      .eq("is_warmup", false)
+      .order("completed_at", { ascending: false })
+      .limit(80);
+
+    if (!logs || logs.length === 0) continue;
+
+    // Seskup podle session date a vezmi max váhu
+    const dateMap = new Map<string, number>();
+    for (const log of logs) {
+      const rawSess = log.workout_sessions;
+      const sessObj = Array.isArray(rawSess) ? rawSess[0] : rawSess;
+      const date = (sessObj as Record<string, string> | null)?.date ?? "";
+      const w = log.weight_kg ?? 0;
+      dateMap.set(date, Math.max(dateMap.get(date) ?? 0, w));
+    }
+
+    const data = Array.from(dateMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-8)
+      .map(([date, maxWeight]) => ({ date, maxWeight }));
+
+    results.push({ exerciseName: name, data });
+  }
+
+  return results;
+}
+
+// Feature 10: Calendar sync
+async function createCalendarEventForSession(
+  userId: string,
+  sessionId: string,
+  workoutLabel: string,
+  startedAt: string
+) {
+  if (DEV_MODE) return;
+  const supabase = await createClient();
+
+  await supabase.from("calendar_events").insert({
+    owner_id: userId,
+    title: `Trénink: ${workoutLabel}`,
+    kind: "training",
+    starts_at: startedAt,
+    ends_at: new Date().toISOString(),
+    is_completed: true,
+  });
+}
+
+// Feature 9: Get next workout info
+export async function getNextWorkoutInfo(userId: string): Promise<string | null> {
+  if (DEV_MODE) return "Push A — Hrudník + triceps";
+  const supabase = await createClient();
+
+  const todayIndex = (new Date().getDay() + 6) % 7; // 0=Mon
+
+  const { data: plans } = await supabase
+    .from("training_plans")
+    .select("id")
+    .eq("profile_id", userId)
+    .lte("start_date", format(new Date(), "yyyy-MM-dd"))
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (!plans?.length) return null;
+
+  // Hledáme další den v plánu po dnešku
+  const { data: workouts } = await supabase
+    .from("workouts")
+    .select("day_index, day_label, focus")
+    .eq("plan_id", plans[0].id)
+    .order("day_index", { ascending: true });
+
+  if (!workouts?.length) return null;
+
+  // Najdi nejbližší den po dnešku
+  const nextWorkout = workouts.find((w) => w.day_index > todayIndex)
+    ?? workouts[0]; // Wrap around to first day
+
+  return `${nextWorkout.day_label}${nextWorkout.focus ? ` — ${nextWorkout.focus}` : ""}`;
 }
 
 export async function getSessionHistoryWithSets(userId: string, limit = 30) {

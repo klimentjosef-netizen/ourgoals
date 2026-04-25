@@ -41,6 +41,11 @@ export function SessionCard({ session }: Props) {
 
   const hasLogs = (session.set_logs?.length ?? 0) > 0;
 
+  // Feature 6: Total volume
+  const totalVolume = (session.set_logs ?? [])
+    .filter((s) => !s.is_warmup)
+    .reduce((sum, s) => sum + (s.weight_kg ?? 0) * (s.reps ?? 0), 0);
+
   return (
     <Card
       className={hasLogs ? "cursor-pointer hover:border-primary/30 transition-colors" : ""}
@@ -70,6 +75,13 @@ export function SessionCard({ session }: Props) {
             </div>
           </div>
           <div className="flex gap-2 items-center">
+            {totalVolume > 0 && (
+              <Badge variant="outline" className="text-[10px] font-mono">
+                {totalVolume >= 1000
+                  ? `${(totalVolume / 1000).toFixed(1)}t`
+                  : `${totalVolume} kg`}
+              </Badge>
+            )}
             {session.mood_1_10 ? (
               <Badge variant="outline" className="text-[10px] font-mono">
                 Mood {session.mood_1_10}
