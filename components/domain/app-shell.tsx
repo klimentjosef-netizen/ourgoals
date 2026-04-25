@@ -15,8 +15,10 @@ import {
   ClipboardCheck,
   Plus,
   X,
+  LogOut,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { ModuleId } from "@/types/modules";
 
@@ -116,10 +118,21 @@ export function AppShell({
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border pt-4 mt-4">
+        <div className="border-t border-sidebar-border pt-4 mt-4 space-y-2">
           <p className="text-xs text-sidebar-foreground/50 font-mono truncate">
             {user.email}
           </p>
+          <button
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              window.location.href = "/";
+            }}
+            className="flex items-center gap-2 text-xs text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors w-full px-1 py-1"
+          >
+            <LogOut size={14} />
+            Odhlásit se
+          </button>
         </div>
       </aside>
 
