@@ -42,8 +42,8 @@ export function AgendaDay({
       </h3>
 
       {events.length === 0 ? (
-        <p className="text-xs text-muted-foreground/50 py-2 pl-1">
-          Žádné eventy
+        <p className="text-xs text-muted-foreground/30 py-1 pl-1">
+          Volný den
         </p>
       ) : (
         <div className="space-y-1.5">

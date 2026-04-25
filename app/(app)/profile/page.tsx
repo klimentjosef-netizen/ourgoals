@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import {
   Trophy,
   Flame,
@@ -19,8 +18,8 @@ import {
   CheckCircle2,
   XCircle,
   MinusCircle,
-  Lock,
 } from "lucide-react";
+import { EditableName, AchievementGrid } from "@/app/(app)/profile/profile-client";
 import type {
   GamificationProfile,
   UserAchievement,
@@ -63,6 +62,10 @@ export default async function ProfilePage() {
   > | null;
 
   const unlockedIds = new Set(userAchievements.map((ua) => ua.achievement_id));
+  const unlockedMap: Record<string, string> = {};
+  for (const ua of userAchievements) {
+    unlockedMap[ua.achievement_id] = ua.unlocked_at;
+  }
 
   const totalXP = gamification?.total_xp ?? 0;
   const xp = getXPProgress(totalXP);
@@ -81,9 +84,7 @@ export default async function ProfilePage() {
                 : "?"}
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-bold">
-                {profile?.display_name ?? "Uživatel"}
-              </h2>
+              <EditableName initialName={profile?.display_name ?? "Uživatel"} />
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="default">Lv. {xp.currentLevel}</Badge>
                 <span className="text-sm text-muted-foreground">
@@ -211,46 +212,10 @@ export default async function ProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {allAchievements.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              Zatím nejsou definovány žádné achievementy.
-            </p>
-          ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {allAchievements.map((achievement) => {
-                const isUnlocked = unlockedIds.has(achievement.id);
-                return (
-                  <div
-                    key={achievement.id}
-                    className={`flex flex-col items-center text-center p-2 rounded-lg transition-colors ${
-                      isUnlocked
-                        ? "bg-primary/5"
-                        : "bg-muted/30 opacity-40"
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">
-                      {isUnlocked ? (
-                        achievement.icon || "🏆"
-                      ) : (
-                        <Lock
-                          size={20}
-                          className="text-muted-foreground"
-                        />
-                      )}
-                    </div>
-                    <p className="text-[10px] font-medium leading-tight">
-                      {achievement.name}
-                    </p>
-                    {isUnlocked && achievement.xp_reward > 0 && (
-                      <p className="text-[9px] text-primary mt-0.5">
-                        +{achievement.xp_reward} XP
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <AchievementGrid
+            allAchievements={allAchievements}
+            unlockedMap={unlockedMap}
+          />
         </CardContent>
       </Card>
     </div>
