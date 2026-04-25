@@ -14,8 +14,17 @@ import {
   X,
   Flame,
   CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Archive,
+  RotateCcw,
 } from "lucide-react";
-import { quickUpdateProgress } from "@/app/(app)/goals/actions";
+import {
+  quickUpdateProgress,
+  extendGoalDeadline,
+  archiveGoal,
+  restartChallenge,
+} from "@/app/(app)/goals/actions";
 import { toast } from "sonner";
 import type { Goal } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -73,6 +82,30 @@ function getProgressPercentage(goal: Goal): number {
 
   const progress = ((goal.current_value - goal.start_value) / range) * 100;
   return Math.max(0, Math.min(100, progress));
+}
+
+/** Feature 4: Check if goal is stagnating (no update in 14+ days) */
+function isStagnating(goal: Goal): boolean {
+  if (goal.goal_type !== "measurable" || goal.status !== "active") return false;
+  if (!goal.updated_at) return false;
+  const updated = new Date(goal.updated_at);
+  updated.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diffDays = Math.floor(
+    (now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return diffDays >= 14;
+}
+
+/** Feature 7: Check if deadline has passed */
+function isDeadlinePassed(goal: Goal): boolean {
+  if (!goal.target_date || goal.status !== "active") return false;
+  const deadline = new Date(goal.target_date);
+  deadline.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return deadline.getTime() < now.getTime();
 }
 
 function getChallengeDayNumber(goal: Goal): number {
@@ -271,6 +304,65 @@ function ChallengeContent({ goal }: { goal: Goal }) {
   );
 }
 
+/** Feature 8: Challenge interruption bar */
+function ChallengeInterruptionBar({
+  goal,
+  onRestart,
+  isLoading,
+}: {
+  goal: Goal;
+  onRestart: () => void;
+  isLoading: boolean;
+}) {
+  // Check if the user missed yesterday (simple heuristic: updated_at is 2+ days ago)
+  if (!goal.challenge_start || !goal.updated_at) return null;
+
+  const updated = new Date(goal.updated_at);
+  updated.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const daysSinceUpdate = Math.floor(
+    (now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // Only show if more than 1 day since last update (missed yesterday)
+  if (daysSinceUpdate < 2) return null;
+
+  const currentDay = getChallengeDayNumber(goal);
+
+  return (
+    <div className="mt-2 pt-2 border-t">
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
+        <AlertTriangle size={14} className="text-orange-500 shrink-0" />
+        <span className="text-xs text-orange-700 dark:text-orange-300 flex-1">
+          Challenge přerušena na dni {currentDay}.
+        </span>
+        <div className="flex gap-1 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700"
+            onClick={onRestart}
+            disabled={isLoading}
+          >
+            <RotateCcw size={10} />
+            Začít znovu
+          </Button>
+          <Link href={`/goals/${goal.id}`}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700"
+            >
+              Pokračovat
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Shared badge */
 function SharedBadge() {
   return (
@@ -293,6 +385,60 @@ export function GoalCard({ goal }: GoalCardProps) {
     String(goal.current_value ?? goal.start_value ?? 0)
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  const stagnating = isStagnating(goal);
+  const deadlinePassed = isDeadlinePassed(goal);
+
+  // Feature 7: Deadline actions
+  async function handleExtendDeadline() {
+    setIsActionLoading(true);
+    try {
+      const result = await extendGoalDeadline(goal.id, 30);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Deadline prodloužen o 30 dní");
+      }
+    } catch {
+      toast.error("Něco se pokazilo");
+    } finally {
+      setIsActionLoading(false);
+    }
+  }
+
+  async function handleArchive() {
+    setIsActionLoading(true);
+    try {
+      const result = await archiveGoal(goal.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Cíl archivován");
+      }
+    } catch {
+      toast.error("Něco se pokazilo");
+    } finally {
+      setIsActionLoading(false);
+    }
+  }
+
+  // Feature 8: Challenge restart
+  async function handleRestartChallenge() {
+    setIsActionLoading(true);
+    try {
+      const result = await restartChallenge(goal.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Challenge restartována od dneška");
+      }
+    } catch {
+      toast.error("Něco se pokazilo");
+    } finally {
+      setIsActionLoading(false);
+    }
+  }
 
   async function handleQuickUpdate() {
     const value = Number(quickValue);
@@ -352,6 +498,15 @@ export function GoalCard({ goal }: GoalCardProps) {
         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
           <AreaBadge area={goalArea} />
           {goalType === "shared" && <SharedBadge />}
+          {stagnating && (
+            <Badge
+              variant="outline"
+              className="text-[10px] gap-1 bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400"
+            >
+              <AlertTriangle size={10} />
+              Stagnuje
+            </Badge>
+          )}
         </div>
 
         {/* Type-specific content */}
@@ -425,6 +580,56 @@ export function GoalCard({ goal }: GoalCardProps) {
             )}
           </div>
         )}
+
+      {/* Feature 7: Deadline passed action bar */}
+      {deadlinePassed && goal.status === "active" && (
+        <div className="mt-2 pt-2 border-t">
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+            <Clock size={14} className="text-red-500 shrink-0" />
+            <span className="text-xs text-red-700 dark:text-red-300 flex-1">
+              Deadline prošel.
+            </span>
+            <div className="flex gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] px-2 text-red-600 hover:text-red-700"
+                onClick={handleExtendDeadline}
+                disabled={isActionLoading}
+              >
+                Prodloužit
+              </Button>
+              <Link href={`/goals/${goal.id}/edit`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[10px] px-2 text-red-600 hover:text-red-700"
+                >
+                  Upravit
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-[10px] px-2 text-red-600 hover:text-red-700"
+                onClick={handleArchive}
+                disabled={isActionLoading}
+              >
+                <Archive size={10} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feature 8: Challenge interruption — shown via ChallengeContent */}
+      {goalType === "challenge" && goal.status === "active" && (
+        <ChallengeInterruptionBar
+          goal={goal}
+          onRestart={handleRestartChallenge}
+          isLoading={isActionLoading}
+        />
+      )}
     </Card>
   );
 }

@@ -193,6 +193,35 @@ export async function saveMorningCheckin(
   // Weight XP
   if (weight != null) {
     await awardXP(profileId, XP_VALUES.WEIGHT_LOGGED, "weight_logged", "weight", today);
+
+    // Auto-update weight goals (Feature 1)
+    try {
+      const { data: weightGoals } = await supabase
+        .from("goals")
+        .select("id, metric")
+        .eq("profile_id", profileId)
+        .eq("status", "active")
+        .eq("goal_type", "measurable");
+
+      if (weightGoals) {
+        const matchingGoals = weightGoals.filter((g) => {
+          const m = (g.metric ?? "").toLowerCase();
+          return m.includes("váha") || m.includes("weight") || m.includes("kg");
+        });
+
+        for (const g of matchingGoals) {
+          await supabase
+            .from("goals")
+            .update({
+              current_value: weight,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", g.id);
+        }
+      }
+    } catch {
+      // Non-critical — weight goal sync failure shouldn't block checkin
+    }
   }
 
   // Check achievements
@@ -210,6 +239,7 @@ export async function saveMorningCheckin(
 
   revalidatePath("/checkin");
   revalidatePath("/dashboard");
+  revalidatePath("/goals");
 
   let totalXP = xpAwarded;
   if (sleepHours != null) totalXP += XP_VALUES.SLEEP_LOGGED;

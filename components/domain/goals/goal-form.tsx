@@ -49,6 +49,7 @@ type FormState = {
     xp_reward: number;
   }>;
   success?: boolean;
+  suggestHabit?: boolean;
 } | null;
 
 export function GoalForm({ goalType, goalArea, goal }: GoalFormProps) {
@@ -123,6 +124,18 @@ export function GoalForm({ goalType, goalArea, goal }: GoalFormProps) {
       router.push(`/goals/${goal.id}`);
     } else {
       toast.success("Cíl vytvořen!");
+
+      // Feature 3: Suggest adding a habit for measurable goals
+      if (state.suggestHabit) {
+        toast("Chceš přidat návyk, který ti s tímto cílem pomůže?", {
+          duration: 8000,
+          action: {
+            label: "Přidat návyk",
+            onClick: () => router.push("/goals"),
+          },
+        });
+      }
+
       router.push("/goals");
     }
   }, [state, router, isEditing, goal?.id]);

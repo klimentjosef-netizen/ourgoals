@@ -128,8 +128,58 @@ export async function completeSession(
     await awardXP(supabase, userId, 30, "Trénink dokončen", "workout_session", sessionId);
   } catch {}
 
+  // Auto-complete training habits (Feature 2)
+  try {
+    const today = format(new Date(), "yyyy-MM-dd");
+
+    // Find active habit goals in health area
+    const { data: healthHabitGoals } = await supabase
+      .from("goals")
+      .select("id, frequency")
+      .eq("profile_id", userId)
+      .eq("status", "active")
+      .eq("goal_type", "habit")
+      .eq("area", "health");
+
+    if (healthHabitGoals && healthHabitGoals.length > 0) {
+      const goalIds = healthHabitGoals.map((g) => g.id);
+
+      // Find daily_habits linked to those goals
+      const { data: linkedHabits } = await supabase
+        .from("daily_habits")
+        .select("id")
+        .in("goal_id", goalIds)
+        .eq("profile_id", userId)
+        .eq("is_active", true);
+
+      if (linkedHabits && linkedHabits.length > 0) {
+        for (const habit of linkedHabits) {
+          // Check if already completed today
+          const { data: existing } = await supabase
+            .from("habit_completions")
+            .select("id")
+            .eq("profile_id", userId)
+            .eq("habit_id", habit.id)
+            .eq("date", today)
+            .maybeSingle();
+
+          if (!existing) {
+            await supabase.from("habit_completions").insert({
+              profile_id: userId,
+              habit_id: habit.id,
+              date: today,
+            });
+          }
+        }
+      }
+    }
+  } catch {
+    // Non-critical — habit auto-complete failure shouldn't block session completion
+  }
+
   revalidatePath("/training");
   revalidatePath("/dashboard");
+  revalidatePath("/goals");
   return { success: true, xpAwarded: 30 };
 }
 

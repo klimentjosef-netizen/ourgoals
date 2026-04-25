@@ -377,6 +377,83 @@ export default async function GoalDetailPage({ params }: PageProps) {
 
   const typedHabits = (habits ?? []) as DailyHabit[];
 
+  // Feature 9: Shared goal — who last updated
+  let lastUpdatedBy: string | null = null;
+  if (goalType === "shared" && typedGoal.household_id) {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", typedGoal.profile_id)
+        .single();
+      if (profile && typedGoal.updated_at) {
+        const date = new Date(typedGoal.updated_at).toLocaleDateString(
+          "cs-CZ",
+          { day: "numeric", month: "numeric" }
+        );
+        lastUpdatedBy = `${profile.display_name}, ${date}`;
+      }
+    } catch {
+      // Non-critical
+    }
+  }
+
+  // Feature 10: Habit monthly adherence data
+  let monthlyAdherence: {
+    completedDays: number;
+    totalDays: number;
+    percentage: number;
+    weekGrids: boolean[][];
+  } | null = null;
+
+  if (goalType === "habit" && typedHabits.length > 0) {
+    try {
+      const now = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const fromDate = thirtyDaysAgo.toISOString().split("T")[0];
+      const toDate = now.toISOString().split("T")[0];
+
+      const habitIds = typedHabits.map((h) => h.id);
+
+      const { data: completions } = await supabase
+        .from("habit_completions")
+        .select("date")
+        .in("habit_id", habitIds)
+        .eq("profile_id", user.id)
+        .gte("date", fromDate)
+        .lte("date", toDate);
+
+      const completedDates = new Set(
+        (completions ?? []).map((c) => c.date)
+      );
+      const completedDays = completedDates.size;
+
+      // Count days in month so far
+      const dayOfMonth = now.getDate();
+      const totalDays = dayOfMonth;
+      const percentage =
+        totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+      // Build 4-week grids (last 28 days)
+      const weekGrids: boolean[][] = [];
+      for (let w = 3; w >= 0; w--) {
+        const week: boolean[] = [];
+        for (let d = 0; d < 7; d++) {
+          const dayDate = new Date();
+          dayDate.setDate(dayDate.getDate() - (w * 7 + (6 - d)));
+          const dateStr = dayDate.toISOString().split("T")[0];
+          week.push(completedDates.has(dateStr));
+        }
+        weekGrids.push(week);
+      }
+
+      monthlyAdherence = { completedDays, totalDays, percentage, weekGrids };
+    } catch {
+      // Non-critical
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -444,6 +521,19 @@ export default async function GoalDetailPage({ params }: PageProps) {
           </p>
         )}
 
+        {/* Feature 9: Shared goal — who last contributed */}
+        {goalType === "shared" && lastUpdatedBy && (
+          <>
+            <Separator />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="text-pink-500">👫</span>
+              <span>
+                Naposledy aktualizoval: <strong>{lastUpdatedBy}</strong>
+              </span>
+            </div>
+          </>
+        )}
+
         {/* Type-specific detail sections */}
         {(goalType === "measurable" || goalType === "shared") && (
           <MeasurableDetail goal={typedGoal} />
@@ -452,6 +542,62 @@ export default async function GoalDetailPage({ params }: PageProps) {
         {goalType === "oneoff" && <OneoffDetail goal={typedGoal} />}
         {goalType === "challenge" && <ChallengeDetail goal={typedGoal} />}
       </Card>
+
+      {/* Feature 10: Habit monthly adherence */}
+      {goalType === "habit" && monthlyAdherence && (
+        <Card className="p-6 space-y-4">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Měsíční přehled
+          </h2>
+
+          {/* Month stat */}
+          <div className="text-center">
+            <p className="text-2xl font-bold font-mono">
+              {monthlyAdherence.completedDays}/{monthlyAdherence.totalDays} dní
+            </p>
+            <p className="text-sm text-muted-foreground">
+              ({monthlyAdherence.percentage}%)
+            </p>
+            <div className="mt-2">
+              <Progress value={monthlyAdherence.percentage} />
+            </div>
+          </div>
+
+          {/* 4-week mini calendar grids */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground font-semibold">
+              Posledních 28 dní
+            </p>
+            <div className="flex justify-center gap-1">
+              {["Po", "Út", "St", "Čt", "Pá", "So", "Ne"].map((d) => (
+                <span
+                  key={d}
+                  className="w-6 text-center text-[9px] text-muted-foreground font-mono"
+                >
+                  {d}
+                </span>
+              ))}
+            </div>
+            {monthlyAdherence.weekGrids.map((week, wi) => (
+              <div key={wi} className="flex justify-center gap-1">
+                {week.map((done, di) => (
+                  <div
+                    key={di}
+                    className={cn(
+                      "w-6 h-6 rounded-sm flex items-center justify-center text-[10px] font-mono",
+                      done
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {done ? "✓" : "·"}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Related habits */}
       {typedHabits.length > 0 && (

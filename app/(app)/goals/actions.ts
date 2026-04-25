@@ -137,6 +137,7 @@ export async function createGoal(formData: FormData) {
     newLevel: xpResult?.newLevel,
     newTitle: xpResult?.newTitle,
     achievementsUnlocked: achievements ?? [],
+    suggestHabit: goalType === "measurable",
   };
 }
 
@@ -247,6 +248,7 @@ export async function completeGoal(id: string) {
 
   return {
     success: true,
+    celebration: true,
     xpAwarded: XP_VALUES.GOAL_COMPLETED,
     leveledUp: xpResult?.leveledUp ?? false,
     newLevel: xpResult?.newLevel,
@@ -299,6 +301,81 @@ export async function quickUpdateProgress(
   revalidatePath("/goals");
   revalidatePath(`/goals/${goalId}`);
 
+  return { success: true };
+}
+
+export async function extendGoalDeadline(goalId: string, days: number) {
+  const { supabase, userId } = await getUser();
+
+  const { data: goal } = await supabase
+    .from("goals")
+    .select("target_date")
+    .eq("id", goalId)
+    .eq("profile_id", userId)
+    .single();
+
+  if (!goal) return { error: "Cíl nenalezen" };
+
+  const currentDate = goal.target_date
+    ? new Date(goal.target_date)
+    : new Date();
+  currentDate.setDate(currentDate.getDate() + days);
+  const newDate = currentDate.toISOString().split("T")[0];
+
+  const { error } = await supabase
+    .from("goals")
+    .update({
+      target_date: newDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", goalId)
+    .eq("profile_id", userId);
+
+  if (error) return { error: `Chyba: ${error.message}` };
+
+  revalidatePath("/goals");
+  revalidatePath(`/goals/${goalId}`);
+  return { success: true, newDate };
+}
+
+export async function archiveGoal(goalId: string) {
+  const { supabase, userId } = await getUser();
+
+  const { error } = await supabase
+    .from("goals")
+    .update({
+      status: "abandoned",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", goalId)
+    .eq("profile_id", userId);
+
+  if (error) return { error: `Chyba: ${error.message}` };
+
+  revalidatePath("/goals");
+  revalidatePath(`/goals/${goalId}`);
+  return { success: true };
+}
+
+export async function restartChallenge(goalId: string) {
+  const { supabase, userId } = await getUser();
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const { error } = await supabase
+    .from("goals")
+    .update({
+      challenge_start: today,
+      current_value: 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", goalId)
+    .eq("profile_id", userId);
+
+  if (error) return { error: `Chyba: ${error.message}` };
+
+  revalidatePath("/goals");
+  revalidatePath(`/goals/${goalId}`);
   return { success: true };
 }
 
