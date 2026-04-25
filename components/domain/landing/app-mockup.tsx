@@ -100,7 +100,7 @@ export function AppMockup() {
             <div className="space-y-1.5">
               {[
                 { done: true, label: "Ranní check-in", delay: "1.0s" },
-                { done: true, label: "Trénink — Pull day", delay: "1.15s" },
+                { done: true, label: "Trénink: Pull day", delay: "1.15s" },
                 { done: true, label: "Meditace 10 min", delay: "1.3s" },
                 { done: false, label: "Zalogovat jídla", delay: "1.45s" },
                 { done: false, label: "Večerní check-in", delay: "1.6s" },

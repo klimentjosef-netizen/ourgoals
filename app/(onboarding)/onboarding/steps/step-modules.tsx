@@ -48,7 +48,7 @@ export function StepModules() {
           <Check size={14} className="text-primary mt-0.5 shrink-0" />
           <p className="text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{lastSelected.label}</span>
-            {" — "}
+            {": "}
             {lastSelected.description}
           </p>
         </div>

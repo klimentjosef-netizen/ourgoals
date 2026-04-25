@@ -48,7 +48,7 @@ function getCoachMessage(
       case "strict_coach":
         return "Ranní check-in čeká. Žádné výmluvy.";
       case "friendly_mentor":
-        return "Začni den ranním check-inem — zabere to minutu!";
+        return "Začni den ranním check-inem, zabere to minutu!";
       case "calm_analyst":
         return "Ranní check-in: nevyplněn. Priorita: vyplnit.";
       case "energetic_motivator":
@@ -64,7 +64,7 @@ function getCoachMessage(
         case "strict_coach":
           return `Streak ${streak} dní. Neztrácej ho. Večerní check-in tě čeká.`;
         case "friendly_mentor":
-          return `Skvělý streak — ${streak} dní! Dnes to dotáhni.`;
+          return `Skvělý streak, ${streak} dní! Dnes to dotáhni.`;
         case "calm_analyst":
           return `Streak: ${streak}. Večerní check-in: pending.`;
         case "energetic_motivator":

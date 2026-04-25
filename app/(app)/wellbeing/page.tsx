@@ -95,7 +95,7 @@ export default async function WellbeingPage() {
         <Card size="sm">
           <CardContent className="text-center pt-2">
             <p className="text-2xl font-bold">
-              {avgSleepHours != null ? avgSleepHours.toFixed(1) : "—"}
+              {avgSleepHours != null ? avgSleepHours.toFixed(1) : "–"}
             </p>
             <p className="text-[10px] text-muted-foreground">Prům. hodin</p>
           </CardContent>
@@ -103,7 +103,7 @@ export default async function WellbeingPage() {
         <Card size="sm">
           <CardContent className="text-center pt-2">
             <p className="text-2xl font-bold">
-              {avgQuality != null ? avgQuality.toFixed(1) : "—"}
+              {avgQuality != null ? avgQuality.toFixed(1) : "–"}
             </p>
             <p className="text-[10px] text-muted-foreground">Prům. kvalita</p>
           </CardContent>
@@ -121,7 +121,7 @@ export default async function WellbeingPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Moon size={18} />
-            Spánek — posledních 14 dní
+            Spánek: posledních 14 dní
           </CardTitle>
         </CardHeader>
         <CardContent>

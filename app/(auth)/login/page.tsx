@@ -284,7 +284,7 @@ export default function LoginPage() {
         <div className="mb-6">
           <h2 className="text-xl font-semibold">Magic link</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Pošleme ti přihlašovací odkaz na email — bez hesla.
+            Pošleme ti přihlašovací odkaz na email. Bez hesla.
           </p>
         </div>
         <form onSubmit={handleMagicLink} className="space-y-4">
@@ -443,7 +443,7 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
           <ul className="space-y-4">
             {[
               "Cíle, návyky a gamifikace na jednom místě",
-              "7 modulů — vyber jen to, co potřebuješ",
+              "7 modulů: vyber jen to, co potřebuješ",
               "XP, levely a streak tě udrží v motivaci",
             ].map((text) => (
               <li key={text} className="flex items-start gap-3">
@@ -493,7 +493,7 @@ function DevModeSection() {
         <ArrowRight size={16} />
       </Button>
       <p className="text-[10px] text-muted-foreground text-center mt-2 font-mono">
-        Dev mode — prohlížení bez účtu
+        Dev mode – prohlížení bez účtu
       </p>
     </div>
   );

@@ -70,7 +70,7 @@ export function StepCalendar() {
           <Label htmlFor="commitments">Stálé závazky (nepovinné)</Label>
           <Textarea
             id="commitments"
-            placeholder="Např. Pondělí 18:00 — angličtina, Středa 7:00 — crossfit..."
+            placeholder="Např. Pondělí 18:00 angličtina, Středa 7:00 crossfit..."
             value={data.fixedCommitments ?? ""}
             onChange={(e) => update({ fixedCommitments: e.target.value })}
             rows={3}

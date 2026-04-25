@@ -87,7 +87,7 @@ export default async function TrainingPlanPage() {
                     <div className="space-y-1">
                       {exercises.map((ex: Record<string, unknown>) => (
                         <p key={ex.id as string} className="text-xs text-muted-foreground font-mono">
-                          {(ex.exercises as Record<string, string>)?.name ?? "?"} — {ex.sets as number}×{ex.reps_low as number}{ex.reps_high ? `-${ex.reps_high}` : ""}
+                          {(ex.exercises as Record<string, string>)?.name ?? "?"} – {ex.sets as number}×{ex.reps_low as number}{ex.reps_high ? `-${ex.reps_high}` : ""}
                         </p>
                       ))}
                       {exercises.length === 0 && (

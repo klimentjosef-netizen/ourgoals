@@ -28,7 +28,7 @@ export default async function PartnerPage() {
                 <Heart size={20} className="text-pink-500" />
                 <p className="text-xs font-medium">Partner notes</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Vděčnost, přání, oslavy — Gottman 5:1
+                  Vděčnost, přání, oslavy (Gottman 5:1)
                 </p>
               </div>
               <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50">
@@ -42,7 +42,7 @@ export default async function PartnerPage() {
                 <ShoppingCart size={20} className="text-green-500" />
                 <p className="text-xs font-medium">Sdílené seznamy</p>
                 <p className="text-[10px] text-muted-foreground">
-                  Nákupy, úkoly, nápady — společně
+                  Nákupy, úkoly, nápady – společně
                 </p>
               </div>
             </div>
@@ -59,7 +59,7 @@ export default async function PartnerPage() {
         <Users size={24} className="text-primary" />
         <h1 className="text-xl font-bold">Rodina & partner</h1>
       </div>
-      <p className="text-muted-foreground text-sm">Modul je aktivní — implementace probíhá.</p>
+      <p className="text-muted-foreground text-sm">Modul je aktivní. Implementace probíhá.</p>
     </div>
   );
 }

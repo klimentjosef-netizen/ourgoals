@@ -52,7 +52,7 @@ const personas = [
     emoji: "🎯",
     title: "Kdokoliv s cílem",
     story:
-      "Chceš zhubnout, naučit se jazyk, přestat kouřit — cokoliv. OurGoals ti rozloží velký cíl na denní kroky a hlídá, aby ses nevzdal. Tentokrát to dotáhneš.",
+      "Chceš zhubnout, naučit se jazyk, přestat kouřit... cokoliv. OurGoals ti rozloží velký cíl na denní kroky a hlídá, aby ses nevzdal. Tentokrát to dotáhneš.",
   },
 ];
 
@@ -80,12 +80,12 @@ const benefits = [
   {
     icon: Layers,
     title: "Všechno propojené",
-    desc: "Cíle, trénink, jídlo, spánek, práce — vše na jednom místě, vše se doplňuje.",
+    desc: "Cíle, trénink, jídlo, spánek, práce: vše na jednom místě, vše se doplňuje.",
   },
   {
     icon: Flame,
     title: "Gamifikace, která drží",
-    desc: "XP, levely, streaky, achievementy. Ne jako hra — jako systém, který tě nepustí.",
+    desc: "XP, levely, streaky, achievementy. Ne jako hra, ale jako systém, který tě nepustí.",
   },
 ];
 
@@ -150,10 +150,10 @@ const modules = [
 
 const testimonials = [
   {
-    text: "Poprvé v životě držím návyky déle než měsíc. Ten streak je návykový — nechci přijít o 53 dní v řadě.",
+    text: "Poprvé v životě držím návyky déle než měsíc. Ten streak je návykový, nechci přijít o 53 dní v řadě.",
   },
   {
-    text: "Konečně nemusím přemýšlet co dělat. Otevřu app a vím. Trénink, jídlo, úkoly — všechno na jednom místě.",
+    text: "Konečně nemusím přemýšlet co dělat. Otevřu app a vím. Trénink, jídlo, úkoly: všechno na jednom místě.",
   },
   {
     text: "Moje partnerka se přidala po týdnu. Teď plníme cíle spolu a motivujeme se navzájem. Nejlepší rozhodnutí.",
@@ -333,7 +333,7 @@ export default function LandingPage() {
                 OurGoals to řeší jinak
               </h2>
               <p className="text-lg text-muted-foreground max-w-xl">
-                Jedna app. Vše propojené. Gamifikace, která motivuje — ne týden, ale měsíce.
+                Jedna app. Vše propojené. Gamifikace, která motivuje ne týden, ale měsíce.
               </p>
             </div>
           </FadeInSection>

@@ -55,7 +55,7 @@ export async function getWorkoutForToday(userId: string) {
 
 export async function startSession(workoutId: string | null) {
   const userId = await getUserId();
-  if (DEV_MODE) return { error: "Dev mode — databáze nedostupná" };
+  if (DEV_MODE) return { error: "Dev mode: databáze nedostupná" };
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -176,7 +176,7 @@ export async function getExerciseSuggestion(
     return {
       suggestedWeight: 80,
       suggestedReps: repsLow,
-      reasoning: "Dev mode — ukázková data",
+      reasoning: "Dev mode: ukázková data",
       lastSets: "80kg × 8, 80kg × 8, 80kg × 7",
     };
   }
@@ -196,7 +196,7 @@ export async function getExerciseSuggestion(
     return {
       suggestedWeight: null,
       suggestedReps: repsLow,
-      reasoning: "První trénink tohoto cviku — zadej váhu sám",
+      reasoning: "První trénink tohoto cviku. Zadej váhu sám.",
       lastSets: null,
     };
   }
