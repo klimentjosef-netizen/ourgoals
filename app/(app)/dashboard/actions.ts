@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
+import { cs } from "date-fns/locale";
 import { DEV_MODE, MOCK_ACTIVE_MODULES } from "@/lib/dev/mock-user";
 import type {
   GamificationProfile,
@@ -9,6 +10,7 @@ import type {
   DailyHabit,
   HabitCompletion,
   Goal,
+  DailyCompletion,
 } from "@/types/database";
 import type { CoachTone } from "@/types/gamification";
 
@@ -37,6 +39,14 @@ interface TodayEvent {
   starts_at: string | null;
 }
 
+type DayStatus = "perfect" | "ok" | "missed" | "pending" | "future";
+
+interface WeekDay {
+  date: string;
+  dayLabel: string;
+  status: DayStatus;
+}
+
 interface DashboardData {
   gamification: GamificationProfile | null;
   coachTone: CoachTone;
@@ -51,12 +61,29 @@ interface DashboardData {
   macroTargets: MacroTargets | null;
   todayEvents: TodayEvent[];
   latestWeight: number | null;
+  registeredAt: string;
+  nearestGoalDeadline: string | null;
+  weeklyProgress: WeekDay[];
 }
 
 export async function getDashboardData(
   userId: string
 ): Promise<DashboardData> {
   if (DEV_MODE) {
+    const today = new Date();
+    const monday = startOfWeek(today, { weekStartsOn: 1 });
+    const weekDays: WeekDay[] = Array.from({ length: 7 }, (_, i) => {
+      const d = addDays(monday, i);
+      const dateStr = format(d, "yyyy-MM-dd");
+      const isToday = dateStr === format(today, "yyyy-MM-dd");
+      const isFuture = d > today;
+      return {
+        date: dateStr,
+        dayLabel: format(d, "EEEEEE", { locale: cs }),
+        status: isFuture ? "future" : isToday ? "pending" : "missed",
+      };
+    });
+
     return {
       gamification: null,
       coachTone: "friendly_mentor",
@@ -71,11 +98,21 @@ export async function getDashboardData(
       macroTargets: null,
       todayEvents: [],
       latestWeight: null,
+      registeredAt: new Date().toISOString(),
+      nearestGoalDeadline: null,
+      weeklyProgress: weekDays,
     };
   }
 
   const supabase = await createClient();
   const today = format(new Date(), "yyyy-MM-dd");
+
+  // Calculate week range (Monday to Sunday)
+  const todayDate = new Date();
+  const monday = startOfWeek(todayDate, { weekStartsOn: 1 });
+  const sunday = addDays(monday, 6);
+  const mondayStr = format(monday, "yyyy-MM-dd");
+  const sundayStr = format(sunday, "yyyy-MM-dd");
 
   // Run all queries in parallel
   const [
@@ -86,6 +123,7 @@ export async function getDashboardData(
     habitsRes,
     completionsRes,
     goalsRes,
+    weeklyRes,
   ] = await Promise.all([
     supabase
       .from("gamification_profiles")
@@ -99,7 +137,7 @@ export async function getDashboardData(
       .single(),
     supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, created_at")
       .eq("id", userId)
       .single(),
     supabase
@@ -126,6 +164,12 @@ export async function getDashboardData(
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(3),
+    supabase
+      .from("daily_completions")
+      .select("date, status")
+      .eq("profile_id", userId)
+      .gte("date", mondayStr)
+      .lte("date", sundayStr),
   ]);
 
   const activeModules = (settingsRes.data?.active_modules as string[]) ?? [];
@@ -136,6 +180,16 @@ export async function getDashboardData(
   const hasCalendar = activeModules.includes("calendar");
 
   const dayOfWeek = new Date().getDay(); // 0=Sun
+
+  // Nearest goal deadline
+  const nearestGoalRes = await supabase
+    .from("goals")
+    .select("target_date")
+    .eq("profile_id", userId)
+    .eq("status", "active")
+    .not("target_date", "is", null)
+    .order("target_date", { ascending: true })
+    .limit(1);
 
   const [workoutRes, mealsRes, eventsRes, weightRes, macroTargetsRaw] =
     await Promise.all([
@@ -205,6 +259,38 @@ export async function getDashboardData(
         }
       : null;
 
+  // Build weekly progress
+  const weeklyCompletionMap = new Map<string, DayStatus>();
+  if (Array.isArray(weeklyRes.data)) {
+    for (const row of weeklyRes.data as Array<{ date: string; status: string }>) {
+      weeklyCompletionMap.set(row.date, row.status as DayStatus);
+    }
+  }
+
+  const weeklyProgress: WeekDay[] = Array.from({ length: 7 }, (_, i) => {
+    const d = addDays(monday, i);
+    const dateStr = format(d, "yyyy-MM-dd");
+    const isToday = dateStr === today;
+    const isFuture = d > todayDate && !isToday;
+
+    let status: DayStatus;
+    if (isFuture) {
+      status = "future";
+    } else if (weeklyCompletionMap.has(dateStr)) {
+      status = weeklyCompletionMap.get(dateStr)!;
+    } else if (isToday) {
+      status = "pending";
+    } else {
+      status = "missed";
+    }
+
+    return {
+      date: dateStr,
+      dayLabel: format(d, "EEEEEE", { locale: cs }),
+      status,
+    };
+  });
+
   return {
     gamification: (gamificationRes.data as GamificationProfile) ?? null,
     coachTone: ((settingsRes.data?.coach_tone as CoachTone) ?? "friendly_mentor"),
@@ -221,5 +307,8 @@ export async function getDashboardData(
     macroTargets,
     todayEvents: (eventsRes.data as TodayEvent[]) ?? [],
     latestWeight: weightRes.data?.weight_kg ?? null,
+    registeredAt: profileRes.data?.created_at ?? new Date().toISOString(),
+    nearestGoalDeadline: nearestGoalRes.data?.[0]?.target_date ?? null,
+    weeklyProgress,
   };
 }

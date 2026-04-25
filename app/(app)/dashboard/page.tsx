@@ -1,14 +1,17 @@
 import { getAuthUser } from "@/lib/auth";
 import { getDashboardData } from "./actions";
+import { CheckinCta } from "@/components/domain/dashboard/checkin-cta";
+import { DashboardGreeting } from "./greeting";
 import { LevelCard } from "@/components/domain/dashboard/level-card";
 import { StreakCard } from "@/components/domain/dashboard/streak-card";
-import { CoachMessage } from "@/components/domain/dashboard/coach-message";
+import { DayCounter } from "@/components/domain/dashboard/day-counter";
 import { TodayChecklist } from "@/components/domain/dashboard/today-checklist";
 import { TrainingWidget } from "@/components/domain/dashboard/training-widget";
 import { NutritionWidget } from "@/components/domain/dashboard/nutrition-widget";
 import { CalendarWidget } from "@/components/domain/dashboard/calendar-widget";
-import { QuickActions } from "@/components/domain/dashboard/quick-actions";
+import { WeeklyProgress } from "@/components/domain/dashboard/weekly-progress";
 import { PushPrompt } from "@/components/domain/notifications/push-prompt";
+import { QuickActions } from "@/components/domain/dashboard/quick-actions";
 import {
   Card,
   CardContent,
@@ -18,11 +21,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Target, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { DashboardGreeting } from "./greeting";
 
 export default async function DashboardPage() {
   const user = await getAuthUser();
-
   const data = await getDashboardData(user.id);
 
   const morningDone = data.checkin?.morning_ritual_done ?? false;
@@ -35,34 +36,53 @@ export default async function DashboardPage() {
   const hasNutrition = data.activeModules.includes("nutrition");
   const hasCalendar = data.activeModules.includes("calendar");
 
+  const noModulesActive =
+    !hasGoals &&
+    !hasSleepWellbeing &&
+    !hasTraining &&
+    !hasNutrition &&
+    !hasCalendar &&
+    data.habits.length === 0;
+
   return (
     <div className="space-y-4">
-      {/* Personalized greeting */}
-      <DashboardGreeting displayName={data.displayName} />
+      {/* 1. Check-in CTA (conditional) */}
+      <CheckinCta morningDone={morningDone} eveningDone={eveningDone} />
 
-      {/* Coach message */}
-      <CoachMessage
-        tone={data.coachTone}
+      {/* 2. Greeting + Coach (combined block) */}
+      <DashboardGreeting
+        displayName={data.displayName}
+        coachTone={data.coachTone}
         streak={data.gamification?.current_streak ?? 0}
         morningDone={morningDone}
         eveningDone={eveningDone}
-        displayName={data.displayName}
       />
 
-      {/* Push notification prompt */}
-      <PushPrompt />
-
-      {/* Level + Streak row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <LevelCard totalXP={data.gamification?.total_xp ?? 0} />
-        <StreakCard
-          currentStreak={data.gamification?.current_streak ?? 0}
-          longestStreak={data.gamification?.longest_streak ?? 0}
-        />
+      {/* 3. Gamification row: Level + Streak + Day counter */}
+      <div className="flex overflow-x-auto gap-3 pb-1 -mx-1 px-1 sm:grid sm:grid-cols-3 sm:overflow-visible">
+        <div className="min-w-[180px] sm:min-w-0 flex-1">
+          <LevelCard totalXP={data.gamification?.total_xp ?? 0} />
+        </div>
+        <div className="min-w-[150px] sm:min-w-0 flex-1">
+          <StreakCard
+            currentStreak={data.gamification?.current_streak ?? 0}
+            longestStreak={data.gamification?.longest_streak ?? 0}
+          />
+        </div>
+        <div className="min-w-[140px] sm:min-w-0 flex-1">
+          <DayCounter
+            registeredAt={data.registeredAt}
+            goalDeadline={
+              data.nearestGoalDeadline
+                ? { targetDate: data.nearestGoalDeadline }
+                : null
+            }
+          />
+        </div>
       </div>
 
-      {/* Today's checklist */}
-      {hasSleepWellbeing || data.habits.length > 0 ? (
+      {/* 4. Today's checklist */}
+      {(hasSleepWellbeing || data.habits.length > 0) && (
         <TodayChecklist
           morningDone={morningDone}
           eveningDone={eveningDone}
@@ -70,9 +90,9 @@ export default async function DashboardPage() {
           completions={data.completions}
           profileId={user.id}
         />
-      ) : null}
+      )}
 
-      {/* Module widgets — 2 col on sm+ */}
+      {/* 5. Module widgets grid */}
       {(hasTraining || hasNutrition || hasCalendar) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {hasTraining && (
@@ -91,7 +111,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Active goals */}
+      {/* 6. Active goals */}
       {hasGoals && data.goals.length > 0 && (
         <Card>
           <CardHeader>
@@ -123,28 +143,37 @@ export default async function DashboardPage() {
                     </p>
                   )}
                 </div>
-                {goal.current_value != null && goal.target_value != null && goal.start_value != null && (
-                  <Badge variant="secondary" className="ml-2 shrink-0">
-                    {Math.round(
-                      goal.target_value === goal.start_value
-                        ? 0
-                        : ((goal.current_value - goal.start_value) /
-                           (goal.target_value - goal.start_value)) * 100
-                    )}
-                    %
-                  </Badge>
-                )}
+                {goal.current_value != null &&
+                  goal.target_value != null &&
+                  goal.start_value != null && (
+                    <Badge variant="secondary" className="ml-2 shrink-0">
+                      {Math.round(
+                        goal.target_value === goal.start_value
+                          ? 0
+                          : ((goal.current_value - goal.start_value) /
+                              (goal.target_value - goal.start_value)) *
+                              100
+                      )}
+                      %
+                    </Badge>
+                  )}
               </div>
             ))}
           </CardContent>
         </Card>
       )}
 
-      {/* Quick actions */}
+      {/* 7. Weekly progress */}
+      <WeeklyProgress days={data.weeklyProgress} />
+
+      {/* 8. Push notification prompt */}
+      <PushPrompt />
+
+      {/* 9. Quick actions */}
       <QuickActions activeModules={data.activeModules} />
 
-      {/* Quick links when no modules active */}
-      {!hasGoals && !hasSleepWellbeing && !hasTraining && !hasNutrition && !hasCalendar && data.habits.length === 0 && (
+      {/* 10. Empty state (no modules active) */}
+      {noModulesActive && (
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-muted-foreground text-sm mb-3">
