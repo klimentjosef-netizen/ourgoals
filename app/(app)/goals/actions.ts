@@ -7,16 +7,23 @@ import { XP_VALUES } from "@/types/gamification";
 import { checkAndUnlockAchievements } from "@/lib/logic/achievements";
 import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
 
-export async function createGoal(formData: FormData) {
+async function getUser() {
   const supabase = await createClient();
   let userId: string;
   if (DEV_MODE) {
     userId = MOCK_USER_ID;
   } else {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error("Nepřihlášen");
     userId = user.id;
   }
+  return { supabase, userId };
+}
+
+export async function createGoal(formData: FormData) {
+  const { supabase, userId } = await getUser();
 
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
@@ -27,10 +34,28 @@ export async function createGoal(formData: FormData) {
   const startValue = formData.get("start_value")
     ? Number(formData.get("start_value"))
     : null;
-  const currentValue = formData.get("current_value")
-    ? Number(formData.get("current_value"))
-    : startValue;
+  const currentValue = startValue;
   const targetDate = (formData.get("target_date") as string) || null;
+
+  // New fields
+  const goalType = (formData.get("goal_type") as string) || "measurable";
+  const area = (formData.get("area") as string) || "other";
+  const frequency = (formData.get("frequency") as string) || null;
+  const frequencyTarget = formData.get("frequency_target")
+    ? Number(formData.get("frequency_target"))
+    : null;
+  const challengeDays = formData.get("challenge_days")
+    ? Number(formData.get("challenge_days"))
+    : null;
+
+  // Challenge: auto-set start to today
+  const challengeStart =
+    goalType === "challenge"
+      ? new Date().toISOString().split("T")[0]
+      : null;
+
+  // Shared: auto-set visibility to household
+  const visibility = goalType === "shared" ? "household" : "private";
 
   const { data: goal, error } = await supabase
     .from("goals")
@@ -44,13 +69,36 @@ export async function createGoal(formData: FormData) {
       current_value: currentValue,
       target_date: targetDate,
       status: "active",
-      visibility: "private",
+      visibility,
+      goal_type: goalType,
+      area,
+      frequency,
+      frequency_target: frequencyTarget,
+      challenge_days: challengeDays,
+      challenge_start: challengeStart,
     })
     .select()
     .single();
 
   if (error) {
     return { error: `Chyba při vytváření cíle: ${error.message}` };
+  }
+
+  // Habit type: auto-create a daily_habit linked to this goal
+  if (goalType === "habit" && goal) {
+    try {
+      await supabase.from("daily_habits").insert({
+        profile_id: userId,
+        goal_id: goal.id,
+        title,
+        description,
+        xp_value: 15,
+        is_active: true,
+        sort_order: 0,
+      });
+    } catch {
+      // Non-critical — habit creation failure shouldn't block goal creation
+    }
   }
 
   // Award XP
@@ -93,15 +141,7 @@ export async function createGoal(formData: FormData) {
 }
 
 export async function updateGoal(id: string, formData: FormData) {
-  const supabase = await createClient();
-  let userId: string;
-  if (DEV_MODE) {
-    userId = MOCK_USER_ID;
-  } else {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Nepřihlášen");
-    userId = user.id;
-  }
+  const { supabase, userId } = await getUser();
 
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
@@ -117,18 +157,37 @@ export async function updateGoal(id: string, formData: FormData) {
     : null;
   const targetDate = (formData.get("target_date") as string) || null;
 
+  // New fields
+  const goalType = (formData.get("goal_type") as string) || undefined;
+  const area = (formData.get("area") as string) || undefined;
+  const frequency = (formData.get("frequency") as string) || null;
+  const frequencyTarget = formData.get("frequency_target")
+    ? Number(formData.get("frequency_target"))
+    : null;
+  const challengeDays = formData.get("challenge_days")
+    ? Number(formData.get("challenge_days"))
+    : null;
+
+  const updateData: Record<string, unknown> = {
+    title,
+    description,
+    metric,
+    target_value: targetValue,
+    start_value: startValue,
+    current_value: currentValue,
+    target_date: targetDate,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (goalType) updateData.goal_type = goalType;
+  if (area) updateData.area = area;
+  if (frequency) updateData.frequency = frequency;
+  if (frequencyTarget) updateData.frequency_target = frequencyTarget;
+  if (challengeDays) updateData.challenge_days = challengeDays;
+
   const { error } = await supabase
     .from("goals")
-    .update({
-      title,
-      description,
-      metric,
-      target_value: targetValue,
-      start_value: startValue,
-      current_value: currentValue,
-      target_date: targetDate,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", id)
     .eq("profile_id", userId);
 
@@ -143,15 +202,7 @@ export async function updateGoal(id: string, formData: FormData) {
 }
 
 export async function completeGoal(id: string) {
-  const supabase = await createClient();
-  let userId: string;
-  if (DEV_MODE) {
-    userId = MOCK_USER_ID;
-  } else {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Nepřihlášen");
-    userId = user.id;
-  }
+  const { supabase, userId } = await getUser();
 
   const { error } = await supabase
     .from("goals")
@@ -205,15 +256,7 @@ export async function completeGoal(id: string) {
 }
 
 export async function pauseGoal(id: string) {
-  const supabase = await createClient();
-  let userId: string;
-  if (DEV_MODE) {
-    userId = MOCK_USER_ID;
-  } else {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Nepřihlášen");
-    userId = user.id;
-  }
+  const { supabase, userId } = await getUser();
 
   const { error } = await supabase
     .from("goals")
@@ -234,16 +277,11 @@ export async function pauseGoal(id: string) {
   return { success: true };
 }
 
-export async function quickUpdateProgress(goalId: string, currentValue: number) {
-  const supabase = await createClient();
-  let userId: string;
-  if (DEV_MODE) {
-    userId = MOCK_USER_ID;
-  } else {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Nepřihlášen");
-    userId = user.id;
-  }
+export async function quickUpdateProgress(
+  goalId: string,
+  currentValue: number
+) {
+  const { supabase, userId } = await getUser();
 
   const { error } = await supabase
     .from("goals")
@@ -265,15 +303,7 @@ export async function quickUpdateProgress(goalId: string, currentValue: number) 
 }
 
 export async function deleteGoal(id: string) {
-  const supabase = await createClient();
-  let userId: string;
-  if (DEV_MODE) {
-    userId = MOCK_USER_ID;
-  } else {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Nepřihlášen");
-    userId = user.id;
-  }
+  const { supabase, userId } = await getUser();
 
   const { error } = await supabase
     .from("goals")

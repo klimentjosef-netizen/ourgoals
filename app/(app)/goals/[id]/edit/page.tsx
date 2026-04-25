@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { GoalForm } from "@/components/domain/goals/goal-form";
 import type { Goal } from "@/types/database";
+import type { GoalType, GoalArea } from "@/types/goals";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,6 +27,8 @@ export default async function EditGoalPage({ params }: PageProps) {
     notFound();
   }
 
+  const typedGoal = goal as Goal;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -38,7 +41,11 @@ export default async function EditGoalPage({ params }: PageProps) {
         <h1 className="text-xl font-bold">Upravit cíl</h1>
       </div>
 
-      <GoalForm goal={goal as Goal} />
+      <GoalForm
+        goal={typedGoal}
+        goalType={(typedGoal.goal_type ?? "measurable") as GoalType}
+        goalArea={(typedGoal.area ?? "other") as GoalArea}
+      />
     </div>
   );
 }

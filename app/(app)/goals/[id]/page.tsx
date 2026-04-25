@@ -2,17 +2,27 @@ import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Pencil } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Pencil,
+  Flame,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Progress,
-} from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { GoalActions } from "@/app/(app)/goals/[id]/goal-actions";
 import type { Goal, DailyHabit } from "@/types/database";
 import { cn } from "@/lib/utils";
+import {
+  getGoalTypeConfig,
+  getGoalAreaConfig,
+  type GoalType,
+  type GoalArea,
+} from "@/types/goals";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -23,6 +33,17 @@ const STATUS_LABELS: Record<Goal["status"], string> = {
   completed: "Dokončeno",
   paused: "Pozastaveno",
   abandoned: "Opuštěno",
+};
+
+const AREA_BORDER_COLORS: Record<GoalArea, string> = {
+  health: "border-l-green-500",
+  work: "border-l-blue-500",
+  finance: "border-l-yellow-500",
+  growth: "border-l-purple-500",
+  relationships: "border-l-pink-500",
+  mental: "border-l-cyan-500",
+  home: "border-l-orange-500",
+  other: "border-l-gray-500",
 };
 
 function getProgressPercentage(goal: Goal): number {
@@ -41,7 +62,19 @@ function getProgressPercentage(goal: Goal): number {
   return Math.max(0, Math.min(100, progress));
 }
 
-/** Feature 6: Milestones */
+function getChallengeDayNumber(goal: Goal): number {
+  if (!goal.challenge_start) return 0;
+  const start = new Date(goal.challenge_start);
+  start.setHours(0, 0, 0, 0);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const diff = Math.floor(
+    (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  return Math.max(1, diff + 1);
+}
+
+/** Milestones for measurable goals */
 const MILESTONES = [
   { percent: 25, label: "Čtvrtina cesty za tebou!" },
   { percent: 50, label: "Jsi v půlce! Skvělá práce!" },
@@ -52,7 +85,6 @@ const MILESTONES = [
 function MilestoneBar({ percentage }: { percentage: number }) {
   return (
     <div className="space-y-2">
-      {/* Progress bar with milestone markers */}
       <div className="relative">
         <Progress value={percentage} />
         <div className="absolute inset-0 flex items-center pointer-events-none">
@@ -75,7 +107,6 @@ function MilestoneBar({ percentage }: { percentage: number }) {
         </div>
       </div>
 
-      {/* Milestone labels */}
       <div className="relative h-5">
         {MILESTONES.map((m) => (
           <span
@@ -93,17 +124,223 @@ function MilestoneBar({ percentage }: { percentage: number }) {
         ))}
       </div>
 
-      {/* Celebration text for reached milestones */}
       {MILESTONES.filter((m) => percentage >= m.percent).length > 0 && (
         <p className="text-xs text-primary font-medium text-center">
           {
-            MILESTONES
-              .filter((m) => percentage >= m.percent)
-              .slice(-1)[0]?.label
+            MILESTONES.filter((m) => percentage >= m.percent).slice(-1)[0]
+              ?.label
           }
         </p>
       )}
     </div>
+  );
+}
+
+/** Measurable detail section */
+function MeasurableDetail({ goal }: { goal: Goal }) {
+  const percentage = getProgressPercentage(goal);
+
+  if (goal.target_value == null) return null;
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs font-mono text-muted-foreground mb-1">
+          <span>Pokrok</span>
+          <span>{percentage.toFixed(0)}%</span>
+        </div>
+        <MilestoneBar percentage={percentage} />
+        <div className="flex justify-between text-xs font-mono text-muted-foreground">
+          <span>Start: {goal.start_value ?? 0}</span>
+          <span className="font-bold text-foreground">
+            Nyní: {goal.current_value ?? 0}
+          </span>
+          <span>Cíl: {goal.target_value}</span>
+        </div>
+        {goal.metric && (
+          <p className="text-xs text-muted-foreground text-center font-mono">
+            Metrika: {goal.metric}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Habit detail section */
+function HabitDetail({ goal }: { goal: Goal }) {
+  const target = goal.frequency_target ?? 5;
+  const current = goal.current_value ?? 0;
+  const adherence = target > 0 ? Math.round((current / target) * 100) : 0;
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-4">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">Tento týden</p>
+          <p className="text-3xl font-bold font-mono">
+            {current}/{target}
+          </p>
+        </div>
+
+        {/* Weekly calendar grid */}
+        <div className="flex justify-center gap-2">
+          {["Po", "Út", "St", "Čt", "Pá", "So", "Ne"].map((day, i) => (
+            <div key={day} className="flex flex-col items-center gap-1">
+              <span className="text-xs text-muted-foreground font-mono">
+                {day}
+              </span>
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium",
+                  i < current
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {i < current ? "✓" : "·"}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Adherence */}
+        <div className="text-center">
+          <p className="text-xs text-muted-foreground">Plnění tento měsíc</p>
+          <p className="text-lg font-bold font-mono">
+            {Math.min(adherence, 100)}%
+          </p>
+        </div>
+
+        {goal.frequency && (
+          <p className="text-xs text-muted-foreground text-center">
+            Frekvence:{" "}
+            {goal.frequency === "daily"
+              ? "Každý den"
+              : goal.frequency === "weekly"
+              ? "1× týdně"
+              : goal.frequency.replace("x_week", "× týdně")}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Oneoff detail section */
+function OneoffDetail({ goal }: { goal: Goal }) {
+  const isDone = goal.status === "completed";
+
+  return (
+    <>
+      <Separator />
+      <div className="text-center space-y-3 py-4">
+        <div
+          className={cn(
+            "w-16 h-16 rounded-full border-4 mx-auto flex items-center justify-center transition-colors",
+            isDone
+              ? "border-primary bg-primary/10"
+              : "border-muted-foreground/20"
+          )}
+        >
+          {isDone ? (
+            <CheckCircle2 size={32} className="text-primary" />
+          ) : (
+            <span className="text-2xl text-muted-foreground/40">?</span>
+          )}
+        </div>
+        <p className="text-lg font-semibold">
+          {isDone ? "Splněno!" : "Čeká na splnění"}
+        </p>
+        {isDone && goal.updated_at && (
+          <p className="text-xs text-muted-foreground font-mono">
+            Dokončeno:{" "}
+            {new Date(goal.updated_at).toLocaleDateString("cs-CZ")}
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
+
+/** Challenge detail section */
+function ChallengeDetail({ goal }: { goal: Goal }) {
+  const totalDays = goal.challenge_days ?? 30;
+  const currentDay = getChallengeDayNumber(goal);
+  const percentage = Math.min(100, (currentDay / totalDays) * 100);
+  const remaining = Math.max(0, totalDays - currentDay);
+
+  return (
+    <>
+      <Separator />
+      <div className="space-y-4">
+        {/* Big day counter */}
+        <div className="text-center py-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Flame size={28} className="text-orange-500" />
+          </div>
+          <p className="text-4xl font-bold font-mono">
+            Den {Math.min(currentDay, totalDays)}/{totalDays}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {remaining > 0
+              ? `Zbývá ${remaining} ${remaining === 1 ? "den" : remaining < 5 ? "dny" : "dní"}`
+              : "Challenge dokončena!"}
+          </p>
+        </div>
+
+        {/* Progress bar */}
+        <div className="space-y-1">
+          <Progress value={percentage} />
+          <p className="text-xs text-muted-foreground text-center font-mono">
+            {percentage.toFixed(0)}%
+          </p>
+        </div>
+
+        {/* Streak */}
+        {currentDay > 1 && (
+          <div className="text-center">
+            <Badge
+              variant="outline"
+              className="text-sm font-mono text-orange-500 border-orange-200 px-4 py-1"
+            >
+              🔥 {currentDay - 1} dní streak
+            </Badge>
+          </div>
+        )}
+
+        {/* Calendar dots grid */}
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-semibold">
+            Přehled dní
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {Array.from({ length: totalDays }, (_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "w-5 h-5 rounded-sm text-[9px] font-mono flex items-center justify-center",
+                  i + 1 <= currentDay
+                    ? "bg-orange-500 text-white"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {goal.challenge_start && (
+          <p className="text-xs text-muted-foreground text-center font-mono">
+            Start:{" "}
+            {new Date(goal.challenge_start).toLocaleDateString("cs-CZ")}
+          </p>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -124,7 +361,11 @@ export default async function GoalDetailPage({ params }: PageProps) {
   }
 
   const typedGoal = goal as Goal;
-  const percentage = getProgressPercentage(typedGoal);
+  const goalType = (typedGoal.goal_type ?? "measurable") as GoalType;
+  const goalArea = (typedGoal.area ?? "other") as GoalArea;
+  const typeConfig = getGoalTypeConfig(goalType);
+  const areaConfig = getGoalAreaConfig(goalArea);
+  const borderClass = AREA_BORDER_COLORS[goalArea] ?? "border-l-gray-500";
 
   // Fetch related habits
   const { data: habits } = await supabase
@@ -147,7 +388,10 @@ export default async function GoalDetailPage({ params }: PageProps) {
           >
             <ArrowLeft size={20} />
           </Link>
-          <h1 className="text-xl font-bold">{typedGoal.title}</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{typeConfig.emoji}</span>
+            <h1 className="text-xl font-bold">{typedGoal.title}</h1>
+          </div>
         </div>
         <Link href={`/goals/${id}/edit`}>
           <Button variant="outline" size="sm">
@@ -158,11 +402,31 @@ export default async function GoalDetailPage({ params }: PageProps) {
       </div>
 
       {/* Main card */}
-      <Card className="p-6 space-y-4">
-        <div className="flex items-center gap-2">
-          <Badge variant={typedGoal.status === "active" ? "default" : "secondary"}>
+      <Card className={cn("p-6 space-y-4 border-l-4", borderClass)}>
+        {/* Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge
+            variant={typedGoal.status === "active" ? "default" : "secondary"}
+          >
             {STATUS_LABELS[typedGoal.status]}
           </Badge>
+          <Badge
+            variant="outline"
+            className={cn("gap-1 text-xs", areaConfig.color)}
+          >
+            {areaConfig.emoji} {areaConfig.label}
+          </Badge>
+          <Badge variant="outline" className="gap-1 text-xs">
+            {typeConfig.emoji} {typeConfig.label}
+          </Badge>
+          {goalType === "shared" && (
+            <Badge
+              variant="outline"
+              className="gap-1 text-xs text-pink-500 border-pink-200"
+            >
+              👫 Sdílený
+            </Badge>
+          )}
           {typedGoal.target_date && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <CalendarDays size={12} />
@@ -173,40 +437,20 @@ export default async function GoalDetailPage({ params }: PageProps) {
           )}
         </div>
 
+        {/* Description */}
         {typedGoal.description && (
           <p className="text-sm text-muted-foreground">
             {typedGoal.description}
           </p>
         )}
 
-        {/* Progress with Milestones (Feature 6) */}
-        {typedGoal.target_value != null && (
-          <>
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs font-mono text-muted-foreground mb-1">
-                <span>Pokrok</span>
-                <span>{percentage.toFixed(0)}%</span>
-              </div>
-
-              {/* Feature 6: Milestone bar */}
-              <MilestoneBar percentage={percentage} />
-
-              <div className="flex justify-between text-xs font-mono text-muted-foreground">
-                <span>Start: {typedGoal.start_value ?? 0}</span>
-                <span className="font-bold text-foreground">
-                  Nyní: {typedGoal.current_value ?? 0}
-                </span>
-                <span>Cíl: {typedGoal.target_value}</span>
-              </div>
-              {typedGoal.metric && (
-                <p className="text-xs text-muted-foreground text-center font-mono">
-                  Metrika: {typedGoal.metric}
-                </p>
-              )}
-            </div>
-          </>
+        {/* Type-specific detail sections */}
+        {(goalType === "measurable" || goalType === "shared") && (
+          <MeasurableDetail goal={typedGoal} />
         )}
+        {goalType === "habit" && <HabitDetail goal={typedGoal} />}
+        {goalType === "oneoff" && <OneoffDetail goal={typedGoal} />}
+        {goalType === "challenge" && <ChallengeDetail goal={typedGoal} />}
       </Card>
 
       {/* Related habits */}
@@ -217,7 +461,10 @@ export default async function GoalDetailPage({ params }: PageProps) {
           </h2>
           <div className="space-y-2">
             {typedHabits.map((habit) => (
-              <Card key={habit.id} className="p-3 flex items-center justify-between">
+              <Card
+                key={habit.id}
+                className="p-3 flex items-center justify-between"
+              >
                 <span className="text-sm">{habit.title}</span>
                 <Badge variant="outline" className="font-mono text-[10px]">
                   +{habit.xp_value} XP

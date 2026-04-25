@@ -6,22 +6,40 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { GoalCard } from "@/components/domain/goals/goal-card";
+import { GoalsFilterBar } from "@/components/domain/goals/goals-filter-bar";
 import { HabitChecklist } from "@/components/domain/goals/habit-checklist";
 import { AddHabitDialog } from "@/components/domain/goals/add-habit-dialog";
 import { getWeeklyHabitStats } from "@/app/(app)/goals/habits/actions";
 import type { Goal, DailyHabit, HabitCompletion } from "@/types/database";
 
-export default async function GoalsPage() {
+interface PageProps {
+  searchParams: Promise<{ area?: string; type?: string }>;
+}
+
+export default async function GoalsPage({ searchParams }: PageProps) {
   const user = await getAuthUser();
   const supabase = await createClient();
+  const params = await searchParams;
+
+  const filterArea = params.area ?? "all";
+  const filterType = params.type ?? "all";
 
   // Fetch goals (exclude abandoned)
-  const { data: goals } = await supabase
+  let query = supabase
     .from("goals")
     .select("*")
     .eq("profile_id", user.id)
     .neq("status", "abandoned")
     .order("created_at", { ascending: false });
+
+  if (filterArea !== "all") {
+    query = query.eq("area", filterArea);
+  }
+  if (filterType !== "all") {
+    query = query.eq("goal_type", filterType);
+  }
+
+  const { data: goals } = await query;
 
   // Fetch today's habits
   const today = new Date().toISOString().split("T")[0];
@@ -43,7 +61,7 @@ export default async function GoalsPage() {
   const typedHabits = (habits ?? []) as DailyHabit[];
   const typedCompletions = (completions ?? []) as HabitCompletion[];
 
-  // Fetch weekly habit stats (Feature 5)
+  // Fetch weekly habit stats
   const habitIds = typedHabits.map((h) => h.id);
   const weeklyStats =
     habitIds.length > 0
@@ -68,6 +86,9 @@ export default async function GoalsPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Filter bars */}
+      <GoalsFilterBar currentArea={filterArea} currentType={filterType} />
 
       {/* Habit checklist */}
       {typedHabits.length > 0 ? (
@@ -128,7 +149,8 @@ export default async function GoalsPage() {
             <div>
               <h3 className="font-semibold text-lg">Nastav si první cíl</h3>
               <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                Definuj co chceš dosáhnout a sleduj svůj pokrok. Za vytvoření cíle dostaneš 25 XP.
+                Definuj co chceš dosáhnout a sleduj svůj pokrok. Za vytvoření
+                cíle dostaneš 25 XP.
               </p>
             </div>
             <Link href="/goals/new">
@@ -137,6 +159,26 @@ export default async function GoalsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* No results with active filters */}
+      {typedGoals.length === 0 &&
+        typedHabits.length > 0 &&
+        (filterArea !== "all" || filterType !== "all") && (
+          <Card>
+            <CardContent className="pt-6 pb-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Žádné cíle neodpovídají filtru. Zkus jiný filtr nebo{" "}
+                <Link
+                  href="/goals/new"
+                  className="text-primary underline underline-offset-2"
+                >
+                  vytvořit nový cíl
+                </Link>
+                .
+              </p>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

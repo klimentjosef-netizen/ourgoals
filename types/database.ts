@@ -40,6 +40,12 @@ export interface Goal {
   status: "active" | "completed" | "paused" | "abandoned";
   visibility: string;
   household_id: string | null;
+  goal_type: "measurable" | "habit" | "oneoff" | "challenge" | "shared";
+  area: "health" | "work" | "finance" | "growth" | "relationships" | "mental" | "home" | "other";
+  frequency: "daily" | "3x_week" | "4x_week" | "5x_week" | "weekly" | null;
+  frequency_target: number | null;
+  challenge_days: number | null;
+  challenge_start: string | null;
   created_at: string;
   updated_at: string;
 }
