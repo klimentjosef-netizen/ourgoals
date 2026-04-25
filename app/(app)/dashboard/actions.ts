@@ -13,6 +13,7 @@ import type {
   DailyCompletion,
 } from "@/types/database";
 import type { CoachTone } from "@/types/gamification";
+import { getHousehold, getGottmanScore } from "@/app/(app)/partner/actions";
 
 interface TodayWorkout {
   day_label: string;
@@ -64,6 +65,11 @@ interface DashboardData {
   registeredAt: string;
   nearestGoalDeadline: string | null;
   weeklyProgress: WeekDay[];
+  partnerData: {
+    hasHousehold: boolean;
+    gottmanScore: { ratio: number; status: string } | null;
+    unreadCount: number;
+  } | null;
 }
 
 export async function getDashboardData(
@@ -101,6 +107,9 @@ export async function getDashboardData(
       registeredAt: new Date().toISOString(),
       nearestGoalDeadline: null,
       weeklyProgress: weekDays,
+      partnerData: MOCK_ACTIVE_MODULES.includes("family")
+        ? { hasHousehold: true, gottmanScore: { ratio: 5.0, status: "good" }, unreadCount: 2 }
+        : null,
     };
   }
 
@@ -178,6 +187,7 @@ export async function getDashboardData(
   const hasTraining = activeModules.includes("training");
   const hasNutrition = activeModules.includes("nutrition");
   const hasCalendar = activeModules.includes("calendar");
+  const hasFamily = activeModules.includes("family");
 
   const dayOfWeek = new Date().getDay(); // 0=Sun
 
@@ -259,6 +269,32 @@ export async function getDashboardData(
         }
       : null;
 
+  // Partner data (only if family module active)
+  let partnerData: DashboardData["partnerData"] = null;
+  if (hasFamily) {
+    const householdData = await getHousehold(userId);
+    if (householdData?.household) {
+      const rawH = householdData.household;
+      const hObj = Array.isArray(rawH) ? rawH[0] : rawH;
+      const hid = (hObj as unknown as { id: string })?.id;
+      const gottman = await getGottmanScore(hid);
+      // Count unread notes not authored by this user
+      const { count } = await supabase
+        .from("partner_notes")
+        .select("id", { count: "exact", head: true })
+        .eq("household_id", hid)
+        .neq("author_id", userId)
+        .eq("is_read", false);
+      partnerData = {
+        hasHousehold: true,
+        gottmanScore: { ratio: gottman.ratio, status: gottman.status },
+        unreadCount: count ?? 0,
+      };
+    } else {
+      partnerData = { hasHousehold: false, gottmanScore: null, unreadCount: 0 };
+    }
+  }
+
   // Build weekly progress
   const weeklyCompletionMap = new Map<string, DayStatus>();
   if (Array.isArray(weeklyRes.data)) {
@@ -310,5 +346,6 @@ export async function getDashboardData(
     registeredAt: profileRes.data?.created_at ?? new Date().toISOString(),
     nearestGoalDeadline: nearestGoalRes.data?.[0]?.target_date ?? null,
     weeklyProgress,
+    partnerData,
   };
 }

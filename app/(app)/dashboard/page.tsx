@@ -9,6 +9,7 @@ import { TodayChecklist } from "@/components/domain/dashboard/today-checklist";
 import { TrainingWidget } from "@/components/domain/dashboard/training-widget";
 import { NutritionWidget } from "@/components/domain/dashboard/nutrition-widget";
 import { CalendarWidget } from "@/components/domain/dashboard/calendar-widget";
+import { PartnerWidget } from "@/components/domain/dashboard/partner-widget";
 import { WeeklyProgress } from "@/components/domain/dashboard/weekly-progress";
 import { PushPrompt } from "@/components/domain/notifications/push-prompt";
 import { QuickActions } from "@/components/domain/dashboard/quick-actions";
@@ -35,6 +36,7 @@ export default async function DashboardPage() {
   const hasTraining = data.activeModules.includes("training");
   const hasNutrition = data.activeModules.includes("nutrition");
   const hasCalendar = data.activeModules.includes("calendar");
+  const hasFamily = data.activeModules.includes("family");
 
   const noModulesActive =
     !hasGoals &&
@@ -42,6 +44,7 @@ export default async function DashboardPage() {
     !hasTraining &&
     !hasNutrition &&
     !hasCalendar &&
+    !hasFamily &&
     data.habits.length === 0;
 
   return (
@@ -93,7 +96,7 @@ export default async function DashboardPage() {
       )}
 
       {/* 5. Module widgets grid */}
-      {(hasTraining || hasNutrition || hasCalendar) && (
+      {(hasTraining || hasNutrition || hasCalendar || hasFamily) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {hasTraining && (
             <TrainingWidget
@@ -108,6 +111,23 @@ export default async function DashboardPage() {
             />
           )}
           {hasCalendar && <CalendarWidget events={data.todayEvents} />}
+          {hasFamily && data.partnerData && (
+            <PartnerWidget
+              gottmanScore={
+                data.partnerData.gottmanScore
+                  ? {
+                      ratio: data.partnerData.gottmanScore.ratio,
+                      status: data.partnerData.gottmanScore.status as
+                        | "good"
+                        | "warning"
+                        | "danger",
+                    }
+                  : null
+              }
+              unreadCount={data.partnerData.unreadCount}
+              hasHousehold={data.partnerData.hasHousehold}
+            />
+          )}
         </div>
       )}
 

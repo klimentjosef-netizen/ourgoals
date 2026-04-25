@@ -6,6 +6,7 @@ import { EveningForm } from "./evening-form";
 import { CheckinSummary } from "@/components/domain/checkin/checkin-summary";
 import { Sunrise, MoonStar, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
 import type { DailyCheckin, SleepLog, GamificationProfile } from "@/types/database";
+import { getHousehold } from "@/app/(app)/partner/actions";
 
 export default async function CheckinPage() {
   const user = await getAuthUser();
@@ -78,6 +79,9 @@ export default async function CheckinPage() {
   }
 
   // Morning done, evening not done
+  const householdData = await getHousehold(user.id);
+  const hasHousehold = !!householdData?.household;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
@@ -90,7 +94,7 @@ export default async function CheckinPage() {
           Ranní check-in hotový! Večerní bude relevantnější odpoledne.
         </div>
       )}
-      <EveningForm />
+      <EveningForm hasHousehold={hasHousehold} />
     </div>
   );
 }

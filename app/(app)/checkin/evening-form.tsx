@@ -14,7 +14,8 @@ import {
 import { SliderField } from "@/components/domain/checkin/slider-field";
 import { saveEveningCheckin } from "./actions";
 import { toast } from "sonner";
-import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus } from "lucide-react";
+import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus, Heart } from "lucide-react";
+import Link from "next/link";
 
 /* ---- Tap counter ---- */
 function TapCounter({
@@ -63,7 +64,11 @@ function TapCounter({
   );
 }
 
-export function EveningForm() {
+interface EveningFormProps {
+  hasHousehold?: boolean;
+}
+
+export function EveningForm({ hasHousehold = false }: EveningFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const [dayRating, setDayRating] = useState(5);
@@ -216,6 +221,25 @@ export function EveningForm() {
           </div>
         </CardContent>
       </Card>
+
+      {/* ---- Vzkaz partnerovi ---- */}
+      {hasHousehold && (
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart size={16} className="text-pink-500" />
+              <span className="text-sm font-medium">
+                Chceš partnerovi něco říct?
+              </span>
+            </div>
+            <Link href="/partner">
+              <Button variant="outline" size="sm" className="w-full">
+                Přejít na Partner &rarr;
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <Button type="submit" className="w-full h-12 text-base" disabled={isPending}>
         {isPending ? (
