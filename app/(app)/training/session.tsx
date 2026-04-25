@@ -1,21 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Square, ChevronRight, Timer } from "lucide-react";
+import { Play, Square, ChevronRight, Timer, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import { startSession, logSet, completeSession } from "./actions";
+import { startSession, logSet, completeSession, getExerciseSuggestion } from "./actions";
+import type { ExerciseSuggestionResult } from "./actions";
 import type { WorkoutExercise } from "@/types/training";
 
 interface Props {
+  userId: string;
   workoutId: string | null;
   exercises: WorkoutExercise[];
 }
 
-export function TrainingSession({ workoutId, exercises }: Props) {
+export function TrainingSession({ userId, workoutId, exercises }: Props) {
   const [active, setActive] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentExIdx, setCurrentExIdx] = useState(0);
@@ -27,8 +29,45 @@ export function TrainingSession({ workoutId, exercises }: Props) {
   const [mood, setMood] = useState("7");
   const [energy, setEnergy] = useState("7");
   const [completing, setCompleting] = useState(false);
+  const [suggestion, setSuggestion] = useState<ExerciseSuggestionResult | null>(null);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
 
   const currentEx = exercises[currentExIdx];
+
+  // Načti doporučení při změně cviku
+  useEffect(() => {
+    if (!active || !currentEx) {
+      setSuggestion(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingSuggestion(true);
+
+    getExerciseSuggestion(
+      userId,
+      currentEx.exercise_id,
+      currentEx.reps_low ?? 6,
+      currentEx.reps_high ?? 12,
+      currentEx.rpe_target ?? 8
+    ).then((result) => {
+      if (cancelled) return;
+      setSuggestion(result);
+      // Předvyplň váhu a repy doporučenou hodnotou
+      if (result.suggestedWeight) {
+        setWeight(String(result.suggestedWeight));
+      }
+      if (result.suggestedReps) {
+        setReps(String(result.suggestedReps));
+      }
+      setLoadingSuggestion(false);
+    }).catch(() => {
+      if (!cancelled) setLoadingSuggestion(false);
+    });
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, currentExIdx, userId]);
 
   async function handleStart() {
     const result = await startSession(workoutId);
@@ -163,6 +202,29 @@ export function TrainingSession({ workoutId, exercises }: Props) {
               {currentExIdx + 1}/{exercises.length}
             </Badge>
           </div>
+
+          {/* Doporučení progresivního přetížení */}
+          {suggestion && !loadingSuggestion && (suggestion.lastSets || suggestion.suggestedWeight) && (
+            <div className="rounded-md bg-muted/50 border border-muted px-3 py-2 space-y-1">
+              {suggestion.lastSets && (
+                <p className="text-xs text-muted-foreground">
+                  Minule: <span className="font-mono">{suggestion.lastSets}</span>
+                </p>
+              )}
+              {suggestion.suggestedWeight && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <TrendingUp size={12} className="text-primary" />
+                  Doporučeno: <span className="font-mono font-semibold text-foreground">{suggestion.suggestedWeight} kg</span>
+                </p>
+              )}
+              <p className="text-[10px] text-muted-foreground italic">
+                {suggestion.reasoning}
+              </p>
+            </div>
+          )}
+          {loadingSuggestion && (
+            <p className="text-xs text-muted-foreground animate-pulse">Načítám doporučení...</p>
+          )}
 
           {restTimer !== null && (
             <div className="flex items-center gap-2 text-sm text-primary font-mono">

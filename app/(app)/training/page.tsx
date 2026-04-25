@@ -87,7 +87,7 @@ export default async function TrainingPage() {
               </div>
             ))}
 
-            <TrainingSession workoutId={workout.id} exercises={exercises} />
+            <TrainingSession userId={user.id} workoutId={workout.id} exercises={exercises} />
           </CardContent>
         </Card>
       ) : (
@@ -150,7 +150,7 @@ export default async function TrainingPage() {
                 </div>
                 <p className="text-xs font-semibold">Trénovat bez plánu</p>
                 <div className="pt-1">
-                  <TrainingSession workoutId={null} exercises={[]} />
+                  <TrainingSession userId={user.id} workoutId={null} exercises={[]} />
                 </div>
               </CardContent>
             </Card>

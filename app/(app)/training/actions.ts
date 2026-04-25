@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { awardXP } from "@/lib/logic/xp";
 import { XP_VALUES } from "@/types/gamification";
 import { DEV_MODE, MOCK_USER_ID } from "@/lib/dev/mock-user";
+import { calculateTargetLoad } from "@/lib/logic/overload";
+import type { SetLog, Exercise } from "@/types/training";
 import { format } from "date-fns";
 
 async function getUserId() {
@@ -153,5 +155,130 @@ export async function getExerciseHistory(userId: string, exerciseId: string, lim
     .eq("workout_sessions.profile_id", userId)
     .order("completed_at", { ascending: false })
     .limit(limit * 10);
+  return data ?? [];
+}
+
+export interface ExerciseSuggestionResult {
+  suggestedWeight: number | null;
+  suggestedReps: number | null;
+  reasoning: string;
+  lastSets: string | null;
+}
+
+export async function getExerciseSuggestion(
+  userId: string,
+  exerciseId: string,
+  repsLow: number,
+  repsHigh: number,
+  rpeTarget: number
+): Promise<ExerciseSuggestionResult> {
+  if (DEV_MODE) {
+    return {
+      suggestedWeight: 80,
+      suggestedReps: repsLow,
+      reasoning: "Dev mode — ukázková data",
+      lastSets: "80kg × 8, 80kg × 8, 80kg × 7",
+    };
+  }
+
+  const supabase = await createClient();
+
+  // Načti poslední 3 sessions s tímto cvikem
+  const { data: logs } = await supabase
+    .from("set_logs")
+    .select("*, workout_sessions!inner(profile_id, date, id)")
+    .eq("exercise_id", exerciseId)
+    .eq("workout_sessions.profile_id", userId)
+    .order("completed_at", { ascending: false })
+    .limit(60);
+
+  if (!logs || logs.length === 0) {
+    return {
+      suggestedWeight: null,
+      suggestedReps: repsLow,
+      reasoning: "První trénink tohoto cviku — zadej váhu sám",
+      lastSets: null,
+    };
+  }
+
+  // Seskup logy podle session
+  const sessionMap = new Map<string, SetLog[]>();
+  for (const log of logs) {
+    const sid = (log.workout_sessions as Record<string, string>)?.id ?? log.session_id;
+    if (!sessionMap.has(sid)) sessionMap.set(sid, []);
+    sessionMap.get(sid)!.push(log as SetLog);
+  }
+
+  const lastSessions = Array.from(sessionMap.values()).slice(0, 3);
+
+  // Načti exercise pro kategorii
+  const { data: exercise } = await supabase
+    .from("exercises")
+    .select("*")
+    .eq("id", exerciseId)
+    .single();
+
+  const suggestion = calculateTargetLoad(
+    lastSessions,
+    (exercise ?? { category: "compound" }) as Exercise,
+    repsLow,
+    repsHigh,
+    rpeTarget
+  );
+
+  // Formátuj string posledních sérií
+  const lastSessionSets = lastSessions[0] ?? [];
+  const workingSets = lastSessionSets.filter((s) => !s.is_warmup);
+  const lastSetsStr = workingSets.length > 0
+    ? workingSets.map((s) => `${s.weight_kg ?? 0}kg × ${s.reps ?? 0}`).join(", ")
+    : null;
+
+  return {
+    suggestedWeight: suggestion.suggestedWeight,
+    suggestedReps: suggestion.suggestedReps,
+    reasoning: suggestion.reasoning,
+    lastSets: lastSetsStr,
+  };
+}
+
+export async function getSessionHistoryWithSets(userId: string, limit = 30) {
+  if (DEV_MODE) {
+    return [
+      {
+        id: "dev-session-1",
+        date: "2026-04-22",
+        completed_at: "2026-04-22T18:00:00Z",
+        mood_1_10: 8,
+        energy_1_10: 7,
+        workouts: { day_label: "Push A", focus: "Hrudník + triceps" },
+        set_logs: [
+          { set_idx: 0, weight_kg: 80, reps: 8, rpe: 7, is_warmup: false, exercises: { name: "Bench press (tlak na lavičce)" } },
+          { set_idx: 1, weight_kg: 80, reps: 8, rpe: 8, is_warmup: false, exercises: { name: "Bench press (tlak na lavičce)" } },
+          { set_idx: 0, weight_kg: 50, reps: 10, rpe: 7, is_warmup: false, exercises: { name: "Tlak nad hlavou" } },
+        ],
+      },
+      {
+        id: "dev-session-2",
+        date: "2026-04-20",
+        completed_at: "2026-04-20T17:30:00Z",
+        mood_1_10: 7,
+        energy_1_10: 6,
+        workouts: { day_label: "Pull A", focus: "Záda + biceps" },
+        set_logs: [
+          { set_idx: 0, weight_kg: 0, reps: 10, rpe: 8, is_warmup: false, exercises: { name: "Shyby" } },
+          { set_idx: 0, weight_kg: 70, reps: 8, rpe: 7, is_warmup: false, exercises: { name: "Přítahy činky" } },
+        ],
+      },
+    ];
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("workout_sessions")
+    .select("*, workouts(day_label, focus), set_logs(*, exercises(name))")
+    .eq("profile_id", userId)
+    .order("date", { ascending: false })
+    .limit(limit);
+
   return data ?? [];
 }

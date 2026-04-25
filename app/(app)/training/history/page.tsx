@@ -1,13 +1,13 @@
 import { getAuthUser } from "@/lib/auth";
-import { getSessionHistory } from "../actions";
+import { getSessionHistoryWithSets } from "../actions";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { SessionCard } from "./session-card";
 
 export default async function TrainingHistoryPage() {
   const user = await getAuthUser();
-  const sessions = await getSessionHistory(user.id, 30);
+  const sessions = await getSessionHistoryWithSets(user.id, 30);
 
   return (
     <div className="space-y-4">
@@ -27,27 +27,25 @@ export default async function TrainingHistoryPage() {
       ) : (
         <div className="space-y-2">
           {sessions.map((s: Record<string, unknown>) => (
-            <Card key={s.id as string}>
-              <CardContent className="pt-3 pb-3 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium">
-                    {(s.workouts as Record<string, string>)?.day_label ?? "Volný trénink"}
-                  </p>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    {new Date(s.date as string).toLocaleDateString("cs-CZ")}
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center">
-                  {s.mood_1_10 ? <Badge variant="outline" className="text-[10px] font-mono">Mood {String(s.mood_1_10)}</Badge> : null}
-                  {s.energy_1_10 ? <Badge variant="outline" className="text-[10px] font-mono">Energie {String(s.energy_1_10)}</Badge> : null}
-                  {s.completed_at ? (
-                    <Badge variant="default" className="text-[10px]">Dokončeno</Badge>
-                  ) : (
-                    <Badge variant="secondary" className="text-[10px]">Nedokončeno</Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            <SessionCard
+              key={s.id as string}
+              session={s as {
+                id: string;
+                date: string;
+                completed_at: string | null;
+                mood_1_10: number | null;
+                energy_1_10: number | null;
+                workouts: { day_label: string; focus: string | null } | null;
+                set_logs: {
+                  set_idx: number;
+                  weight_kg: number | null;
+                  reps: number | null;
+                  rpe: number | null;
+                  is_warmup: boolean;
+                  exercises: { name: string } | null;
+                }[];
+              }}
+            />
           ))}
         </div>
       )}
