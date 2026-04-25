@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/progress";
 import { GoalActions } from "@/app/(app)/goals/[id]/goal-actions";
 import type { Goal, DailyHabit } from "@/types/database";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -38,6 +39,72 @@ function getProgressPercentage(goal: Goal): number {
 
   const progress = ((goal.current_value - goal.start_value) / range) * 100;
   return Math.max(0, Math.min(100, progress));
+}
+
+/** Feature 6: Milestones */
+const MILESTONES = [
+  { percent: 25, label: "Čtvrtina cesty za tebou!" },
+  { percent: 50, label: "Jsi v půlce! Skvělá práce!" },
+  { percent: 75, label: "Tři čtvrtiny hotovo!" },
+  { percent: 100, label: "Cíl splněn! Gratulace!" },
+];
+
+function MilestoneBar({ percentage }: { percentage: number }) {
+  return (
+    <div className="space-y-2">
+      {/* Progress bar with milestone markers */}
+      <div className="relative">
+        <Progress value={percentage} />
+        <div className="absolute inset-0 flex items-center pointer-events-none">
+          {MILESTONES.map((m) => (
+            <div
+              key={m.percent}
+              className="absolute flex flex-col items-center"
+              style={{ left: `${m.percent}%`, transform: "translateX(-50%)" }}
+            >
+              <div
+                className={cn(
+                  "w-3 h-3 rounded-full border-2 -mt-1",
+                  percentage >= m.percent
+                    ? "bg-primary border-primary"
+                    : "bg-background border-muted-foreground/30"
+                )}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Milestone labels */}
+      <div className="relative h-5">
+        {MILESTONES.map((m) => (
+          <span
+            key={m.percent}
+            className={cn(
+              "absolute text-[9px] font-mono -translate-x-1/2",
+              percentage >= m.percent
+                ? "text-primary font-semibold"
+                : "text-muted-foreground"
+            )}
+            style={{ left: `${m.percent}%` }}
+          >
+            {m.percent}%
+          </span>
+        ))}
+      </div>
+
+      {/* Celebration text for reached milestones */}
+      {MILESTONES.filter((m) => percentage >= m.percent).length > 0 && (
+        <p className="text-xs text-primary font-medium text-center">
+          {
+            MILESTONES
+              .filter((m) => percentage >= m.percent)
+              .slice(-1)[0]?.label
+          }
+        </p>
+      )}
+    </div>
+  );
 }
 
 export default async function GoalDetailPage({ params }: PageProps) {
@@ -112,7 +179,7 @@ export default async function GoalDetailPage({ params }: PageProps) {
           </p>
         )}
 
-        {/* Progress */}
+        {/* Progress with Milestones (Feature 6) */}
         {typedGoal.target_value != null && (
           <>
             <Separator />
@@ -121,7 +188,10 @@ export default async function GoalDetailPage({ params }: PageProps) {
                 <span>Pokrok</span>
                 <span>{percentage.toFixed(0)}%</span>
               </div>
-              <Progress value={percentage} />
+
+              {/* Feature 6: Milestone bar */}
+              <MilestoneBar percentage={percentage} />
+
               <div className="flex justify-between text-xs font-mono text-muted-foreground">
                 <span>Start: {typedGoal.start_value ?? 0}</span>
                 <span className="font-bold text-foreground">

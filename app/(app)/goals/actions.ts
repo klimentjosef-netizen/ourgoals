@@ -234,6 +234,36 @@ export async function pauseGoal(id: string) {
   return { success: true };
 }
 
+export async function quickUpdateProgress(goalId: string, currentValue: number) {
+  const supabase = await createClient();
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
+
+  const { error } = await supabase
+    .from("goals")
+    .update({
+      current_value: currentValue,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", goalId)
+    .eq("profile_id", userId);
+
+  if (error) {
+    return { error: `Chyba při aktualizaci: ${error.message}` };
+  }
+
+  revalidatePath("/goals");
+  revalidatePath(`/goals/${goalId}`);
+
+  return { success: true };
+}
+
 export async function deleteGoal(id: string) {
   const supabase = await createClient();
   let userId: string;

@@ -218,6 +218,79 @@ async function updateDailyCompletion(
   }
 }
 
+export async function updateHabit(id: string, formData: FormData) {
+  const supabase = await createClient();
+  let userId: string;
+  if (DEV_MODE) {
+    userId = MOCK_USER_ID;
+  } else {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Nepřihlášen");
+    userId = user.id;
+  }
+
+  const title = formData.get("title") as string;
+  const xpValue = Number(formData.get("xp_value") || 15);
+
+  const { error } = await supabase
+    .from("daily_habits")
+    .update({
+      title,
+      xp_value: xpValue,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("profile_id", userId);
+
+  if (error) {
+    return { error: `Chyba při aktualizaci návyku: ${error.message}` };
+  }
+
+  revalidatePath("/goals");
+
+  return { success: true };
+}
+
+export async function getWeeklyHabitStats(userId: string, habitIds: string[]) {
+  const supabase = await createClient();
+
+  // Získat pondělí aktuálního týdne
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const mondayStr = monday.toISOString().split("T")[0];
+  const sundayStr = sunday.toISOString().split("T")[0];
+
+  const { data: completions } = await supabase
+    .from("habit_completions")
+    .select("habit_id, date")
+    .eq("profile_id", userId)
+    .in("habit_id", habitIds)
+    .gte("date", mondayStr)
+    .lte("date", sundayStr);
+
+  // Seskupit podle habit_id
+  const stats: Record<string, { count: number; days: string[] }> = {};
+  for (const hId of habitIds) {
+    stats[hId] = { count: 0, days: [] };
+  }
+
+  for (const c of completions ?? []) {
+    if (stats[c.habit_id]) {
+      stats[c.habit_id].count++;
+      stats[c.habit_id].days.push(c.date);
+    }
+  }
+
+  return { stats, weekStart: mondayStr };
+}
+
 export async function deleteHabit(id: string) {
   const supabase = await createClient();
   let userId: string;

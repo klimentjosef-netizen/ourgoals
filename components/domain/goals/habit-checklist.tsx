@@ -8,10 +8,17 @@ import { toggleHabit } from "@/app/(app)/goals/habits/actions";
 import { toast } from "sonner";
 import type { DailyHabit, HabitCompletion } from "@/types/database";
 
+interface WeeklyHabitStat {
+  count: number;
+  days: string[];
+}
+
 interface HabitChecklistProps {
   habits: DailyHabit[];
   completions: HabitCompletion[];
   date: string;
+  weeklyStats?: Record<string, WeeklyHabitStat>;
+  weekStart?: string;
 }
 
 interface UnlockedAchievement {
@@ -22,10 +29,50 @@ interface UnlockedAchievement {
   xp_reward: number;
 }
 
+const DAY_LABELS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
+
+function WeekDots({
+  stat,
+  weekStart,
+}: {
+  stat: WeeklyHabitStat;
+  weekStart: string;
+}) {
+  const startDate = new Date(weekStart);
+
+  return (
+    <div className="flex items-center gap-1 mt-1">
+      {DAY_LABELS.map((label, i) => {
+        const dayDate = new Date(startDate);
+        dayDate.setDate(startDate.getDate() + i);
+        const dayStr = dayDate.toISOString().split("T")[0];
+        const completed = stat.days.includes(dayStr);
+
+        return (
+          <div key={i} className="flex flex-col items-center gap-0.5">
+            <span className="text-[8px] text-muted-foreground leading-none">
+              {label}
+            </span>
+            <div
+              className={`w-2 h-2 rounded-full ${
+                completed
+                  ? "bg-primary"
+                  : "bg-muted border border-border"
+              }`}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function HabitChecklist({
   habits,
   completions,
   date,
+  weeklyStats,
+  weekStart,
 }: HabitChecklistProps) {
   const [unlockedAchievement, setUnlockedAchievement] =
     useState<UnlockedAchievement | null>(null);
@@ -81,16 +128,30 @@ export function HabitChecklist({
       </div>
 
       <div className="space-y-1.5">
-        {habits.map((habit) => (
-          <HabitItem
-            key={habit.id}
-            id={habit.id}
-            title={habit.title}
-            xpValue={habit.xp_value}
-            completed={completedIds.has(habit.id)}
-            onToggle={handleToggle}
-          />
-        ))}
+        {habits.map((habit) => {
+          const stat = weeklyStats?.[habit.id];
+
+          return (
+            <div key={habit.id} className="space-y-1">
+              <HabitItem
+                id={habit.id}
+                title={habit.title}
+                xpValue={habit.xp_value}
+                completed={completedIds.has(habit.id)}
+                onToggle={handleToggle}
+              />
+              {/* Feature 5: Týdenní stats */}
+              {stat && weekStart && (
+                <div className="flex items-center justify-between pl-9 pr-1">
+                  <WeekDots stat={stat} weekStart={weekStart} />
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    Tento týden: {stat.count}/7
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <AchievementUnlockDialog

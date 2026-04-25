@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { GoalCard } from "@/components/domain/goals/goal-card";
 import { HabitChecklist } from "@/components/domain/goals/habit-checklist";
+import { AddHabitDialog } from "@/components/domain/goals/add-habit-dialog";
+import { getWeeklyHabitStats } from "@/app/(app)/goals/habits/actions";
 import type { Goal, DailyHabit, HabitCompletion } from "@/types/database";
 
 export default async function GoalsPage() {
@@ -41,6 +43,13 @@ export default async function GoalsPage() {
   const typedHabits = (habits ?? []) as DailyHabit[];
   const typedCompletions = (completions ?? []) as HabitCompletion[];
 
+  // Fetch weekly habit stats (Feature 5)
+  const habitIds = typedHabits.map((h) => h.id);
+  const weeklyStats =
+    habitIds.length > 0
+      ? await getWeeklyHabitStats(user.id, habitIds)
+      : { stats: {}, weekStart: today };
+
   const activeGoals = typedGoals.filter((g) => g.status === "active");
   const otherGoals = typedGoals.filter((g) => g.status !== "active");
 
@@ -61,15 +70,24 @@ export default async function GoalsPage() {
       </div>
 
       {/* Habit checklist */}
-      {typedHabits.length > 0 && (
+      {typedHabits.length > 0 ? (
         <>
           <HabitChecklist
             habits={typedHabits}
             completions={typedCompletions}
             date={today}
+            weeklyStats={weeklyStats.stats}
+            weekStart={weeklyStats.weekStart}
           />
+          <div className="flex justify-end">
+            <AddHabitDialog goals={activeGoals} />
+          </div>
           <Separator />
         </>
+      ) : (
+        <div className="flex justify-end">
+          <AddHabitDialog goals={activeGoals} />
+        </div>
       )}
 
       {/* Active goals */}
