@@ -120,10 +120,14 @@ export default function LoginPage() {
     setLoading(true);
     clearMessages();
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) {
       setError(error.message);
+    } else if (data.session) {
+      // Email confirmation disabled — user is logged in immediately
+      window.location.href = "/onboarding";
     } else {
+      // Email confirmation required
       setSignupDone(true);
     }
 
