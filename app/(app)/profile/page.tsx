@@ -18,8 +18,15 @@ import {
   CheckCircle2,
   XCircle,
   MinusCircle,
+  Dumbbell,
+  UtensilsCrossed,
+  ClipboardCheck,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { EditableName, AchievementGrid } from "@/app/(app)/profile/profile-client";
+import { ActivityHeatmap } from "@/components/domain/profile/activity-heatmap";
+import { getProfileStats } from "@/app/(app)/profile/profile-actions";
 import type {
   GamificationProfile,
   UserAchievement,
@@ -32,7 +39,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
 
   // Fetch all profile data in parallel
-  const [gamRes, achievementsRes, allAchievementsRes, profileRes] =
+  const [gamRes, achievementsRes, allAchievementsRes, profileRes, stats] =
     await Promise.all([
       supabase
         .from("gamification_profiles")
@@ -49,6 +56,7 @@ export default async function ProfilePage() {
         .select("display_name, avatar_url")
         .eq("id", user.id)
         .single(),
+      getProfileStats(user.id),
     ]);
 
   const gamification = gamRes.data as GamificationProfile | null;
@@ -200,6 +208,58 @@ export default async function ProfilePage() {
         </CardContent>
       </Card>
 
+      {/* Statistiky */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BarChart3 size={16} />
+            Statistiky
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-center">
+            <div className="space-y-1">
+              <div className="flex items-center justify-center">
+                <Dumbbell size={16} className="text-blue-500" />
+              </div>
+              <p className="text-xl font-bold tabular-nums">{stats.totalWorkouts}</p>
+              <p className="text-[10px] text-muted-foreground">Celkem tréninků</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-center">
+                <UtensilsCrossed size={16} className="text-green-500" />
+              </div>
+              <p className="text-xl font-bold tabular-nums">{stats.totalMeals}</p>
+              <p className="text-[10px] text-muted-foreground">Zalogovaných jídel</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-center">
+                <ClipboardCheck size={16} className="text-purple-500" />
+              </div>
+              <p className="text-xl font-bold tabular-nums">{stats.totalCheckins}</p>
+              <p className="text-[10px] text-muted-foreground">Celkem check-inů</p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-center">
+                <Zap size={16} className="text-yellow-500" />
+              </div>
+              <p className="text-xl font-bold tabular-nums">{stats.totalXP}</p>
+              <p className="text-[10px] text-muted-foreground">Celkem XP</p>
+            </div>
+            <div className="space-y-1 col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-center">
+                <TrendingUp size={16} className="text-emerald-500" />
+              </div>
+              <p className="text-xl font-bold tabular-nums">{stats.avgAdherence}%</p>
+              <p className="text-[10px] text-muted-foreground">Průměrná adherence</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Heatmap */}
+      <ActivityHeatmap userId={user.id} />
+
       {/* Achievements */}
       <Card>
         <CardHeader>
@@ -215,6 +275,7 @@ export default async function ProfilePage() {
           <AchievementGrid
             allAchievements={allAchievements}
             unlockedMap={unlockedMap}
+            userId={user.id}
           />
         </CardContent>
       </Card>

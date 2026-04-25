@@ -16,8 +16,13 @@ import { SliderField } from "@/components/domain/checkin/slider-field";
 import { saveMorningCheckin } from "./actions";
 import { toast } from "sonner";
 import { Sun, Moon, Scale, Smile, Loader2 } from "lucide-react";
+import { YesterdayComparison } from "@/components/domain/checkin/yesterday-comparison";
 
-export function MorningForm() {
+interface MorningFormProps {
+  userId?: string;
+}
+
+export function MorningForm({ userId }: MorningFormProps) {
   const [isPending, startTransition] = useTransition();
   const [sleepQuality, setSleepQuality] = useState(5);
   const [mood, setMood] = useState(5);
@@ -51,10 +56,12 @@ export function MorningForm() {
     <form action={handleSubmit} className="space-y-5">
       <div className="flex items-center gap-2 mb-1">
         <Sun size={24} className="text-yellow-500" />
-        <h2 className="text-xl font-bold">Rann\u00ed check-in</h2>
+        <h2 className="text-xl font-bold">Ranní check-in</h2>
       </div>
 
-      {/* ---- Sp\u00e1nek ---- */}
+      {userId && <YesterdayComparison userId={userId} variant="morning" />}
+
+      {/* ---- Spánek ---- */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">

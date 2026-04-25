@@ -16,6 +16,7 @@ import { saveEveningCheckin } from "./actions";
 import { toast } from "sonner";
 import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus, Heart } from "lucide-react";
 import Link from "next/link";
+import { YesterdayComparison } from "@/components/domain/checkin/yesterday-comparison";
 
 /* ---- Tap counter ---- */
 function TapCounter({
@@ -66,9 +67,10 @@ function TapCounter({
 
 interface EveningFormProps {
   hasHousehold?: boolean;
+  userId?: string;
 }
 
-export function EveningForm({ hasHousehold = false }: EveningFormProps) {
+export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const [dayRating, setDayRating] = useState(5);
@@ -107,10 +109,12 @@ export function EveningForm({ hasHousehold = false }: EveningFormProps) {
     <form action={handleSubmit} className="space-y-5">
       <div className="flex items-center gap-2 mb-1">
         <MoonStar size={24} className="text-indigo-400" />
-        <h2 className="text-xl font-bold">Ve\u010dern\u00ed check-in</h2>
+        <h2 className="text-xl font-bold">Večerní check-in</h2>
       </div>
 
-      {/* ---- Hodnocen\u00ed dne ---- */}
+      {userId && <YesterdayComparison userId={userId} variant="evening" />}
+
+      {/* ---- Hodnocení dne ---- */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
