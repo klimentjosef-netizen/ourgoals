@@ -4,17 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth";
-import { getDailyMacros, getUserTargets, getMealTemplates } from "@/app/(app)/nutrition/actions";
+import {
+  getDailyMacros,
+  getUserTargets,
+  getMealTemplates,
+  getSuggestions,
+  getWaterGlasses,
+  isTrainingDay,
+  getDailyMealsForDate,
+  getTemplateMacros,
+} from "@/app/(app)/nutrition/actions";
 import { MacroSummary } from "@/components/domain/nutrition/macro-summary";
 import { MealCard } from "@/components/domain/nutrition/meal-card";
 import { TemplatePicker } from "@/components/domain/nutrition/template-picker";
-import { NutritionClient } from "@/app/(app)/nutrition/nutrition-client";
-import { MEAL_TYPE_LABELS } from "@/types/nutrition";
+import { FoodSuggestions } from "@/components/domain/nutrition/food-suggestions";
+import { MacroWarnings } from "@/components/domain/nutrition/macro-warnings";
+import { WaterTracker } from "@/components/domain/nutrition/water-tracker";
+import { TrainingDayBanner } from "@/components/domain/nutrition/training-day-banner";
+import { DailySummary } from "@/components/domain/nutrition/daily-summary";
+import { NutritionActionsBar } from "@/components/domain/nutrition/nutrition-actions-bar";
 import type { MealType, MealWithItems } from "@/types/nutrition";
 
 export default async function NutritionPage() {
   const user = await getAuthUser();
   const today = new Date().toISOString().split("T")[0];
+
+  // Compute tomorrow's date
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = tomorrowDate.toISOString().split("T")[0];
 
   const [{ meals, totals }, targets, templates] = await Promise.all([
     getDailyMacros(user.id, today),
@@ -50,6 +68,27 @@ export default async function NutritionPage() {
   );
   const remainKcal = Math.max(0, targetKcal - totals.kcal);
 
+  // Feature 1: Suggestions — only if any macro is >30% below target
+  const targetP = targets.protein_g ?? 0;
+  const targetC = targets.carbs_g ?? 0;
+  const targetF = targets.fat_g ?? 0;
+  const needsSuggestions =
+    (targetP > 0 && remainP > targetP * 0.3) ||
+    (targetC > 0 && remainC > targetC * 0.3) ||
+    (targetF > 0 && remainF > targetF * 0.3);
+
+  // Parallel fetch of optional data
+  const [suggestions, waterGlasses, trainingDay, tomorrowMeals, templateMacros] =
+    await Promise.all([
+      needsSuggestions
+        ? getSuggestions(user.id, remainP, remainC, remainF)
+        : Promise.resolve([]),
+      getWaterGlasses(user.id, today).catch(() => 0),
+      isTrainingDay(user.id, today).catch(() => false),
+      getDailyMealsForDate(user.id, tomorrow).catch(() => [] as MealWithItems[]),
+      getTemplateMacros(templates),
+    ]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -73,6 +112,9 @@ export default async function NutritionPage() {
           </Link>
         </div>
       </div>
+
+      {/* Feature 9: Training day banner */}
+      {trainingDay && <TrainingDayBanner />}
 
       {/* Macro progress */}
       <Card className="p-4">
@@ -107,10 +149,30 @@ export default async function NutritionPage() {
         </div>
       </Card>
 
+      {/* Feature 3: Real-time macro warnings */}
+      <MacroWarnings
+        remainingP={remainP}
+        currentKcal={totals.kcal}
+        targetKcal={targetKcal}
+      />
+
+      {/* Feature 1: Food suggestions */}
+      {needsSuggestions && suggestions.length > 0 && (
+        <FoodSuggestions
+          suggestions={suggestions}
+          remainingP={remainP}
+          remainingC={remainC}
+          remainingF={remainF}
+        />
+      )}
+
+      {/* Feature 8: Water tracking */}
+      <WaterTracker initialGlasses={waterGlasses} date={today} />
+
       <Separator />
 
-      {/* Meal templates */}
-      <TemplatePicker templates={templates} date={today} />
+      {/* Meal templates (Feature 4: with macro preview) */}
+      <TemplatePicker templates={templates} date={today} templateMacros={templateMacros} />
 
       {/* Meals list */}
       <div className="space-y-3">
@@ -137,11 +199,38 @@ export default async function NutritionPage() {
         ))}
       </div>
 
-      {/* Add meal (client component) */}
-      <NutritionClient
+      {/* Feature 7: Tomorrow's planned meals */}
+      {tomorrowMeals.length > 0 && (
+        <div className="space-y-3">
+          <Separator />
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Naplánováno na zítra
+          </h2>
+          {tomorrowMeals.map((meal) => (
+            <MealCard key={meal.id} meal={meal} />
+          ))}
+        </div>
+      )}
+
+      {/* Add meal + Copy yesterday + Plan tomorrow (Features 7, 10) */}
+      <NutritionActionsBar
         userId={user.id}
         date={today}
+        tomorrowDate={tomorrow}
       />
+
+      {/* Feature 11: Daily summary card */}
+      {meals.length > 0 && (
+        <>
+          <Separator />
+          <DailySummary
+            totals={totals}
+            targets={targets}
+            mealCount={meals.length}
+            waterGlasses={waterGlasses}
+          />
+        </>
+      )}
     </div>
   );
 }

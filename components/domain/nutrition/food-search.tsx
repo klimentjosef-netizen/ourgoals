@@ -153,24 +153,35 @@ export function FoodSearch({ mealId, userId, onItemAdded }: FoodSearchProps) {
                 <Globe size={10} />
                 OpenFoodFacts
               </div>
-              {offResults.map((food) => (
-                <button
-                  key={food.id}
-                  className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors border-b border-border last:border-0"
-                  onClick={() => handleSelectOFF(food)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="truncate">
-                      <p className="text-xs font-medium truncate">{food.name}</p>
-                      {food.brand && <p className="text-[10px] text-muted-foreground">{food.brand}</p>}
+              {offResults.map((food) => {
+                // Feature 6: detect non-Czech names
+                const hasCzechChars = /[áčďéěíňóřšťúůýž]/i.test(food.name);
+                return (
+                  <button
+                    key={food.id}
+                    className="w-full text-left px-3 py-2.5 hover:bg-accent transition-colors border-b border-border last:border-0"
+                    onClick={() => handleSelectOFF(food)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="truncate">
+                        <p className="text-xs font-medium truncate">
+                          {food.name}
+                          {!hasCzechChars && (
+                            <span className="ml-1 text-[9px] text-muted-foreground font-normal">
+                              (OpenFoodFacts)
+                            </span>
+                          )}
+                        </p>
+                        {food.brand && <p className="text-[10px] text-muted-foreground">{food.brand}</p>}
+                      </div>
+                      <Badge variant="outline" className="text-[9px] ml-2 shrink-0">{food.kcal_per_100g} kcal</Badge>
                     </div>
-                    <Badge variant="outline" className="text-[9px] ml-2 shrink-0">{food.kcal_per_100g} kcal</Badge>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                    P:{food.protein_g}g C:{food.carbs_g}g F:{food.fat_g}g /100g
-                  </p>
-                </button>
-              ))}
+                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                      P:{food.protein_g}g C:{food.carbs_g}g F:{food.fat_g}g /100g
+                    </p>
+                  </button>
+                );
+              })}
             </>
           )}
 

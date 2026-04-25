@@ -19,6 +19,36 @@ import {
 } from "@/app/(app)/nutrition/actions";
 import type { FoodItem } from "@/types/nutrition";
 
+// Feature 5: Category definitions with keyword matching
+const CATEGORIES = [
+  { id: "all", label: "Vše", keywords: [] as string[] },
+  { id: "maso", label: "Maso", keywords: ["kuřecí", "hovězí", "vepřové", "krůtí", "kachní", "maso", "steak", "řízek", "prsa", "šunka", "salám", "párek", "klobása", "svíčková", "guláš", "chicken", "beef", "pork", "turkey"] },
+  { id: "mlecne", label: "Mléčné", keywords: ["mléko", "jogurt", "tvaroh", "sýr", "cottage", "kefír", "mascarpone", "ricotta", "cream", "cheese", "milk", "yogurt", "whey", "skyr", "zakysaná", "smetana"] },
+  { id: "sacharidy", label: "Sacharidy", keywords: ["rýže", "těstoviny", "chléb", "rohlík", "brambory", "ovesné", "müsli", "granola", "pasta", "rice", "bread", "potato", "oat", "mouka", "bulgur", "kuskus", "quinoa", "tortilla"] },
+  { id: "zelenina", label: "Zelenina", keywords: ["rajče", "okurka", "paprika", "cibule", "česnek", "brokolice", "špenát", "mrkev", "zelí", "salát", "cuketa", "lilek", "hrášek", "fazole", "tomato", "cucumber", "pepper", "broccoli", "spinach", "carrot"] },
+  { id: "ovoce", label: "Ovoce", keywords: ["jablko", "banán", "hruška", "pomeranč", "jahoda", "malina", "borůvka", "třešně", "meruňka", "broskev", "kiwi", "mango", "ananas", "apple", "banana", "orange", "strawberry", "berry", "grape"] },
+  { id: "tuky", label: "Tuky", keywords: ["olej", "máslo", "ořech", "mandle", "arašíd", "vlašský", "pistácie", "kokos", "avokádo", "oil", "butter", "nut", "almond", "peanut", "walnut", "olive", "lněné", "sezam"] },
+  { id: "doplnky", label: "Doplňky", keywords: ["whey", "protein", "kreatin", "bcaa", "eaa", "gainer", "kasein", "izolát", "kolagen", "supplement", "vitamin"] },
+  { id: "ostatni", label: "Ostatní", keywords: [] as string[] },
+] as const;
+
+function matchCategory(food: FoodItem, categoryId: string): boolean {
+  if (categoryId === "all") return true;
+  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  if (!cat || cat.keywords.length === 0) {
+    // "Ostatní" = doesn't match any other category
+    if (categoryId === "ostatni") {
+      return !CATEGORIES.some(
+        (c) => c.id !== "all" && c.id !== "ostatni" && matchCategory(food, c.id)
+      );
+    }
+    return true;
+  }
+  const name = food.name.toLowerCase();
+  const brand = (food.brand ?? "").toLowerCase();
+  return cat.keywords.some((kw) => name.includes(kw) || brand.includes(kw));
+}
+
 interface CatalogClientProps {
   userId: string;
   initialFoods: FoodItem[];
@@ -34,6 +64,7 @@ export function CatalogClient({
   const [isSearching, startSearch] = useTransition();
   const [showForm, setShowForm] = useState(false);
   const [isCreating, startCreate] = useTransition();
+  const [activeCategory, setActiveCategory] = useState("all");
 
   function handleSearch(value: string) {
     setQuery(value);
@@ -59,6 +90,11 @@ export function CatalogClient({
       }
     });
   }
+
+  // Filter by category
+  const filteredFoods = activeCategory === "all"
+    ? foods
+    : foods.filter((f) => matchCategory(f, activeCategory));
 
   return (
     <div className="space-y-4">
@@ -86,8 +122,25 @@ export function CatalogClient({
           ) : (
             <Plus size={14} />
           )}
-          Nova
+          Nová
         </Button>
+      </div>
+
+      {/* Feature 5: Category pills */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={`shrink-0 snap-start text-[11px] px-3 py-1 rounded-full border transition-colors ${
+              activeCategory === cat.id
+                ? "bg-primary text-primary-foreground border-primary"
+                : "bg-background text-muted-foreground border-border hover:bg-muted"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
       </div>
 
       {/* Add food form */}
@@ -192,18 +245,20 @@ export function CatalogClient({
       )}
 
       {/* Food list */}
-      {foods.length === 0 && (
+      {filteredFoods.length === 0 && (
         <Card>
           <CardContent className="pt-4 text-center text-muted-foreground text-sm">
             {query
               ? "Žádné výsledky."
+              : activeCategory !== "all"
+              ? "Žádné potraviny v této kategorii."
               : "Katalog je prázdný. Spusť seed-foods.sql."}
           </CardContent>
         </Card>
       )}
 
       <div className="space-y-2">
-        {foods.map((food) => (
+        {filteredFoods.map((food) => (
           <Card key={food.id}>
             <CardContent className="pt-3 pb-3">
               <div className="flex items-start justify-between">

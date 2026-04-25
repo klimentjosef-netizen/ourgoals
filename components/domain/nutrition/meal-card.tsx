@@ -11,6 +11,7 @@ import {
   Plus,
   Trash2,
   Bookmark,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FoodItemRow } from "@/components/domain/nutrition/food-item-row";
@@ -29,6 +30,7 @@ export function MealCard({ meal, onAddItem }: MealCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [showTemplateSave, setShowTemplateSave] = useState(false);
+  const [showPhotoHint, setShowPhotoHint] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const totals = calculateMealMacros(
@@ -153,6 +155,26 @@ export function MealCard({ meal, onAddItem }: MealCardProps) {
               {Math.round(totals.fat)}F
             </p>
             <div className="flex items-center gap-1">
+              {/* Photo placeholder (Feature 12) */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPhotoHint(!showPhotoHint);
+                  setTimeout(() => setShowPhotoHint(false), 2000);
+                }}
+              >
+                <Camera size={14} />
+                Foto
+                {showPhotoHint && (
+                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] bg-popover border rounded px-2 py-0.5 shadow-sm z-10">
+                    Brzy dostupné
+                  </span>
+                )}
+              </Button>
+
               {/* Save as template */}
               <Button
                 variant="ghost"

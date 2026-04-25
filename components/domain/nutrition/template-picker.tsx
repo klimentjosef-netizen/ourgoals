@@ -16,9 +16,10 @@ import type { MealTemplate, MealType } from "@/types/nutrition";
 interface TemplatePickerProps {
   templates: MealTemplate[];
   date: string;
+  templateMacros?: Record<string, { kcal: number; protein: number }>;
 }
 
-export function TemplatePicker({ templates, date }: TemplatePickerProps) {
+export function TemplatePicker({ templates, date, templateMacros }: TemplatePickerProps) {
   const [isPending, startTransition] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -116,6 +117,12 @@ export function TemplatePicker({ templates, date }: TemplatePickerProps) {
                 {tpl.items.length} {tpl.items.length === 1 ? "položka" : tpl.items.length < 5 ? "položky" : "položek"}
               </span>
             </div>
+            {/* Feature 4: Template macro preview */}
+            {templateMacros?.[tpl.id] && (
+              <p className="text-[9px] text-muted-foreground font-mono mt-1">
+                ~{templateMacros[tpl.id].kcal} kcal, {templateMacros[tpl.id].protein}g P
+              </p>
+            )}
           </Card>
         ))}
       </div>
