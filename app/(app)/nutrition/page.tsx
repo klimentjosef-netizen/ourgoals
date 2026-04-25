@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAuthUser } from "@/lib/auth";
-import { getDailyMacros, getUserTargets } from "@/app/(app)/nutrition/actions";
+import { getDailyMacros, getUserTargets, getMealTemplates } from "@/app/(app)/nutrition/actions";
 import { MacroSummary } from "@/components/domain/nutrition/macro-summary";
 import { MealCard } from "@/components/domain/nutrition/meal-card";
+import { TemplatePicker } from "@/components/domain/nutrition/template-picker";
 import { NutritionClient } from "@/app/(app)/nutrition/nutrition-client";
 import { MEAL_TYPE_LABELS } from "@/types/nutrition";
 import type { MealType, MealWithItems } from "@/types/nutrition";
@@ -15,9 +16,10 @@ export default async function NutritionPage() {
   const user = await getAuthUser();
   const today = new Date().toISOString().split("T")[0];
 
-  const [{ meals, totals }, targets] = await Promise.all([
+  const [{ meals, totals }, targets, templates] = await Promise.all([
     getDailyMacros(user.id, today),
     getUserTargets(user.id),
+    getMealTemplates(user.id),
   ]);
 
   const targetKcal =
@@ -106,6 +108,9 @@ export default async function NutritionPage() {
       </Card>
 
       <Separator />
+
+      {/* Meal templates */}
+      <TemplatePicker templates={templates} date={today} />
 
       {/* Meals list */}
       <div className="space-y-3">

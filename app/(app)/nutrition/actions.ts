@@ -294,6 +294,132 @@ export async function saveOFFFood(product: {
   return { food: data };
 }
 
+export async function deleteMeal(mealId: string) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+  // Delete meal (cascades meal_items)
+  const { error } = await supabase
+    .from("meals")
+    .delete()
+    .eq("id", mealId)
+    .eq("profile_id", userId);
+  if (error) return { error: error.message };
+  revalidatePath("/nutrition");
+  return { success: true };
+}
+
+// ── Meal Templates ──────────────────────────────────────────
+
+export async function getMealTemplates(userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("meal_templates")
+    .select("*")
+    .eq("owner_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as import("@/types/nutrition").MealTemplate[];
+}
+
+export async function saveMealAsTemplate(mealId: string, name: string) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+
+  // Fetch meal + items
+  const { data: meal, error: mealError } = await supabase
+    .from("meals")
+    .select("*, meal_items(*, food_items(*))")
+    .eq("id", mealId)
+    .eq("profile_id", userId)
+    .single();
+
+  if (mealError || !meal) return { error: mealError?.message ?? "Jídlo nenalezeno" };
+
+  const items = (meal.meal_items ?? []).map(
+    (mi: { food_id: string; grams: number; food_items: { name: string } }) => ({
+      food_id: mi.food_id,
+      food_name: mi.food_items.name,
+      grams: mi.grams,
+    })
+  );
+
+  const { data, error } = await supabase
+    .from("meal_templates")
+    .insert({
+      owner_id: userId,
+      name,
+      meal_type: meal.meal_type,
+      items,
+      is_household: false,
+    })
+    .select()
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath("/nutrition");
+  return { template: data };
+}
+
+export async function createMealFromTemplate(templateId: string, date: string) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+
+  // Fetch template
+  const { data: template, error: tplError } = await supabase
+    .from("meal_templates")
+    .select("*")
+    .eq("id", templateId)
+    .eq("owner_id", userId)
+    .single();
+
+  if (tplError || !template) return { error: tplError?.message ?? "Šablona nenalezena" };
+
+  // Create meal
+  const { data: meal, error: mealError } = await supabase
+    .from("meals")
+    .insert({
+      profile_id: userId,
+      date,
+      meal_type: template.meal_type ?? "snack",
+      consumed_at: new Date().toISOString(),
+      notes: `Ze šablony: ${template.name}`,
+      visibility: "private",
+    })
+    .select()
+    .single();
+
+  if (mealError || !meal) return { error: mealError?.message ?? "Nepodařilo se vytvořit jídlo" };
+
+  // Insert items from template
+  const items = (template.items as { food_id: string; grams: number }[]) ?? [];
+  if (items.length > 0) {
+    const { error: itemsError } = await supabase.from("meal_items").insert(
+      items.map((i) => ({
+        meal_id: meal.id,
+        food_id: i.food_id,
+        grams: i.grams,
+      }))
+    );
+    if (itemsError) return { error: itemsError.message };
+  }
+
+  revalidatePath("/nutrition");
+  return { success: true, meal };
+}
+
+export async function deleteTemplate(templateId: string) {
+  const supabase = await createClient();
+  const userId = await resolveUserId();
+  const { error } = await supabase
+    .from("meal_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("owner_id", userId);
+  if (error) return { error: error.message };
+  revalidatePath("/nutrition");
+  return { success: true };
+}
+
 // Quick-add: just kcal + macros, no food search
 export async function quickAddMeal(formData: FormData) {
   const supabase = await createClient();
