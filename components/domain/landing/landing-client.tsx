@@ -78,7 +78,7 @@ export function StickyHeader() {
           </span>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-5 h-9 text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20"
+            className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground px-5 h-9 text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm shadow-primary/20"
           >
             Začít zdarma
           </Link>
@@ -219,6 +219,112 @@ export function AnimatedProgress({
 }
 
 /* ================================================
+   PulseGlowButton — CTA button with pulsing glow
+   ================================================ */
+export function PulseGlowButton({
+  href,
+  children,
+  className = "",
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.03] ${className}`}
+    >
+      {/* Animated glow ring */}
+      <span className="absolute inset-0 rounded-xl animate-pulse-glow pointer-events-none" />
+      <span className="relative z-10 flex items-center gap-2">{children}</span>
+
+      <style jsx>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 0 0 oklch(0.65 0.2 270 / 0.4);
+          }
+          50% {
+            box-shadow: 0 0 20px 4px oklch(0.65 0.2 270 / 0.15);
+          }
+        }
+        .animate-pulse-glow {
+          animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+      `}</style>
+    </Link>
+  );
+}
+
+/* ================================================
+   FloatingParticles — subtle background dots
+   ================================================ */
+export function FloatingParticles({ count = 30 }: { count?: number }) {
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; size: number; duration: number; delay: number; opacity: number }[]
+  >([]);
+
+  useEffect(() => {
+    const generated = Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 3 + 1,
+      duration: Math.random() * 8 + 6,
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.3 + 0.05,
+    }));
+    setParticles(generated);
+  }, [count]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full animate-particle"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            opacity: p.opacity,
+            background: p.id % 3 === 0
+              ? "oklch(0.65 0.2 270)"
+              : p.id % 3 === 1
+              ? "oklch(0.7 0.18 30)"
+              : "oklch(0.78 0.14 85)",
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+          }}
+        />
+      ))}
+      <style jsx>{`
+        @keyframes particle-drift {
+          0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+          }
+          10% {
+            opacity: var(--tw-opacity, 0.15);
+          }
+          90% {
+            opacity: var(--tw-opacity, 0.15);
+          }
+          100% {
+            transform: translateY(-80px) translateX(20px);
+            opacity: 0;
+          }
+        }
+        .animate-particle {
+          animation: particle-drift linear infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ================================================
    CoachToneDemo — prominent section with chat bubble
    ================================================ */
 const coachTones: { id: string; label: string; emoji: string; quote: string }[] = [
@@ -232,7 +338,7 @@ const coachTones: { id: string; label: string; emoji: string; quote: string }[] 
     id: "friendly",
     label: "Kamarádský",
     emoji: "😊",
-    quote: "Hej, zbývají ti jen 2 úkoly a den ještě nekončí! Věřím, že to dáš. Pojď, ať máš večer klid. 💪",
+    quote: "Hej, zbývají ti jen 2 úkoly a den ještě nekončí! Věřím, že to dáš. Pojď, ať máš večer klid.",
   },
   {
     id: "calm",
@@ -244,7 +350,7 @@ const coachTones: { id: string; label: string; emoji: string; quote: string }[] 
     id: "energetic",
     label: "Energický",
     emoji: "🔥",
-    quote: "LEVEL UP na dosah! Ještě 200 XP a jsi Level 13! Dva úkoly a máš to! LET'S GOOO! 🚀",
+    quote: "LEVEL UP na dosah! Ještě 200 XP a jsi Level 13! Dva úkoly a máš to! LET'S GOOO!",
   },
   {
     id: "minimal",
