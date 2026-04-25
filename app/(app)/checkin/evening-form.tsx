@@ -38,7 +38,7 @@ function TapCounter({
           type="button"
           onClick={() => setCount((c) => Math.max(0, c - 1))}
           className="h-9 w-9 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
-          aria-label={`Sn\u00ed\u017eit ${label}`}
+          aria-label={`Snížit ${label}`}
         >
           <Minus size={16} />
         </button>
@@ -51,14 +51,14 @@ function TapCounter({
           type="button"
           onClick={() => setCount((c) => Math.min(20, c + 1))}
           className="h-9 w-9 rounded-full border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
-          aria-label={`Zv\u00fd\u0161it ${label}`}
+          aria-label={`Zvýšit ${label}`}
         >
           <Plus size={16} />
         </button>
       </div>
       <div className="text-[10px] text-muted-foreground flex items-center gap-1">
         {icon}
-        n\u00e1poj\u016f
+        nápojů
       </div>
       <input type="hidden" name={name} value={count} />
     </div>
@@ -86,19 +86,19 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
       }
       if (result?.xpAwarded) {
         toast.success(
-          `+${result.xpAwarded} XP za ve\u010dern\u00ed check-in!`,
+          `+${result.xpAwarded} XP za večerní check-in!`,
           {
             description:
               result.streak && result.streak > 1
-                ? `Streak: ${result.streak} dn\u00ed v \u0159ad\u011b!`
-                : "Dobr\u00e1 pr\u00e1ce!",
+                ? `Streak: ${result.streak} dní v řadě!`
+                : "Dobrá práce!",
           },
         );
       }
       if (result?.achievementsUnlocked?.length) {
         for (const a of result.achievementsUnlocked) {
-          toast.success(`Achievement odem\u010den: ${a}`, {
-            description: "Nov\u00fd achievement!",
+          toast.success(`Achievement odemčen: ${a}`, {
+            description: "Nový achievement!",
           });
         }
       }
@@ -119,20 +119,20 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Star size={18} className="text-yellow-500" />
-            Hodnocen\u00ed dne
+            Hodnocení dne
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <SliderField
             name="day_rating"
-            label="Zn\u00e1mka dne"
+            label="Známka dne"
             value={dayRating}
             onChange={setDayRating}
           />
 
           <SliderField
             name="mood"
-            label="N\u00e1lada"
+            label="Nálada"
             value={mood}
             onChange={setMood}
           />
@@ -156,43 +156,43 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="best_thing">Co bylo dnes nejlep\u0161\u00ed?</Label>
+            <Label htmlFor="best_thing">Co bylo dnes nejlepší?</Label>
             <Textarea
               id="best_thing"
               name="best_thing"
-              placeholder="Nap\u0159. Skv\u011bl\u00fd tr\u00e9nink, produktivn\u00ed meeting..."
+              placeholder="Např. Skvělý trénink, produktivní meeting..."
               rows={3}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="worst_thing">Co bylo nejhor\u0161\u00ed?</Label>
+            <Label htmlFor="worst_thing">Co bylo nejhorší?</Label>
             <Textarea
               id="worst_thing"
               name="worst_thing"
-              placeholder="Co se nepovedlo nebo t\u011b mrzelo..."
+              placeholder="Co se nepovedlo nebo tě mrzelo..."
               rows={3}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tomorrow_risk">Nejv\u011bt\u0161\u00ed riziko z\u00edt\u0159ka?</Label>
+            <Label htmlFor="tomorrow_risk">Největší riziko zítřka?</Label>
             <Textarea
               id="tomorrow_risk"
               name="tomorrow_risk"
-              placeholder="Na co si d\u00e1t pozor, co m\u016f\u017ee pokazit z\u00edt\u0159ek..."
+              placeholder="Na co si dát pozor, co může pokazit zítřek..."
               rows={3}
             />
           </div>
         </CardContent>
       </Card>
 
-      {/* ---- Sledov\u00e1n\u00ed ---- */}
+      {/* ---- Sledování ---- */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Coffee size={18} className="text-amber-600" />
-            Sledov\u00e1n\u00ed
+            Sledování
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -249,10 +249,10 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
         {isPending ? (
           <>
             <Loader2 size={18} className="animate-spin mr-2" />
-            Ukl\u00e1d\u00e1m...
+            Ukládám...
           </>
         ) : (
-          "Ulo\u017eit ve\u010dern\u00ed check-in"
+          "Uložit večerní check-in"
         )}
       </Button>
     </form>

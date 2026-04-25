@@ -38,14 +38,14 @@ export function MorningForm({ userId }: MorningFormProps) {
       }
       if (result?.xpAwarded) {
         toast.success(
-          `+${result.xpAwarded} XP${result.streak && result.streak > 1 ? ` \u2022 Streak: ${result.streak} dn\u00ed` : ""}`,
-          { description: "Skv\u011bl\u00fd start dne!" },
+          `+${result.xpAwarded} XP${result.streak && result.streak > 1 ? ` • Streak: ${result.streak} dní` : ""}`,
+          { description: "Skvělý start dne!" },
         );
       }
       if (result?.achievementsUnlocked?.length) {
         for (const a of result.achievementsUnlocked) {
-          toast.success(`Achievement odem\u010den: ${a}`, {
-            description: "Nov\u00fd achievement!",
+          toast.success(`Achievement odemčen: ${a}`, {
+            description: "Nový achievement!",
           });
         }
       }
@@ -66,13 +66,13 @@ export function MorningForm({ userId }: MorningFormProps) {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Moon size={18} className="text-indigo-400" />
-            Sp\u00e1nek
+            Spánek
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="bedtime">Kdy jsi \u0161el sp\u00e1t</Label>
+              <Label htmlFor="bedtime">Kdy jsi šel spát</Label>
               <Input
                 type="time"
                 id="bedtime"
@@ -94,12 +94,12 @@ export function MorningForm({ userId }: MorningFormProps) {
           <div className="grid grid-cols-[1fr_auto] gap-4 items-end">
             <SliderField
               name="sleep_quality"
-              label="Kvalita sp\u00e1nku"
+              label="Kvalita spánku"
               value={sleepQuality}
               onChange={setSleepQuality}
             />
             <div className="space-y-1.5 text-center">
-              <Label htmlFor="wake_count">Probuzen\u00ed</Label>
+              <Label htmlFor="wake_count">Probuzení</Label>
               <Input
                 type="number"
                 id="wake_count"
@@ -114,12 +114,12 @@ export function MorningForm({ userId }: MorningFormProps) {
         </CardContent>
       </Card>
 
-      {/* ---- T\u011blo ---- */}
+      {/* ---- Tělo ---- */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Scale size={18} className="text-emerald-500" />
-            T\u011blo
+            Tělo
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -130,13 +130,13 @@ export function MorningForm({ userId }: MorningFormProps) {
               onCheckedChange={(v) => setSkipWeight(v === true)}
             />
             <Label htmlFor="skip_weight" className="text-sm text-muted-foreground cursor-pointer">
-              P\u0159esko\u010dit v\u00e1\u017een\u00ed
+              Přeskočit vážení
             </Label>
           </div>
 
           {!skipWeight && (
             <div className="space-y-1.5">
-              <Label htmlFor="weight">V\u00e1ha (kg)</Label>
+              <Label htmlFor="weight">Váha (kg)</Label>
               <Input
                 type="number"
                 id="weight"
@@ -144,7 +144,7 @@ export function MorningForm({ userId }: MorningFormProps) {
                 step={0.1}
                 min={30}
                 max={300}
-                placeholder="Nepovinn\u00e9"
+                placeholder="Nepovinné"
                 className="h-11 w-36"
               />
             </div>
@@ -152,18 +152,18 @@ export function MorningForm({ userId }: MorningFormProps) {
         </CardContent>
       </Card>
 
-      {/* ---- Jak se c\u00edt\u00ed\u0161? ---- */}
+      {/* ---- Jak se cítíš? ---- */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Smile size={18} className="text-amber-500" />
-            Jak se c\u00edt\u00ed\u0161?
+            Jak se cítíš?
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <SliderField
             name="mood"
-            label="N\u00e1lada"
+            label="Nálada"
             value={mood}
             onChange={setMood}
           />
@@ -176,11 +176,11 @@ export function MorningForm({ userId }: MorningFormProps) {
           />
 
           <div className="space-y-1.5">
-            <Label htmlFor="plan">Co dnes pl\u00e1nuje\u0161?</Label>
+            <Label htmlFor="plan">Co dnes plánuješ?</Label>
             <Textarea
               id="plan"
               name="plan"
-              placeholder="Hlavn\u00ed pl\u00e1ny a priority na dne\u0161ek..."
+              placeholder="Hlavní plány a priority na dnešek..."
               rows={3}
             />
           </div>
@@ -191,10 +191,10 @@ export function MorningForm({ userId }: MorningFormProps) {
         {isPending ? (
           <>
             <Loader2 size={18} className="animate-spin mr-2" />
-            Ukl\u00e1d\u00e1m...
+            Ukládám...
           </>
         ) : (
-          "Ulo\u017eit rann\u00ed check-in"
+          "Uložit ranní check-in"
         )}
       </Button>
     </form>

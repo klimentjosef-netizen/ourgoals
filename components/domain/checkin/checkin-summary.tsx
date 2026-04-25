@@ -44,20 +44,20 @@ function getDayStatus(checkin: DailyCheckin): {
 
   if (hasMorning && hasEvening) {
     return {
-      label: "Perfektn\u00ed den!",
+      label: "Perfektní den!",
       color: "text-emerald-700 dark:text-emerald-400",
       bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800",
     };
   }
   if (hasMorning || hasEvening) {
     return {
-      label: "Dobr\u00fd den",
+      label: "Dobrý den",
       color: "text-amber-700 dark:text-amber-400",
       bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
     };
   }
   return {
-    label: "Zme\u0161k\u00e1no",
+    label: "Zmeškáno",
     color: "text-red-700 dark:text-red-400",
     bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800",
   };
@@ -80,7 +80,7 @@ export function CheckinSummary({
         <div>
           <p className={`text-lg font-bold ${status.color}`}>{status.label}</p>
           <p className="text-sm text-muted-foreground">
-            Dne\u0161n\u00ed check-in hotov\u00fd
+            Dnešní check-in hotový
           </p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export function CheckinSummary({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Zap size={18} className="text-yellow-500" />
-              XP dne\u0161n\u00edho dne
+              XP dnešního dne
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -99,7 +99,7 @@ export function CheckinSummary({
               {checkin.mood_1_10 != null && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Rann\u00ed check-in
+                    Ranní check-in
                   </span>
                   <span className="font-medium">+{XP_VALUES.MORNING_CHECKIN} XP</span>
                 </div>
@@ -107,7 +107,7 @@ export function CheckinSummary({
               {checkin.day_rating_1_10 != null && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Ve\u010dern\u00ed check-in
+                    Večerní check-in
                   </span>
                   <span className="font-medium">+{XP_VALUES.EVENING_CHECKIN} XP</span>
                 </div>
@@ -131,7 +131,7 @@ export function CheckinSummary({
                 {gamification.current_streak}
               </span>
               <span className="text-sm text-muted-foreground">
-                dn\u00ed v \u0159ad\u011b
+                dní v řadě
               </span>
               <div className="ml-auto">
                 <Badge variant="secondary">
@@ -143,17 +143,17 @@ export function CheckinSummary({
         </Card>
       )}
 
-      {/* ---- Dne\u0161n\u00ed statistiky ---- */}
+      {/* ---- Dnešní statistiky ---- */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Dne\u0161n\u00ed statistiky</CardTitle>
+          <CardTitle className="text-base">Dnešní statistiky</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <StatTile
               icon={<Smile size={18} className="text-amber-500" />}
               value={checkin.mood_1_10}
-              label="N\u00e1lada"
+              label="Nálada"
               max={10}
             />
             <StatTile
@@ -169,13 +169,13 @@ export function CheckinSummary({
                   ? Number(sleepLog.sleep_hours.toFixed(1))
                   : null
               }
-              label="Sp\u00e1nek"
+              label="Spánek"
               suffix="h"
             />
             <StatTile
               icon={<Star size={18} className="text-yellow-500" />}
               value={checkin.day_rating_1_10}
-              label="Hodnocen\u00ed"
+              label="Hodnocení"
               max={10}
             />
           </div>
@@ -184,8 +184,8 @@ export function CheckinSummary({
             <div className="mt-3 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
               <AlertTriangle size={14} />
               <span>
-                Vysok\u00fd stres ({checkin.stress_1_10}/10) &mdash; zkus
-                odpo\u010dinek
+                Vysoký stres ({checkin.stress_1_10}/10) &mdash; zkus
+                odpočinek
               </span>
             </div>
           )}
@@ -205,7 +205,7 @@ export function CheckinSummary({
             {checkin.best_thing && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1">
-                  Nejlep\u0161\u00ed moment
+                  Nejlepší moment
                 </p>
                 <p className="text-sm">{checkin.best_thing}</p>
               </div>
@@ -215,7 +215,7 @@ export function CheckinSummary({
                 <Separator />
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-1">
-                    Nejhor\u0161\u00ed moment
+                    Nejhorší moment
                   </p>
                   <p className="text-sm">{checkin.worst_thing}</p>
                 </div>
@@ -254,7 +254,7 @@ function StatTile({
     <div className="flex flex-col items-center gap-1 py-2">
       {icon}
       <p className="text-2xl font-bold tabular-nums">
-        {value != null ? value : "\u2014"}
+        {value != null ? value : "—"}
         {value != null && suffix && (
           <span className="text-sm font-normal text-muted-foreground">
             {suffix}

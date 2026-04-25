@@ -51,7 +51,7 @@ const CARDS: Array<{
     kind: "bother",
     emoji: "🟡",
     title: "Co mě mrzelo",
-    description: "Sdílej upřímně, max 1\u00d7 denně",
+    description: "Sdílej upřímně, max 1× denně",
     gradient:
       "bg-gradient-to-br from-amber-50/70 to-amber-100/30 dark:from-amber-950/20 dark:to-amber-900/10",
     hoverGradient:
