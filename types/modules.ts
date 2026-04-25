@@ -85,7 +85,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
     label: "Rodina & partner",
     description: "Sdílený kalendář, vzkazy, nákupy, vztahové metriky",
     icon: Users,
-    routes: [],
+    routes: ["/partner"],
     featureFlag: "FAMILY_MODULE_ENABLED",
     onboardingStep: false,
   },

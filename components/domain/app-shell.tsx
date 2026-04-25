@@ -13,6 +13,7 @@ import {
   Briefcase,
   BookOpen,
   ClipboardCheck,
+  Heart,
   Plus,
   X,
   LogOut,
@@ -38,6 +39,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/nutrition", label: "Jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
   { href: "/calendar", label: "Kalendář", icon: CalendarDays, moduleId: "calendar" },
   { href: "/wellbeing", label: "Wellbeing", icon: Moon, moduleId: "sleep_wellbeing" },
+  { href: "/partner", label: "Partner", icon: Heart, moduleId: "family" },
   { href: "/founder-log", label: "Founder Log", icon: BookOpen, moduleId: "work_focus" },
   { href: "/profile", label: "Profil", icon: User, alwaysVisible: true },
 ];
