@@ -16,14 +16,17 @@ export function StepCoach({ onSubmit, isPending }: StepCoachProps) {
 
   return (
     <StepContainer
-      title="Tv\u016fj kou\u010d"
-      subtitle="Jak\u00fd styl komunikace ti sed\u00ed?"
-      helperText="M\u016f\u017ee\u0161 zm\u011bnit kdykoliv v nastaven\u00ed."
+      title="Tvůj kouč"
+      subtitle="Jaký styl komunikace ti sedí?"
+      helperText="Můžeš změnit kdykoliv v nastavení."
       icon={MessageCircle}
       onNext={onSubmit}
       onPrev={prevStep}
       canSkip={false}
       canProceed={!isPending}
+      isLast
+      nextLabel={isPending ? "Ukládám..." : "Dokončit"}
+      isPending={isPending}
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {COACH_TONES.map((tone) => (
@@ -42,7 +45,7 @@ export function StepCoach({ onSubmit, isPending }: StepCoachProps) {
         if (!activeTone || activeTone.id === "minimal") return null;
         return (
           <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/20 animate-in fade-in-0 duration-200">
-            <p className="text-xs text-muted-foreground mb-1.5">Uk\u00e1zka od kou\u010de:</p>
+            <p className="text-xs text-muted-foreground mb-1.5">Ukázka od kouče:</p>
             <p className="text-sm font-medium">
               &ldquo;{activeTone.example}&rdquo;
             </p>

@@ -276,6 +276,7 @@ export async function saveEveningCheckin(
   const caffeine = formData.get("caffeine") ? Number(formData.get("caffeine")) : null;
   const alcohol = formData.get("alcohol") ? Number(formData.get("alcohol")) : null;
   const screenTime = formData.get("screen_time") ? Number(formData.get("screen_time")) : null;
+  const meditation = formData.get("meditation") ? Number(formData.get("meditation")) : null;
 
   const supabase = await createClient();
 
@@ -293,6 +294,7 @@ export async function saveEveningCheckin(
       caffeine_drinks: caffeine,
       alcohol_drinks: alcohol,
       screen_time_min: screenTime,
+      meditation_min: meditation,
       // Also update mood if evening mood differs
       mood_1_10: mood,
     },

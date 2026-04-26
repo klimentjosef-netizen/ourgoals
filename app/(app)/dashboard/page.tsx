@@ -10,6 +10,7 @@ import { TrainingWidget } from "@/components/domain/dashboard/training-widget";
 import { NutritionWidget } from "@/components/domain/dashboard/nutrition-widget";
 import { CalendarWidget } from "@/components/domain/dashboard/calendar-widget";
 import { PartnerWidget } from "@/components/domain/dashboard/partner-widget";
+import { WorkWidget } from "@/components/domain/dashboard/work-widget";
 import { WeeklyProgress } from "@/components/domain/dashboard/weekly-progress";
 import { PushPrompt } from "@/components/domain/notifications/push-prompt";
 import { QuickActions } from "@/components/domain/dashboard/quick-actions";
@@ -37,6 +38,7 @@ export default async function DashboardPage() {
   const hasNutrition = data.activeModules.includes("nutrition");
   const hasCalendar = data.activeModules.includes("calendar");
   const hasFamily = data.activeModules.includes("family");
+  const hasWork = data.activeModules.includes("work_focus");
 
   const noModulesActive =
     !hasGoals &&
@@ -96,7 +98,7 @@ export default async function DashboardPage() {
       )}
 
       {/* 5. Module widgets grid */}
-      {(hasTraining || hasNutrition || hasCalendar || hasFamily) && (
+      {(hasTraining || hasNutrition || hasCalendar || hasFamily || hasWork) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {hasTraining && (
             <TrainingWidget
@@ -111,6 +113,14 @@ export default async function DashboardPage() {
             />
           )}
           {hasCalendar && <CalendarWidget events={data.todayEvents} />}
+          {hasWork && (
+            <WorkWidget
+              todayDeepWorkMinutes={data.workData?.todayDeepWorkMinutes ?? 0}
+              targetMinutes={data.workData?.targetMinutes ?? 240}
+              overdueTasks={data.workData?.overdueTasks ?? 0}
+              activeTasks={data.workData?.activeTasks ?? 0}
+            />
+          )}
           {hasFamily && data.partnerData && (
             <PartnerWidget
               gottmanScore={

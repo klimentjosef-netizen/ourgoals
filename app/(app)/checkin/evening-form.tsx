@@ -14,9 +14,10 @@ import {
 import { SliderField } from "@/components/domain/checkin/slider-field";
 import { saveEveningCheckin } from "./actions";
 import { toast } from "sonner";
-import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus, Heart } from "lucide-react";
+import { MoonStar, Star, Brain, Coffee, Loader2, Plus, Minus, Heart, Timer } from "lucide-react";
 import Link from "next/link";
 import { YesterdayComparison } from "@/components/domain/checkin/yesterday-comparison";
+import type { TrackingPrefs } from "./page";
 
 /* ---- Tap counter ---- */
 function TapCounter({
@@ -68,14 +69,23 @@ function TapCounter({
 interface EveningFormProps {
   hasHousehold?: boolean;
   userId?: string;
+  trackingPrefs?: TrackingPrefs;
 }
 
-export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) {
+export function EveningForm({ hasHousehold = false, userId, trackingPrefs }: EveningFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const [dayRating, setDayRating] = useState(5);
   const [mood, setMood] = useState(5);
   const [stress, setStress] = useState(3);
+
+  const showStress = trackingPrefs?.trackStress ?? true;
+  const showCaffeine = trackingPrefs?.trackCaffeine ?? false;
+  const showAlcohol = trackingPrefs?.trackAlcohol ?? false;
+  const showScreenTime = trackingPrefs?.trackScreenTime ?? false;
+  const showMeditation = trackingPrefs?.trackMeditation ?? false;
+
+  const hasAnyTracking = showCaffeine || showAlcohol || showScreenTime || showMeditation;
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -137,12 +147,14 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
             onChange={setMood}
           />
 
-          <SliderField
-            name="stress"
-            label="Stres"
-            value={stress}
-            onChange={setStress}
-          />
+          {showStress && (
+            <SliderField
+              name="stress"
+              label="Stres"
+              value={stress}
+              onChange={setStress}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -187,44 +199,72 @@ export function EveningForm({ hasHousehold = false, userId }: EveningFormProps) 
         </CardContent>
       </Card>
 
-      {/* ---- Sledování ---- */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Coffee size={18} className="text-amber-600" />
-            Sledování
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <TapCounter
-              name="caffeine"
-              label="Kofein"
-              icon={<Coffee size={10} />}
-            />
-            <TapCounter
-              name="alcohol"
-              label="Alkohol"
-              icon={<span className="text-[10px]">\ud83c\udf77</span>}
-            />
-            <div className="flex flex-col items-center gap-1.5">
-              <Label htmlFor="screen_time" className="text-sm">
-                Screen time
-              </Label>
-              <Input
-                type="number"
-                id="screen_time"
-                name="screen_time"
-                min={0}
-                max={600}
-                defaultValue={0}
-                className="h-11 w-20 text-center"
-              />
-              <p className="text-[10px] text-muted-foreground">minut</p>
+      {/* ---- Sledování (podmíněně podle preferencí) ---- */}
+      {hasAnyTracking && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Coffee size={18} className="text-amber-600" />
+              Sledování
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {showCaffeine && (
+                <TapCounter
+                  name="caffeine"
+                  label="Kofein"
+                  icon={<Coffee size={10} />}
+                />
+              )}
+              {showAlcohol && (
+                <TapCounter
+                  name="alcohol"
+                  label="Alkohol"
+                  icon={<span className="text-[10px]">🍷</span>}
+                />
+              )}
+              {showScreenTime && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <Label htmlFor="screen_time" className="text-sm">
+                    Screen time
+                  </Label>
+                  <Input
+                    type="number"
+                    id="screen_time"
+                    name="screen_time"
+                    min={0}
+                    max={600}
+                    defaultValue={0}
+                    className="h-11 w-20 text-center"
+                  />
+                  <p className="text-[10px] text-muted-foreground">minut</p>
+                </div>
+              )}
+              {showMeditation && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <Label htmlFor="meditation" className="text-sm">
+                    Meditace
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Timer size={14} className="text-muted-foreground" />
+                    <Input
+                      type="number"
+                      id="meditation"
+                      name="meditation"
+                      min={0}
+                      max={180}
+                      defaultValue={0}
+                      className="h-11 w-20 text-center"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">minut</p>
+                </div>
+              )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ---- Vzkaz partnerovi ---- */}
       {hasHousehold && (

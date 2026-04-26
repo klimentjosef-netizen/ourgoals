@@ -6,11 +6,46 @@ import type { CalendarEvent } from "@/types/calendar";
  * Tyto eventy se nezapisují do DB — jsou pouze pro zobrazení v kalendáři.
  */
 
+interface WorkoutDay {
+  dayIndex: number;
+  dayLabel: string;
+  focus: string | null;
+}
+
 interface VirtualEventConfig {
   enableSleep?: boolean;
   bedtimeTarget?: string; // "22:30"
   wakeTarget?: string;    // "06:30"
   enableCheckin?: boolean;
+  // Training
+  trainingDays?: WorkoutDay[];
+  preferTrainingTime?: string; // "morning" | "afternoon" | "evening"
+  // Work
+  workDays?: number[];        // [0,1,2,3,4] (0=Po)
+  workStartTime?: string;     // "08:00"
+  workEndTime?: string;       // "17:00"
+  deepWorkHours?: number;
+  preferDeepWork?: string;    // "morning" | "afternoon"
+}
+
+function getTrainingStartTime(pref?: string): string {
+  switch (pref) {
+    case "morning": return "07:00";
+    case "afternoon": return "14:00";
+    case "evening": return "18:00";
+    default: return "17:00";
+  }
+}
+
+function getDeepWorkStartTime(pref?: string, workStart?: string): string {
+  if (pref === "morning") return workStart ?? "08:00";
+  if (pref === "afternoon") return "13:00";
+  // Default: 1 hour after work start
+  if (workStart) {
+    const [h, m] = workStart.split(":").map(Number);
+    return `${String(Math.min(h + 1, 23)).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+  return "09:00";
 }
 
 export function generateVirtualEvents(
@@ -23,6 +58,7 @@ export function generateVirtualEvents(
 
   while (cursor <= weekEnd) {
     const dateStr = format(cursor, "yyyy-MM-dd");
+    const dayOfWeek = (cursor.getDay() + 6) % 7; // 0=Po
 
     // Spánkové eventy
     if (config.enableSleep) {
@@ -57,8 +93,8 @@ export function generateVirtualEvents(
         title: "Ranní check-in",
         kind: "checkin",
         date: dateStr,
-        startTime: "07:00",
-        endTime: "07:15",
+        startTime: config.wakeTarget ? addMinutes(config.wakeTarget, 15) : "07:00",
+        endTime: config.wakeTarget ? addMinutes(config.wakeTarget, 30) : "07:15",
         linkedType: "checkin_module",
       }));
       virtuals.push(makeVirtualEvent({
@@ -66,10 +102,46 @@ export function generateVirtualEvents(
         title: "Večerní check-in",
         kind: "checkin",
         date: dateStr,
-        startTime: "21:00",
-        endTime: "21:15",
+        startTime: config.bedtimeTarget ? addMinutes(config.bedtimeTarget, -30) : "21:00",
+        endTime: config.bedtimeTarget ?? "21:15",
         linkedType: "checkin_module",
       }));
+    }
+
+    // Training eventy — zobrazit plánovaný trénink pro daný den
+    if (config.trainingDays) {
+      const todayWorkout = config.trainingDays.find((w) => w.dayIndex === dayOfWeek);
+      if (todayWorkout) {
+        const startTime = getTrainingStartTime(config.preferTrainingTime);
+        virtuals.push(makeVirtualEvent({
+          id: `virtual_training_${dateStr}`,
+          title: `Trénink: ${todayWorkout.dayLabel}`,
+          kind: "training",
+          date: dateStr,
+          startTime,
+          endTime: addMinutes(startTime, 60),
+          linkedType: "training_module",
+          notes: todayWorkout.focus ?? undefined,
+        }));
+      }
+    }
+
+    // Deep work bloky — v pracovní dny
+    if (config.deepWorkHours && config.deepWorkHours > 0 && config.workDays) {
+      const isWorkDay = config.workDays.includes(dayOfWeek);
+      if (isWorkDay) {
+        const startTime = getDeepWorkStartTime(config.preferDeepWork, config.workStartTime);
+        const durationMin = Math.round(config.deepWorkHours * 60);
+        virtuals.push(makeVirtualEvent({
+          id: `virtual_deepwork_${dateStr}`,
+          title: `Deep work (${config.deepWorkHours}h)`,
+          kind: "work_deep",
+          date: dateStr,
+          startTime,
+          endTime: addMinutes(startTime, durationMin),
+          linkedType: "work_module",
+        }));
+      }
     }
 
     cursor = addDays(cursor, 1);
@@ -86,6 +158,7 @@ function makeVirtualEvent(params: {
   startTime: string;
   endTime: string;
   linkedType: string;
+  notes?: string;
 }): CalendarEvent {
   return {
     id: params.id,
@@ -99,7 +172,7 @@ function makeVirtualEvent(params: {
     rrule: null,
     color: null,
     visibility: "private",
-    notes: null,
+    notes: params.notes ?? null,
     linked_entity_type: params.linkedType,
     linked_entity_id: null,
     is_completed: false,

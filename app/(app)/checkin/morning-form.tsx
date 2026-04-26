@@ -17,17 +17,22 @@ import { saveMorningCheckin } from "./actions";
 import { toast } from "sonner";
 import { Sun, Moon, Scale, Smile, Loader2 } from "lucide-react";
 import { YesterdayComparison } from "@/components/domain/checkin/yesterday-comparison";
+import type { TrackingPrefs } from "./page";
 
 interface MorningFormProps {
   userId?: string;
+  trackingPrefs?: TrackingPrefs;
 }
 
-export function MorningForm({ userId }: MorningFormProps) {
+export function MorningForm({ userId, trackingPrefs }: MorningFormProps) {
   const [isPending, startTransition] = useTransition();
   const [sleepQuality, setSleepQuality] = useState(5);
   const [mood, setMood] = useState(5);
   const [energy, setEnergy] = useState(5);
   const [skipWeight, setSkipWeight] = useState(false);
+
+  const showMood = trackingPrefs?.trackMood ?? true;
+  const showEnergy = trackingPrefs?.trackEnergy ?? true;
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -77,8 +82,14 @@ export function MorningForm({ userId }: MorningFormProps) {
                 type="time"
                 id="bedtime"
                 name="bedtime"
+                defaultValue={trackingPrefs?.bedtimeTarget ?? undefined}
                 className="h-11"
               />
+              {trackingPrefs?.bedtimeTarget && (
+                <p className="text-[10px] text-muted-foreground">
+                  Cíl: {trackingPrefs.bedtimeTarget}
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="wake_time">Kdy jsi vstal</Label>
@@ -86,8 +97,14 @@ export function MorningForm({ userId }: MorningFormProps) {
                 type="time"
                 id="wake_time"
                 name="wake_time"
+                defaultValue={trackingPrefs?.wakeTarget ?? undefined}
                 className="h-11"
               />
+              {trackingPrefs?.wakeTarget && (
+                <p className="text-[10px] text-muted-foreground">
+                  Cíl: {trackingPrefs.wakeTarget}
+                </p>
+              )}
             </div>
           </div>
 
@@ -152,40 +169,66 @@ export function MorningForm({ userId }: MorningFormProps) {
         </CardContent>
       </Card>
 
-      {/* ---- Jak se cítíš? ---- */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Smile size={18} className="text-amber-500" />
-            Jak se cítíš?
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <SliderField
-            name="mood"
-            label="Nálada"
-            value={mood}
-            onChange={setMood}
-          />
+      {/* ---- Jak se cítíš? (podmíněně podle preferencí) ---- */}
+      {(showMood || showEnergy) && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Smile size={18} className="text-amber-500" />
+              Jak se cítíš?
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {showMood && (
+              <SliderField
+                name="mood"
+                label="Nálada"
+                value={mood}
+                onChange={setMood}
+              />
+            )}
 
-          <SliderField
-            name="energy"
-            label="Energie"
-            value={energy}
-            onChange={setEnergy}
-          />
+            {showEnergy && (
+              <SliderField
+                name="energy"
+                label="Energie"
+                value={energy}
+                onChange={setEnergy}
+              />
+            )}
 
-          <div className="space-y-1.5">
-            <Label htmlFor="plan">Co dnes plánuješ?</Label>
-            <Textarea
-              id="plan"
-              name="plan"
-              placeholder="Hlavní plány a priority na dnešek..."
-              rows={3}
-            />
-          </div>
-        </CardContent>
-      </Card>
+            <div className="space-y-1.5">
+              <Label htmlFor="plan">Co dnes plánuješ?</Label>
+              <Textarea
+                id="plan"
+                name="plan"
+                placeholder="Hlavní plány a priority na dnešek..."
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* If no mood/energy tracked, still show plan */}
+      {!showMood && !showEnergy && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Plán dne</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1.5">
+              <Label htmlFor="plan">Co dnes plánuješ?</Label>
+              <Textarea
+                id="plan"
+                name="plan"
+                placeholder="Hlavní plány a priority na dnešek..."
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Button type="submit" className="w-full h-12 text-base" disabled={isPending}>
         {isPending ? (

@@ -9,8 +9,8 @@ import { Dumbbell, Check } from "lucide-react";
 import type { TrainingSetupData } from "@/types/onboarding";
 
 const EXPERIENCE_OPTIONS = [
-  { value: "beginner" as const, label: "Za\u010d\u00e1te\u010dn\u00edk" },
-  { value: "intermediate" as const, label: "Pokro\u010dil\u00fd" },
+  { value: "beginner" as const, label: "Začátečník" },
+  { value: "intermediate" as const, label: "Pokročilý" },
   { value: "advanced" as const, label: "Expert" },
 ];
 
@@ -24,7 +24,7 @@ const LOCATION_OPTIONS = [
 const GOAL_OPTIONS = [
   { value: "cut" as const, label: "Zhubnout" },
   { value: "bulk" as const, label: "Nabrat" },
-  { value: "maintain" as const, label: "Udr\u017eet" },
+  { value: "maintain" as const, label: "Udržet" },
   { value: "recomp" as const, label: "Recomposition" },
 ];
 
@@ -32,17 +32,17 @@ const TEMPLATE_PLANS = [
   {
     value: "fullbody3" as const,
     title: "Full Body 3x",
-    desc: "3 tr\u00e9ninky t\u00fddn\u011b, cel\u00e9 t\u011blo ka\u017ed\u00fd tr\u00e9nink. Ide\u00e1ln\u00ed pro za\u010d\u00e1te\u010dn\u00edky.",
+    desc: "3 tréninky týdně, celé tělo každý trénink. Ideální pro začátečníky.",
   },
   {
     value: "upperlower4" as const,
     title: "Upper-Lower 4x",
-    desc: "2x horn\u00ed t\u011blo, 2x doln\u00ed. Dobr\u00fd kompromis objemu a frekvence.",
+    desc: "2x horní tělo, 2x dolní. Dobrý kompromis objemu a frekvence.",
   },
   {
     value: "ppl6" as const,
     title: "PPL 6x",
-    desc: "Push/Pull/Legs 2x t\u00fddn\u011b. Pro pokro\u010dil\u00e9 s v\u00edc \u010dasu.",
+    desc: "Push/Pull/Legs 2x týdně. Pro pokročilé s víc času.",
   },
 ];
 
@@ -62,13 +62,13 @@ export function StepTraining() {
   function validate(): boolean {
     const e: Record<string, string> = {};
     if (data.weightKg !== undefined && (data.weightKg < 30 || data.weightKg > 300)) {
-      e.weightKg = "V\u00e1ha mus\u00ed b\u00fdt 30\u2013300 kg";
+      e.weightKg = "Váha musí být 30–300 kg";
     }
     if (data.heightCm !== undefined && (data.heightCm < 100 || data.heightCm > 250)) {
-      e.heightCm = "V\u00fd\u0161ka mus\u00ed b\u00fdt 100\u2013250 cm";
+      e.heightCm = "Výška musí být 100–250 cm";
     }
     if (data.bodyFatPct !== undefined && (data.bodyFatPct < 3 || data.bodyFatPct > 60)) {
-      e.bodyFatPct = "Body fat mus\u00ed b\u00fdt 3\u201360%";
+      e.bodyFatPct = "Body fat musí být 3–60%";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -82,9 +82,9 @@ export function StepTraining() {
 
   return (
     <StepContainer
-      title="Tr\u00e9nink & t\u011blo"
-      subtitle="Nastav si z\u00e1kladn\u00ed parametry tr\u00e9ninku."
-      helperText="\u0158ekni n\u00e1m o sv\u00e9m tr\u00e9ninku, abychom ti mohli pomoct."
+      title="Trénink & tělo"
+      subtitle="Nastav si základní parametry tréninku."
+      helperText="Řekni nám o svém tréninku, abychom ti mohli pomoct."
       icon={Dumbbell}
       onNext={handleNext}
       onPrev={prevStep}
@@ -92,15 +92,15 @@ export function StepTraining() {
       canProceed
     >
       <div className="space-y-8">
-        {/* Section 1: Tv\u016fj tr\u00e9nink */}
+        {/* Section 1: Tvůj trénink */}
         <div className="space-y-5">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Tv\u016fj tr\u00e9nink
+            Tvůj trénink
           </h3>
 
-          {/* Zku\u0161enost */}
+          {/* Zkušenost */}
           <div className="space-y-2">
-            <Label>Zku\u0161enost</Label>
+            <Label>Zkušenost</Label>
             <div className="grid grid-cols-3 gap-2">
               {EXPERIENCE_OPTIONS.map((opt) => (
                 <button
@@ -119,9 +119,9 @@ export function StepTraining() {
             </div>
           </div>
 
-          {/* Kolikr\u00e1t t\u00fddn\u011b */}
+          {/* Kolikrát týdně */}
           <div className="space-y-2">
-            <Label>Kolikr\u00e1t t\u00fddn\u011b</Label>
+            <Label>Kolikrát týdně</Label>
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -138,13 +138,13 @@ export function StepTraining() {
               >
                 +
               </button>
-              <span className="text-sm text-muted-foreground">x t\u00fddn\u011b</span>
+              <span className="text-sm text-muted-foreground">x týdně</span>
             </div>
           </div>
 
-          {/* Kde cvi\u010d\u00ed\u0161 */}
+          {/* Kde cvičíš */}
           <div className="space-y-2">
-            <Label>Kde cvi\u010d\u00ed\u0161</Label>
+            <Label>Kde cvičíš</Label>
             <div className="grid grid-cols-4 gap-2">
               {LOCATION_OPTIONS.map((opt) => (
                 <button
@@ -164,15 +164,15 @@ export function StepTraining() {
           </div>
         </div>
 
-        {/* Section 2: T\u011blesn\u00e9 metriky */}
+        {/* Section 2: Tělesné metriky */}
         <div className="space-y-5">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            T\u011blesn\u00e9 metriky
+            Tělesné metriky
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="weight">V\u00e1ha (kg)</Label>
+              <Label htmlFor="weight">Váha (kg)</Label>
               <Input
                 id="weight"
                 className="h-11"
@@ -190,7 +190,7 @@ export function StepTraining() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="height">V\u00fd\u0161ka (cm)</Label>
+              <Label htmlFor="height">Výška (cm)</Label>
               <Input
                 id="height"
                 className="h-11"
@@ -208,7 +208,7 @@ export function StepTraining() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bf">Body fat % (voliteln\u00e9)</Label>
+              <Label htmlFor="bf">Body fat % (volitelné)</Label>
               <Input
                 id="bf"
                 className="h-11"
@@ -227,9 +227,9 @@ export function StepTraining() {
             </div>
           </div>
 
-          {/* C\u00edl */}
+          {/* Cíl */}
           <div className="space-y-2">
-            <Label>C\u00edl</Label>
+            <Label>Cíl</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {GOAL_OPTIONS.map((opt) => (
                 <button
@@ -249,13 +249,13 @@ export function StepTraining() {
           </div>
         </div>
 
-        {/* Section 3: Tr\u00e9ninkov\u00fd pl\u00e1n */}
+        {/* Section 3: Tréninkový plán */}
         <div className="space-y-5">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Tr\u00e9ninkov\u00fd pl\u00e1n
+            Tréninkový plán
           </h3>
           <p className="text-xs text-muted-foreground -mt-3">
-            Vyber \u0161ablonu nebo si vytvo\u0159 vlastn\u00ed pozd\u011bji.
+            Vyber šablonu nebo si vytvoř vlastní později.
           </p>
 
           <div className="grid grid-cols-1 gap-3">
@@ -290,7 +290,7 @@ export function StepTraining() {
                   : "border-border border-dashed hover:border-primary/40"
               }`}
             >
-              <span className="text-sm font-medium">Vytvo\u0159\u00edm si vlastn\u00ed</span>
+              <span className="text-sm font-medium">Vytvořím si vlastní</span>
             </button>
           </div>
         </div>

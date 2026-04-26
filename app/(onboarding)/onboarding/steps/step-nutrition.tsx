@@ -12,32 +12,32 @@ import type { NutritionSetupData, TrainingSetupData } from "@/types/onboarding";
 const TRACKING_LEVELS = [
   {
     value: "macros" as const,
-    title: "P\u0159esn\u011b (makra)",
+    title: "Přesně (makra)",
     desc: "Sleduj kalorie, protein, sacharidy i tuky.",
   },
   {
     value: "kcal_only" as const,
-    title: "P\u0159ibli\u017en\u011b (jen kcal)",
-    desc: "Sleduj jen celkov\u00e9 kalorie.",
+    title: "Přibližně (jen kcal)",
+    desc: "Sleduj jen celkové kalorie.",
   },
   {
     value: "none" as const,
     title: "Nechci sledovat",
-    desc: "\u017d\u00e1dn\u00e9 po\u010d\u00edt\u00e1n\u00ed, jen tipy.",
+    desc: "Žádné počítání, jen tipy.",
   },
 ];
 
 const ALLERGY_OPTIONS = [
-  { id: "lactose", label: "Lakt\u00f3za" },
+  { id: "lactose", label: "Laktóza" },
   { id: "gluten", label: "Lepek" },
-  { id: "nuts", label: "O\u0159echy" },
-  { id: "soy", label: "S\u00f3ja" },
-  { id: "none", label: "\u017d\u00e1dn\u00e9" },
+  { id: "nuts", label: "Ořechy" },
+  { id: "soy", label: "Sója" },
+  { id: "none", label: "Žádné" },
 ];
 
 const DIET_OPTIONS = [
-  { value: "none" as const, label: "Bez omezen\u00ed" },
-  { value: "vegetarian" as const, label: "Veget\u00e1ri\u00e1n" },
+  { value: "none" as const, label: "Bez omezení" },
+  { value: "vegetarian" as const, label: "Vegetárián" },
   { value: "vegan" as const, label: "Vegan" },
 ];
 
@@ -118,16 +118,16 @@ export function StepNutrition() {
     const e: Record<string, string> = {};
     if (isTracking) {
       if (data.targetKcal !== undefined && (data.targetKcal < 800 || data.targetKcal > 6000)) {
-        e.targetKcal = "Kalorie mus\u00ed b\u00fdt 800\u20136000";
+        e.targetKcal = "Kalorie musí být 800–6000";
       }
       if (data.proteinG !== undefined && (data.proteinG < 20 || data.proteinG > 500)) {
-        e.proteinG = "Protein mus\u00ed b\u00fdt 20\u2013500g";
+        e.proteinG = "Protein musí být 20–500g";
       }
       if (data.carbsG !== undefined && (data.carbsG < 20 || data.carbsG > 800)) {
-        e.carbsG = "Sacharidy mus\u00ed b\u00fdt 20\u2013800g";
+        e.carbsG = "Sacharidy musí být 20–800g";
       }
       if (data.fatG !== undefined && (data.fatG < 10 || data.fatG > 300)) {
-        e.fatG = "Tuky mus\u00ed b\u00fdt 10\u2013300g";
+        e.fatG = "Tuky musí být 10–300g";
       }
     }
     setErrors(e);
@@ -140,9 +140,9 @@ export function StepNutrition() {
 
   return (
     <StepContainer
-      title="J\u00eddlo & v\u00fd\u017eiva"
-      subtitle="Nastav si, jak detailn\u011b chce\u0161 sledovat stravu."
-      helperText="Pokud nev\u00ed\u0161, za\u010dni s doporu\u010den\u00fdmi hodnotami a uprav pozd\u011bji."
+      title="Jídlo & výživa"
+      subtitle="Nastav si, jak detailně chceš sledovat stravu."
+      helperText="Pokud nevíš, začni s doporučenými hodnotami a uprav později."
       icon={UtensilsCrossed}
       onNext={handleNext}
       onPrev={prevStep}
@@ -150,10 +150,10 @@ export function StepNutrition() {
       canProceed
     >
       <div className="space-y-8">
-        {/* Section 1: Jak detailn\u011b sledovat */}
+        {/* Section 1: Jak detailně sledovat */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Jak detailn\u011b sledovat?
+            Jak detailně sledovat?
           </h3>
           <div className="grid grid-cols-1 gap-3">
             {TRACKING_LEVELS.map((level) => (
@@ -179,11 +179,11 @@ export function StepNutrition() {
           </div>
         </div>
 
-        {/* Section 2: C\u00edle (only if tracking) */}
+        {/* Section 2: Cíle (only if tracking) */}
         {isTracking && (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              C\u00edle
+              Cíle
             </h3>
 
             {/* Recommendation banner */}
@@ -192,7 +192,7 @@ export function StepNutrition() {
                 <Zap size={16} className="text-primary mt-0.5 shrink-0" />
                 <div className="flex-1 space-y-1">
                   <p className="text-xs font-medium">
-                    Doporu\u010deno: {recommended.kcal} kcal, {recommended.protein}g P,{" "}
+                    Doporučeno: {recommended.kcal} kcal, {recommended.protein}g P,{" "}
                     {recommended.carbs}g C, {recommended.fat}g F
                   </p>
                   <button
@@ -200,14 +200,14 @@ export function StepNutrition() {
                     onClick={applyRecommended}
                     className="text-xs font-semibold text-primary hover:underline"
                   >
-                    Pou\u017e\u00edt doporu\u010den\u00e9 hodnoty
+                    Použít doporučené hodnoty
                   </button>
                 </div>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="kcal">Denn\u00ed kcal</Label>
+              <Label htmlFor="kcal">Denní kcal</Label>
               <Input
                 id="kcal"
                 className="h-11"
@@ -314,9 +314,9 @@ export function StepNutrition() {
             </div>
           </div>
 
-          {/* Stravov\u00e1n\u00ed */}
+          {/* Stravování */}
           <div className="space-y-2">
-            <Label>Stravov\u00e1n\u00ed</Label>
+            <Label>Stravování</Label>
             <div className="grid grid-cols-3 gap-2">
               {DIET_OPTIONS.map((opt) => (
                 <button
@@ -335,9 +335,9 @@ export function StepNutrition() {
             </div>
           </div>
 
-          {/* J\u00eddel denn\u011b */}
+          {/* Jídel denně */}
           <div className="space-y-2">
-            <Label>J\u00eddel denn\u011b</Label>
+            <Label>Jídel denně</Label>
             <div className="grid grid-cols-3 gap-2">
               {MEALS_OPTIONS.map((n) => (
                 <button

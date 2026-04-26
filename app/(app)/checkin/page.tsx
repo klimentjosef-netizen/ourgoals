@@ -10,6 +10,18 @@ import { Sunrise, MoonStar, CheckCircle2, AlertTriangle, Clock, Flame } from "lu
 import type { DailyCheckin, SleepLog, GamificationProfile } from "@/types/database";
 import { getHousehold } from "@/app/(app)/partner/actions";
 
+export interface TrackingPrefs {
+  trackMood: boolean;
+  trackEnergy: boolean;
+  trackStress: boolean;
+  trackMeditation: boolean;
+  trackScreenTime: boolean;
+  trackCaffeine: boolean;
+  trackAlcohol: boolean;
+  bedtimeTarget: string | null;
+  wakeTarget: string | null;
+}
+
 function StreakBadge({ streak }: { streak: number }) {
   if (streak <= 0) return null;
   return (
@@ -30,8 +42,8 @@ export default async function CheckinPage() {
   const currentHour = new Date().getHours();
   const isMorning = currentHour < 14;
 
-  // Fetch today's checkin and gamification in parallel
-  const [checkinRes, gamRes] = await Promise.all([
+  // Fetch today's checkin, gamification, and tracking preferences in parallel
+  const [checkinRes, gamRes, settingsRes] = await Promise.all([
     supabase
       .from("daily_checkins")
       .select("*")
@@ -43,11 +55,29 @@ export default async function CheckinPage() {
       .select("*")
       .eq("profile_id", user.id)
       .single(),
+    supabase
+      .from("user_settings")
+      .select("track_mood, track_energy, track_stress, track_meditation, track_screen_time, track_caffeine, track_alcohol, bedtime_target, wake_target")
+      .eq("profile_id", user.id)
+      .single(),
   ]);
 
   const typedCheckin = checkinRes.data as DailyCheckin | null;
   const gamification = gamRes.data as GamificationProfile | null;
   const currentStreak = gamification?.current_streak ?? 0;
+
+  // Build tracking preferences (defaults = track everything)
+  const prefs: TrackingPrefs = {
+    trackMood: settingsRes.data?.track_mood ?? true,
+    trackEnergy: settingsRes.data?.track_energy ?? true,
+    trackStress: settingsRes.data?.track_stress ?? true,
+    trackMeditation: settingsRes.data?.track_meditation ?? false,
+    trackScreenTime: settingsRes.data?.track_screen_time ?? false,
+    trackCaffeine: settingsRes.data?.track_caffeine ?? false,
+    trackAlcohol: settingsRes.data?.track_alcohol ?? false,
+    bedtimeTarget: settingsRes.data?.bedtime_target ?? null,
+    wakeTarget: settingsRes.data?.wake_target ?? null,
+  };
 
   const morningDone = typedCheckin?.morning_ritual_done ?? false;
   const eveningDone = typedCheckin?.evening_ritual_done ?? false;
@@ -98,7 +128,7 @@ export default async function CheckinPage() {
             Je odpoledne, ale ranní check-in jsi ještě neudělal. Vyplň ho teď!
           </div>
         )}
-        <MorningForm userId={user.id} />
+        <MorningForm userId={user.id} trackingPrefs={prefs} />
         <CheckinHistory userId={user.id} />
         <Correlations userId={user.id} />
       </div>
@@ -124,7 +154,7 @@ export default async function CheckinPage() {
           Ranní check-in hotový! Večerní bude relevantnější odpoledne.
         </div>
       )}
-      <EveningForm hasHousehold={hasHousehold} userId={user.id} />
+      <EveningForm hasHousehold={hasHousehold} userId={user.id} trackingPrefs={prefs} />
       <CheckinHistory userId={user.id} />
       <Correlations userId={user.id} />
     </div>

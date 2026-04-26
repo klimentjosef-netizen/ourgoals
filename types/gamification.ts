@@ -10,6 +10,11 @@ export const XP_VALUES = {
   EVENT_CREATED: 10,
   FOUNDER_LOG_ENTRY: 15,
   MEAL_LOGGED: 10,
+  DEEP_WORK_COMPLETED: 20,
+  DEEP_WORK_FOCUS_BONUS: 5,
+  WEEKLY_REVIEW: 30,
+  MILESTONE_COMPLETED: 10,
+  TASK_COMPLETED: 5,
 } as const;
 
 export interface LevelDefinition {

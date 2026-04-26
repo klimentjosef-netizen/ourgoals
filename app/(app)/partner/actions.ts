@@ -298,3 +298,104 @@ export async function deleteSharedList(listId: string) {
   revalidatePath("/partner");
   return { success: true };
 }
+
+// EDIT/DELETE PARTNER NOTES
+
+export async function updatePartnerNote(
+  noteId: string,
+  content: string
+): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  // Only author can edit
+  const { data: note } = await supabase
+    .from("partner_notes")
+    .select("author_id, created_at")
+    .eq("id", noteId)
+    .single();
+
+  if (!note) return { error: "Poznámka nenalezena" };
+  if (note.author_id !== userId) return { error: "Můžeš upravit jen své poznámky" };
+
+  // 10-minute edit window
+  const createdAt = new Date(note.created_at);
+  const now = new Date();
+  const minutesElapsed = (now.getTime() - createdAt.getTime()) / 60000;
+  if (minutesElapsed > 10) {
+    return { error: "Úprava je možná jen 10 minut po odeslání" };
+  }
+
+  const { error } = await supabase
+    .from("partner_notes")
+    .update({ content })
+    .eq("id", noteId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function deletePartnerNote(noteId: string): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  // Only author can delete
+  const { data: note } = await supabase
+    .from("partner_notes")
+    .select("author_id")
+    .eq("id", noteId)
+    .single();
+
+  if (!note) return { error: "Poznámka nenalezena" };
+  if (note.author_id !== userId) return { error: "Můžeš smazat jen své poznámky" };
+
+  const { error } = await supabase
+    .from("partner_notes")
+    .delete()
+    .eq("id", noteId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+// LIST ITEM CATEGORIES
+
+export async function addListItemWithCategory(
+  listId: string,
+  text: string,
+  category?: string
+) {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const { data: list } = await supabase
+    .from("shared_lists")
+    .select("items")
+    .eq("id", listId)
+    .single();
+
+  if (!list) return { error: "Seznam nenalezen" };
+
+  const items = (list.items as Array<Record<string, unknown>>) ?? [];
+  items.push({
+    text,
+    category: category || null,
+    addedBy: userId,
+    addedAt: new Date().toISOString(),
+    checked: false,
+  });
+
+  const { error } = await supabase
+    .from("shared_lists")
+    .update({ items })
+    .eq("id", listId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return { success: true };
+}

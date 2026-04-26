@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingWizard } from "./wizard";
+import { OnboardingReset } from "./onboarding-reset";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -37,5 +38,10 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  return <OnboardingWizard />;
+  return (
+    <>
+      <OnboardingReset />
+      <OnboardingWizard />
+    </>
+  );
 }

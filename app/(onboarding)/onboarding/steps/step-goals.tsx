@@ -16,19 +16,19 @@ interface SuggestedGoal {
 
 const SUGGESTED_GOALS: SuggestedGoal[] = [
   { title: "Zhubnout", type: "measurable", modules: ["training"] },
-  { title: "Zv\u00fd\u0161it s\u00edlu", type: "measurable", modules: ["training"] },
-  { title: "Cvi\u010dit pravideln\u011b", type: "habit", modules: ["training"] },
-  { title: "J\u00edst zdrav\u011bji", type: "habit", modules: ["nutrition"] },
-  { title: "Hl\u00eddat makra", type: "habit", modules: ["nutrition"] },
-  { title: "Sp\u00e1t v\u00edc", type: "habit", modules: ["sleep_wellbeing"] },
-  { title: "Sn\u00ed\u017eit stres", type: "habit", modules: ["sleep_wellbeing"] },
-  { title: "30 dn\u00ed meditace", type: "challenge", modules: ["sleep_wellbeing"] },
-  { title: "V\u00edc deep work", type: "habit", modules: ["work_focus"] },
-  { title: "Dokon\u010dit projekt", type: "oneoff", modules: ["work_focus"] },
-  { title: "P\u0159e\u010d\u00edst X knih", type: "measurable", modules: ["goals_habits"] },
-  { title: "Nau\u010dit se jazyk", type: "oneoff", modules: ["goals_habits"] },
-  { title: "Spole\u010dn\u00fd streak", type: "challenge", modules: ["family"] },
-  { title: "Lep\u0161\u00ed komunikace", type: "habit", modules: ["family"] },
+  { title: "Zvýšit sílu", type: "measurable", modules: ["training"] },
+  { title: "Cvičit pravidelně", type: "habit", modules: ["training"] },
+  { title: "Jíst zdravěji", type: "habit", modules: ["nutrition"] },
+  { title: "Hlídat makra", type: "habit", modules: ["nutrition"] },
+  { title: "Spát víc", type: "habit", modules: ["sleep_wellbeing"] },
+  { title: "Snížit stres", type: "habit", modules: ["sleep_wellbeing"] },
+  { title: "30 dní meditace", type: "challenge", modules: ["sleep_wellbeing"] },
+  { title: "Víc deep work", type: "habit", modules: ["work_focus"] },
+  { title: "Dokončit projekt", type: "oneoff", modules: ["work_focus"] },
+  { title: "Přečíst X knih", type: "measurable", modules: ["goals_habits"] },
+  { title: "Naučit se jazyk", type: "oneoff", modules: ["goals_habits"] },
+  { title: "Společný streak", type: "challenge", modules: ["family"] },
+  { title: "Lepší komunikace", type: "habit", modules: ["family"] },
 ];
 
 let goalIdCounter = 0;
@@ -97,13 +97,13 @@ export function StepGoals() {
   function getTypeLabel(type: GoalType): string {
     switch (type) {
       case "measurable":
-        return "M\u011b\u0159iteln\u00fd";
+        return "Měřitelný";
       case "habit":
-        return "N\u00e1vyk";
+        return "Návyk";
       case "challenge":
-        return "V\u00fdzva";
+        return "Výzva";
       case "oneoff":
-        return "Jednor\u00e1zov\u00fd";
+        return "Jednorázový";
     }
   }
 
@@ -117,9 +117,9 @@ export function StepGoals() {
 
   return (
     <StepContainer
-      title="Na \u010dem chce\u0161 pracovat?"
-      subtitle="Vyber si c\u00edle podle sv\u00fdch modul\u016f nebo si p\u0159idej vlastn\u00ed."
-      helperText="M\u016f\u017ee\u0161 p\u0159eskocit a p\u0159idat c\u00edle pozd\u011bji."
+      title="Na čem chceš pracovat?"
+      subtitle="Vyber si cíle podle svých modulů nebo si přidej vlastní."
+      helperText="Můžeš přeskocit a přidat cíle později."
       icon={Target}
       onNext={handleNext}
       onPrev={prevStep}
@@ -131,7 +131,7 @@ export function StepGoals() {
         {/* Suggested quick goals */}
         {relevantSuggestions.length > 0 && (
           <div className="space-y-2">
-            <Label>Doporu\u010den\u00e9 c\u00edle</Label>
+            <Label>Doporučené cíle</Label>
             <div className="flex flex-wrap gap-2">
               {relevantSuggestions.map((sg) => {
                 const alreadyAdded = goals.some((g) => g.title === sg.title);
@@ -157,11 +157,11 @@ export function StepGoals() {
 
         {/* Custom goal input */}
         <div className="space-y-2">
-          <Label>Vlastn\u00ed c\u00edl</Label>
+          <Label>Vlastní cíl</Label>
           <div className="flex gap-2">
             <Input
               className="h-11 flex-1"
-              placeholder="Napi\u0161 sv\u016fj c\u00edl..."
+              placeholder="Napiš svůj cíl..."
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
               onKeyDown={(e) => {
@@ -187,7 +187,7 @@ export function StepGoals() {
         {goals.length > 0 && (
           <div className="space-y-2">
             <Label>
-              Tvoje c\u00edle ({goals.length}/5)
+              Tvoje cíle ({goals.length}/5)
             </Label>
             <div className="space-y-2">
               {goals.map((goal) => {
@@ -231,14 +231,14 @@ export function StepGoals() {
                       <div className="px-3 pb-3 pt-1 border-t space-y-3">
                         {goal.type === "measurable" && (
                           <div className="space-y-2">
-                            <Label className="text-xs">C\u00edlov\u00e1 hodnota</Label>
+                            <Label className="text-xs">Cílová hodnota</Label>
                             <Input
                               className="h-11"
                               type="number"
                               placeholder={
                                 goal.title === "Zhubnout"
-                                  ? "C\u00edlov\u00e1 v\u00e1ha (kg)"
-                                  : "C\u00edlov\u00e9 \u010d\u00edslo"
+                                  ? "Cílová váha (kg)"
+                                  : "Cílové číslo"
                               }
                               value={goal.targetWeight ?? ""}
                               onChange={(e) =>
@@ -253,7 +253,7 @@ export function StepGoals() {
                         )}
                         {goal.type === "habit" && (
                           <div className="space-y-2">
-                            <Label className="text-xs">Kolikr\u00e1t t\u00fddn\u011b</Label>
+                            <Label className="text-xs">Kolikrát týdně</Label>
                             <div className="flex items-center gap-3">
                               <button
                                 type="button"
@@ -287,14 +287,14 @@ export function StepGoals() {
                                 +
                               </button>
                               <span className="text-xs text-muted-foreground">
-                                x t\u00fddn\u011b
+                                x týdně
                               </span>
                             </div>
                           </div>
                         )}
                         {goal.type === "challenge" && (
                           <div className="space-y-2">
-                            <Label className="text-xs">Po\u010det dn\u00ed</Label>
+                            <Label className="text-xs">Počet dní</Label>
                             <Input
                               className="h-11"
                               type="number"

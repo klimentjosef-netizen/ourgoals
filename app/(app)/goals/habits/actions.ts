@@ -291,6 +291,57 @@ export async function getWeeklyHabitStats(userId: string, habitIds: string[]) {
   return { stats, weekStart: mondayStr };
 }
 
+export async function getHabitStreaks(
+  userId: string,
+  habitIds: string[]
+): Promise<Record<string, number>> {
+  if (habitIds.length === 0) return {};
+  const supabase = await createClient();
+
+  // Pro každý habit spočítej consecutive days zpětně od včerejška/dnes
+  const streaks: Record<string, number> = {};
+
+  for (const habitId of habitIds) {
+    const { data: completions } = await supabase
+      .from("habit_completions")
+      .select("date")
+      .eq("profile_id", userId)
+      .eq("habit_id", habitId)
+      .order("date", { ascending: false })
+      .limit(60); // max 60 dní zpět
+
+    if (!completions || completions.length === 0) {
+      streaks[habitId] = 0;
+      continue;
+    }
+
+    const dates = new Set(completions.map((c) => c.date));
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Start from today, go backwards
+    for (let i = 0; i < 60; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateStr = checkDate.toISOString().split("T")[0];
+
+      if (dates.has(dateStr)) {
+        streak++;
+      } else if (i === 0) {
+        // Today not done yet — that's OK, check from yesterday
+        continue;
+      } else {
+        break;
+      }
+    }
+
+    streaks[habitId] = streak;
+  }
+
+  return streaks;
+}
+
 export async function deleteHabit(id: string) {
   const supabase = await createClient();
   let userId: string;

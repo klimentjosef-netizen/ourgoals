@@ -70,6 +70,12 @@ interface DashboardData {
     gottmanScore: { ratio: number; status: string } | null;
     unreadCount: number;
   } | null;
+  workData: {
+    todayDeepWorkMinutes: number;
+    targetMinutes: number;
+    overdueTasks: number;
+    activeTasks: number;
+  } | null;
 }
 
 export async function getDashboardData(
@@ -109,6 +115,9 @@ export async function getDashboardData(
       weeklyProgress: weekDays,
       partnerData: MOCK_ACTIVE_MODULES.includes("family")
         ? { hasHousehold: true, gottmanScore: { ratio: 5.0, status: "good" }, unreadCount: 2 }
+        : null,
+      workData: MOCK_ACTIVE_MODULES.includes("work_focus")
+        ? { todayDeepWorkMinutes: 45, targetMinutes: 240, overdueTasks: 1, activeTasks: 3 }
         : null,
     };
   }
@@ -188,6 +197,7 @@ export async function getDashboardData(
   const hasNutrition = activeModules.includes("nutrition");
   const hasCalendar = activeModules.includes("calendar");
   const hasFamily = activeModules.includes("family");
+  const hasWork = activeModules.includes("work_focus");
 
   const dayOfWeek = new Date().getDay(); // 0=Sun
 
@@ -269,6 +279,49 @@ export async function getDashboardData(
         }
       : null;
 
+  // Work data (only if work_focus module active)
+  let workData: DashboardData["workData"] = null;
+  if (hasWork) {
+    try {
+      const [dwRes, taskRes, settingsWork] = await Promise.all([
+        supabase
+          .from("deep_work_sessions")
+          .select("actual_minutes")
+          .eq("profile_id", userId)
+          .eq("date", today)
+          .not("ended_at", "is", null),
+        supabase
+          .from("work_tasks")
+          .select("id, status, due_date")
+          .eq("profile_id", userId)
+          .neq("status", "done"),
+        supabase
+          .from("user_settings")
+          .select("deep_work_hours")
+          .eq("profile_id", userId)
+          .single(),
+      ]);
+
+      const todayMinutes = (dwRes.data ?? []).reduce(
+        (sum: number, s: { actual_minutes: number | null }) => sum + (s.actual_minutes ?? 0),
+        0
+      );
+      const activeTasks = (taskRes.data ?? []).length;
+      const overdueTasks = (taskRes.data ?? []).filter(
+        (t: { due_date: string | null }) => t.due_date && t.due_date < today
+      ).length;
+
+      workData = {
+        todayDeepWorkMinutes: todayMinutes,
+        targetMinutes: (settingsWork.data?.deep_work_hours ?? 4) * 60,
+        overdueTasks,
+        activeTasks,
+      };
+    } catch {
+      workData = { todayDeepWorkMinutes: 0, targetMinutes: 240, overdueTasks: 0, activeTasks: 0 };
+    }
+  }
+
   // Partner data (only if family module active)
   let partnerData: DashboardData["partnerData"] = null;
   if (hasFamily) {
@@ -347,5 +400,6 @@ export async function getDashboardData(
     nearestGoalDeadline: nearestGoalRes.data?.[0]?.target_date ?? null,
     weeklyProgress,
     partnerData,
+    workData,
   };
 }

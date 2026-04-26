@@ -6,6 +6,7 @@ import { showXPToast } from "@/components/domain/gamification/xp-toast";
 import { AchievementUnlockDialog } from "@/components/domain/gamification/achievement-unlock-dialog";
 import { toggleHabit } from "@/app/(app)/goals/habits/actions";
 import { toast } from "sonner";
+import { Flame } from "lucide-react";
 import type { DailyHabit, HabitCompletion } from "@/types/database";
 
 interface WeeklyHabitStat {
@@ -19,6 +20,7 @@ interface HabitChecklistProps {
   date: string;
   weeklyStats?: Record<string, WeeklyHabitStat>;
   weekStart?: string;
+  habitStreaks?: Record<string, number>;
 }
 
 interface UnlockedAchievement {
@@ -73,6 +75,7 @@ export function HabitChecklist({
   date,
   weeklyStats,
   weekStart,
+  habitStreaks,
 }: HabitChecklistProps) {
   const [unlockedAchievement, setUnlockedAchievement] =
     useState<UnlockedAchievement | null>(null);
@@ -130,17 +133,28 @@ export function HabitChecklist({
       <div className="space-y-1.5">
         {habits.map((habit) => {
           const stat = weeklyStats?.[habit.id];
+          const streak = habitStreaks?.[habit.id] ?? 0;
 
           return (
             <div key={habit.id} className="space-y-1">
-              <HabitItem
-                id={habit.id}
-                title={habit.title}
-                xpValue={habit.xp_value}
-                completed={completedIds.has(habit.id)}
-                onToggle={handleToggle}
-              />
-              {/* Feature 5: Týdenní stats */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <HabitItem
+                    id={habit.id}
+                    title={habit.title}
+                    xpValue={habit.xp_value}
+                    completed={completedIds.has(habit.id)}
+                    onToggle={handleToggle}
+                  />
+                </div>
+                {streak >= 2 && (
+                  <div className="flex items-center gap-0.5 text-orange-500 shrink-0" title={`${streak} dní v řadě`}>
+                    <Flame size={12} />
+                    <span className="text-[10px] font-bold tabular-nums">{streak}</span>
+                  </div>
+                )}
+              </div>
+              {/* Týdenní stats */}
               {stat && weekStart && (
                 <div className="flex items-center justify-between pl-9 pr-1">
                   <WeekDots stat={stat} weekStart={weekStart} />

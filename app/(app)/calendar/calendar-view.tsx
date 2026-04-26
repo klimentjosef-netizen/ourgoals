@@ -38,12 +38,19 @@ interface CalendarViewProps {
   initialConflicts: [string, string[]][];
   initialWeekStart: string;
   userId: string;
-  /** FEATURE 3: Nastavení modulů pro virtuální eventy */
+  /** Nastavení modulů pro virtuální eventy */
   moduleConfig?: {
     enableSleep?: boolean;
     bedtimeTarget?: string | null;
     wakeTarget?: string | null;
     enableCheckin?: boolean;
+    trainingDays?: { dayIndex: number; dayLabel: string; focus: string | null }[];
+    preferTrainingTime?: string;
+    workDays?: number[];
+    workStartTime?: string;
+    workEndTime?: string;
+    deepWorkHours?: number;
+    preferDeepWork?: string;
   };
 }
 
@@ -65,6 +72,17 @@ export function CalendarView({
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | undefined>();
+
+  // Kind filter chips
+  const [hiddenKinds, setHiddenKinds] = useState<Set<string>>(new Set());
+  function toggleKind(kind: string) {
+    setHiddenKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(kind)) next.delete(kind);
+      else next.add(kind);
+      return next;
+    });
+  }
 
   // FEATURE 5: Detail dialog
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
@@ -106,8 +124,9 @@ export function CalendarView({
       return new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime();
     });
 
-    return expanded;
-  }, [events, currentWeekStart, weekEnd, moduleConfig]);
+    // Filtruj podle hidden kinds
+    return expanded.filter((e) => !hiddenKinds.has(e.kind));
+  }, [events, currentWeekStart, weekEnd, moduleConfig, hiddenKinds]);
 
   // Aktualizuj konflikty pro display eventy
   const displayConflicts = useMemo(
@@ -268,7 +287,33 @@ export function CalendarView({
         onNewEvent={handleNewEvent}
       />
 
-      {/* FEATURE 1: Kompaktní "Dnes" přehled */}
+      {/* Kind filter chips */}
+      <div className="flex flex-wrap gap-1.5">
+        {[
+          { kind: "training", label: "Trénink", color: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 border-green-300 dark:border-green-800" },
+          { kind: "work_deep", label: "Deep work", color: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-800" },
+          { kind: "work_meeting", label: "Meeting", color: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-purple-300 dark:border-purple-800" },
+          { kind: "family", label: "Rodina", color: "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300 border-pink-300 dark:border-pink-800" },
+          { kind: "sleep", label: "Spánek", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800" },
+          { kind: "checkin", label: "Check-in", color: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800" },
+          { kind: "custom", label: "Vlastní", color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-700" },
+        ].map((chip) => (
+          <button
+            key={chip.kind}
+            type="button"
+            onClick={() => toggleKind(chip.kind)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+              hiddenKinds.has(chip.kind)
+                ? "opacity-40 line-through bg-muted text-muted-foreground border-border"
+                : chip.color
+            }`}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Kompaktní "Dnes" přehled */}
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="py-3 px-4">
           <div className="flex items-center gap-3 flex-wrap">

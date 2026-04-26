@@ -43,15 +43,15 @@ const STEP_NAMES: Record<StepId, string> = {
   welcome: "",
   profile: "Profil",
   modules: "Moduly",
-  goals_habits: "C\u00edle",
-  sleep_wellbeing: "Sp\u00e1nek",
-  training: "Tr\u00e9nink",
-  nutrition: "J\u00eddlo",
-  calendar: "Kalend\u00e1\u0159",
-  work_focus: "Pr\u00e1ce",
-  family: "Rodina",
-  coach: "Kou\u010d",
   colors: "Barvy",
+  goals_habits: "Cíle",
+  sleep_wellbeing: "Spánek",
+  training: "Trénink",
+  nutrition: "Jídlo",
+  calendar: "Kalendář",
+  work_focus: "Práce",
+  family: "Rodina",
+  coach: "Kouč",
   complete: "",
 };
 
@@ -79,7 +79,7 @@ export function OnboardingWizard() {
   } = store;
 
   const stepIds = useMemo<StepId[]>(() => {
-    const ids: StepId[] = ["welcome", "profile", "modules"];
+    const ids: StepId[] = ["welcome", "profile", "modules", "colors"];
 
     const dynamicModules = selectedModules.filter((moduleId) => {
       const mod = MODULE_REGISTRY.find((m) => m.id === moduleId);
@@ -87,7 +87,7 @@ export function OnboardingWizard() {
     });
     ids.push(...(dynamicModules as StepId[]));
 
-    ids.push("coach", "colors", "complete");
+    ids.push("coach", "complete");
     return ids;
   }, [selectedModules]);
 
@@ -148,9 +148,9 @@ export function OnboardingWizard() {
       case "family":
         return <StepFamily />;
       case "coach":
-        return <StepCoach onSubmit={nextStep} isPending={false} />;
+        return <StepCoach onSubmit={handleSubmit} isPending={isPending} />;
       case "colors":
-        return <StepColors onSubmit={handleSubmit} isPending={isPending} />;
+        return <StepColors />;
       case "complete": {
         const goalSetup = moduleSetups.goals_habits as Record<string, unknown> | undefined;
         const goalTitle = goalSetup?.title as string | undefined;

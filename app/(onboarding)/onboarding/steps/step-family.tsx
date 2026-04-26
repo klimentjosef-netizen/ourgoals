@@ -9,10 +9,10 @@ import { Users } from "lucide-react";
 import type { FamilySetupData } from "@/types/onboarding";
 
 const SHARING_OPTIONS = [
-  { id: "calendar", label: "Kalend\u00e1\u0159" },
-  { id: "shopping", label: "N\u00e1kupn\u00ed seznamy" },
-  { id: "goals", label: "C\u00edle" },
-  { id: "messages", label: "Partnelsk\u00e9 vzkazy" },
+  { id: "calendar", label: "Kalendář" },
+  { id: "shopping", label: "Nákupní seznamy" },
+  { id: "goals", label: "Cíle" },
+  { id: "messages", label: "Partnelské vzkazy" },
 ];
 
 export function StepFamily() {
@@ -53,8 +53,8 @@ export function StepFamily() {
   return (
     <StepContainer
       title="Rodina & partner"
-      subtitle="Nastav si rodinn\u00fd modul."
-      helperText="Partnera m\u016f\u017ee\u0161 pozvat kdykoliv z nastaven\u00ed."
+      subtitle="Nastav si rodinný modul."
+      helperText="Partnera můžeš pozvat kdykoliv z nastavení."
       icon={Users}
       onNext={nextStep}
       onPrev={prevStep}
@@ -69,9 +69,9 @@ export function StepFamily() {
             Tvoje rodina
           </h3>
 
-          {/* M\u00e1\u0161 partnera/ku? */}
+          {/* Máš partnera/ku? */}
           <div className="space-y-2">
-            <Label>M\u00e1\u0161 partnera/ku?</Label>
+            <Label>Máš partnera/ku?</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -98,9 +98,9 @@ export function StepFamily() {
             </div>
           </div>
 
-          {/* M\u00e1\u0161 d\u011bti? */}
+          {/* Máš děti? */}
           <div className="space-y-2">
-            <Label>M\u00e1\u0161 d\u011bti?</Label>
+            <Label>Máš děti?</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -161,19 +161,19 @@ export function StepFamily() {
 
               {(data.childrenCount ?? 0) > 0 && (
                 <div className="space-y-2">
-                  <Label>V\u011bk d\u011bt\u00ed</Label>
+                  <Label>Věk dětí</Label>
                   <div className="flex flex-wrap gap-2">
                     {Array.from({ length: data.childrenCount ?? 0 }).map((_, i) => (
                       <div key={i} className="space-y-1">
                         <span className="text-[10px] text-muted-foreground">
-                          D\u00edt\u011b {i + 1}
+                          Dítě {i + 1}
                         </span>
                         <Input
                           className="h-11 w-20"
                           type="number"
                           min={0}
                           max={30}
-                          placeholder="V\u011bk"
+                          placeholder="Věk"
                           value={(data.childrenAges ?? [])[i] ?? ""}
                           onChange={(e) =>
                             setChildAge(
@@ -191,10 +191,10 @@ export function StepFamily() {
           )}
         </div>
 
-        {/* Section 2: Co chcete sd\u00edlet */}
+        {/* Section 2: Co chcete sdílet */}
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Co chcete sd\u00edlet?
+            Co chcete sdílet?
           </h3>
 
           <div className="space-y-3">
@@ -216,7 +216,7 @@ export function StepFamily() {
           </div>
 
           <p className="text-xs text-muted-foreground/70">
-            Partnera m\u016f\u017ee\u0161 pozvat kdykoliv z nastaven\u00ed.
+            Partnera můžeš pozvat kdykoliv z nastavení.
           </p>
         </div>
       </div>

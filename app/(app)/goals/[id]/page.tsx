@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { GoalActions } from "@/app/(app)/goals/[id]/goal-actions";
+import { getMilestones } from "@/app/(app)/goals/actions";
+import { MilestoneSection } from "@/components/domain/goals/milestone-section";
 import type { Goal, DailyHabit } from "@/types/database";
 import { cn } from "@/lib/utils";
 import {
@@ -367,6 +369,9 @@ export default async function GoalDetailPage({ params }: PageProps) {
   const areaConfig = getGoalAreaConfig(goalArea);
   const borderClass = AREA_BORDER_COLORS[goalArea] ?? "border-l-gray-500";
 
+  // Fetch milestones
+  const milestones = await getMilestones(id);
+
   // Fetch related habits
   const { data: habits } = await supabase
     .from("daily_habits")
@@ -542,6 +547,13 @@ export default async function GoalDetailPage({ params }: PageProps) {
         {goalType === "oneoff" && <OneoffDetail goal={typedGoal} />}
         {goalType === "challenge" && <ChallengeDetail goal={typedGoal} />}
       </Card>
+
+      {/* Milestones */}
+      <MilestoneSection
+        goalId={id}
+        milestones={milestones}
+        isActive={typedGoal.status === "active"}
+      />
 
       {/* Feature 10: Habit monthly adherence */}
       {goalType === "habit" && monthlyAdherence && (

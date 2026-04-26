@@ -396,3 +396,110 @@ export async function deleteGoal(id: string) {
 
   return { success: true };
 }
+
+// ==================== MILESTONES ====================
+
+export interface GoalMilestone {
+  id: string;
+  goal_id: string;
+  title: string;
+  target_value: number | null;
+  completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+}
+
+export async function getMilestones(goalId: string): Promise<GoalMilestone[]> {
+  const { supabase } = await getUser();
+
+  const { data } = await supabase
+    .from("goal_milestones")
+    .select("*")
+    .eq("goal_id", goalId)
+    .order("sort_order", { ascending: true });
+
+  return (data ?? []) as GoalMilestone[];
+}
+
+export async function addMilestone(
+  goalId: string,
+  title: string,
+  targetValue?: number
+): Promise<{ error?: string }> {
+  const { supabase, userId } = await getUser();
+
+  // Verify goal ownership
+  const { data: goal } = await supabase
+    .from("goals")
+    .select("id")
+    .eq("id", goalId)
+    .eq("profile_id", userId)
+    .single();
+
+  if (!goal) return { error: "Cíl nenalezen" };
+
+  // Get max sort_order
+  const { data: existing } = await supabase
+    .from("goal_milestones")
+    .select("sort_order")
+    .eq("goal_id", goalId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+
+  const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order + 1) : 0;
+
+  const { error } = await supabase.from("goal_milestones").insert({
+    goal_id: goalId,
+    title,
+    target_value: targetValue ?? null,
+    sort_order: nextOrder,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/goals/${goalId}`);
+  return {};
+}
+
+export async function completeMilestone(
+  milestoneId: string
+): Promise<{ xpAwarded?: number; error?: string }> {
+  const { supabase, userId } = await getUser();
+
+  const { data: milestone } = await supabase
+    .from("goal_milestones")
+    .select("id, goal_id, completed")
+    .eq("id", milestoneId)
+    .single();
+
+  if (!milestone) return { error: "Milestone nenalezen" };
+  if (milestone.completed) return { error: "Už je dokončen" };
+
+  await supabase
+    .from("goal_milestones")
+    .update({
+      completed: true,
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", milestoneId);
+
+  // Award XP
+  await awardXP(supabase, userId, XP_VALUES.MILESTONE_COMPLETED, "Milestone dokončen", "milestone", milestoneId);
+
+  revalidatePath(`/goals/${milestone.goal_id}`);
+  return { xpAwarded: XP_VALUES.MILESTONE_COMPLETED };
+}
+
+export async function deleteMilestone(milestoneId: string): Promise<{ error?: string }> {
+  const { supabase } = await getUser();
+
+  const { error } = await supabase
+    .from("goal_milestones")
+    .delete()
+    .eq("id", milestoneId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/goals");
+  return {};
+}
