@@ -17,8 +17,7 @@ import { StepGoals } from "./steps/step-goals";
 import { StepSleep } from "./steps/step-sleep";
 import { StepTraining } from "./steps/step-training";
 import { StepNutrition } from "./steps/step-nutrition";
-import { StepCalendar } from "./steps/step-calendar";
-import { StepWork } from "./steps/step-work";
+import { StepWeek } from "./steps/step-week";
 import { StepFamily } from "./steps/step-family";
 import { StepCoach } from "./steps/step-coach";
 import { StepColors } from "./steps/step-colors";
@@ -28,15 +27,14 @@ type StepId =
   | "welcome"
   | "profile"
   | "modules"
+  | "colors"
+  | "week"
   | "goals_habits"
   | "sleep_wellbeing"
   | "training"
   | "nutrition"
-  | "calendar"
-  | "work_focus"
   | "family"
   | "coach"
-  | "colors"
   | "complete";
 
 const STEP_NAMES: Record<StepId, string> = {
@@ -44,24 +42,23 @@ const STEP_NAMES: Record<StepId, string> = {
   profile: "Profil",
   modules: "Moduly",
   colors: "Barvy",
+  week: "Tvůj týden",
   goals_habits: "Cíle",
   sleep_wellbeing: "Spánek",
   training: "Trénink",
   nutrition: "Jídlo",
-  calendar: "Kalendář",
-  work_focus: "Práce",
   family: "Rodina",
   coach: "Kouč",
   complete: "",
 };
 
+// Modules that have their own dedicated onboarding step
+// Note: calendar and work_focus are now merged into "week" step
 const MODULE_STEP_MAP: Record<string, React.ComponentType> = {
   goals_habits: StepGoals,
   sleep_wellbeing: StepSleep,
   training: StepTraining,
   nutrition: StepNutrition,
-  calendar: StepCalendar,
-  work_focus: StepWork,
   family: StepFamily,
 };
 
@@ -81,7 +78,17 @@ export function OnboardingWizard() {
   const stepIds = useMemo<StepId[]>(() => {
     const ids: StepId[] = ["welcome", "profile", "modules", "colors"];
 
+    // "Tvůj týden" step is shown if user has calendar OR work_focus OR training
+    const needsWeek = selectedModules.some((m) =>
+      ["calendar", "work_focus", "training"].includes(m)
+    );
+    if (needsWeek) {
+      ids.push("week");
+    }
+
+    // Add module-specific steps (excluding calendar and work_focus which are in "week")
     const dynamicModules = selectedModules.filter((moduleId) => {
+      if (moduleId === "calendar" || moduleId === "work_focus") return false;
       const mod = MODULE_REGISTRY.find((m) => m.id === moduleId);
       return mod?.onboardingStep && MODULE_STEP_MAP[moduleId];
     });
@@ -94,11 +101,9 @@ export function OnboardingWizard() {
   const totalSteps = stepIds.length;
   const currentStepId = stepIds[currentStep] ?? "welcome";
 
-  // Steps where progress bar is hidden
   const showProgressBar =
     currentStepId !== "welcome" && currentStepId !== "complete";
 
-  // Progress bar adjustments (exclude welcome and complete from count)
   const progressCurrent = Math.max(0, currentStep - 1);
   const progressTotal = Math.max(1, totalSteps - 2);
 
@@ -117,11 +122,10 @@ export function OnboardingWizard() {
         return;
       }
       setCompleted();
-      nextStep(); // advance to StepComplete
+      nextStep();
     });
   }
 
-  // Get coach tone label for completion screen
   const coachToneLabel =
     COACH_TONES.find((t) => t.id === coachTone)?.label ?? coachTone;
 
@@ -133,6 +137,10 @@ export function OnboardingWizard() {
         return <StepProfile />;
       case "modules":
         return <StepModules />;
+      case "colors":
+        return <StepColors />;
+      case "week":
+        return <StepWeek />;
       case "goals_habits":
         return <StepGoals />;
       case "sleep_wellbeing":
@@ -141,16 +149,10 @@ export function OnboardingWizard() {
         return <StepTraining />;
       case "nutrition":
         return <StepNutrition />;
-      case "calendar":
-        return <StepCalendar />;
-      case "work_focus":
-        return <StepWork />;
       case "family":
         return <StepFamily />;
       case "coach":
         return <StepCoach onSubmit={handleSubmit} isPending={isPending} />;
-      case "colors":
-        return <StepColors />;
       case "complete": {
         const goalSetup = moduleSetups.goals_habits as Record<string, unknown> | undefined;
         const goalTitle = goalSetup?.title as string | undefined;
