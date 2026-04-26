@@ -15,7 +15,7 @@ import {
 import { SliderField } from "@/components/domain/checkin/slider-field";
 import { saveMorningCheckin } from "./actions";
 import { toast } from "sonner";
-import { Sun, Moon, Scale, Smile, Loader2 } from "lucide-react";
+import { Sun, Moon, Scale, Smile, Loader2, AlertCircle } from "lucide-react";
 import { YesterdayComparison } from "@/components/domain/checkin/yesterday-comparison";
 import type { TrackingPrefs } from "./page";
 
@@ -30,6 +30,8 @@ export function MorningForm({ userId, trackingPrefs }: MorningFormProps) {
   const [mood, setMood] = useState(5);
   const [energy, setEnergy] = useState(5);
   const [skipWeight, setSkipWeight] = useState(false);
+  const [sleepFactors, setSleepFactors] = useState<string[]>([]);
+  const [sleepNotes, setSleepNotes] = useState("");
 
   const showMood = trackingPrefs?.trackMood ?? true;
   const showEnergy = trackingPrefs?.trackEnergy ?? true;
@@ -128,6 +130,61 @@ export function MorningForm({ userId, trackingPrefs }: MorningFormProps) {
               />
             </div>
           </div>
+
+          {/* Sleep quality notes — show when quality <= 5 */}
+          {sleepQuality <= 5 && (
+            <div className="space-y-3 pt-3 border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={14} className="text-amber-500" />
+                <Label className="text-xs font-medium">Co ovlivnilo spánek?</Label>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { id: "stress", label: "Stres" },
+                  { id: "caffeine", label: "Kofein" },
+                  { id: "screen", label: "Obrazovka" },
+                  { id: "noise", label: "Hluk" },
+                  { id: "temperature", label: "Teplota" },
+                  { id: "pain", label: "Bolest" },
+                  { id: "illness", label: "Nemoc" },
+                  { id: "child", label: "Dítě" },
+                  { id: "nightmare", label: "Noční můry" },
+                  { id: "late_meal", label: "Pozdní jídlo" },
+                ].map((factor) => {
+                  const isSelected = sleepFactors.includes(factor.id);
+                  return (
+                    <button
+                      key={factor.id}
+                      type="button"
+                      onClick={() => {
+                        setSleepFactors((prev) =>
+                          isSelected ? prev.filter((f) => f !== factor.id) : [...prev, factor.id]
+                        );
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                        isSelected
+                          ? "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-700"
+                          : "bg-muted text-muted-foreground border-border hover:border-amber-300"
+                      }`}
+                    >
+                      {factor.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <input type="hidden" name="sleep_factors" value={sleepFactors.join(",")} />
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Poznámka (volitelné)</Label>
+                <Input
+                  value={sleepNotes}
+                  onChange={(e) => setSleepNotes(e.target.value)}
+                  name="sleep_notes"
+                  placeholder="Proč noc stála za nic..."
+                  className="h-10"
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

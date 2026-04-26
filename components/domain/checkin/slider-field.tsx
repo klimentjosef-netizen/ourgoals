@@ -21,6 +21,11 @@ function getEmoji(value: number): string {
   return "🔥";
 }
 
+function getScaleLabel(_value: number, end: "low" | "high"): string {
+  if (end === "low") return "Špatné";
+  return "Výborné";
+}
+
 function getScaleColor(value: number, max: number): string {
   const ratio = value / max;
   if (ratio <= 0.3) return "text-red-500";
@@ -62,6 +67,10 @@ export function SliderField({
         max={max}
         step={1}
       />
+      <div className="flex justify-between text-[9px] text-muted-foreground/50">
+        <span>{getScaleLabel(value, "low")}</span>
+        <span>{getScaleLabel(value, "high")}</span>
+      </div>
       <input type="hidden" name={name} value={value} />
     </div>
   );
