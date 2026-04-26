@@ -3,7 +3,7 @@ import type { ModuleId } from "./modules";
 import type { CoachTone } from "./gamification";
 
 export const profileSchema = z.object({
-  displayName: z.string().min(1, "Jm\u00e9no je povinn\u00e9"),
+  displayName: z.string().min(1, "Jméno je povinné"),
   dateOfBirth: z.string().optional(),
   timezone: z.string().default("Europe/Prague"),
   locale: z.string().default("cs"),
@@ -29,7 +29,7 @@ export const quickGoalSchema = z.object({
 export type QuickGoalData = z.infer<typeof quickGoalSchema>;
 
 export const goalSetupSchema = z.object({
-  title: z.string().min(1, "N\u00e1zev c\u00edle je povinn\u00fd"),
+  title: z.string().min(1, "Název cíle je povinný"),
   description: z.string().optional(),
   metric: z.string().optional(),
   targetValue: z.number().optional(),
