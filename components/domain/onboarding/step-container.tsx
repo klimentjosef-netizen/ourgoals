@@ -1,9 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { ChevronLeft, ChevronRight, SkipForward, CheckCircle2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+
+const PRAISE_MESSAGES = [
+  "Skvěle!",
+  "Super!",
+  "Paráda!",
+  "Výborně!",
+  "Jdeš na to!",
+  "Tak to jde!",
+  "Perfektní!",
+];
+
+function getRandomPraise(): string {
+  return PRAISE_MESSAGES[Math.floor(Math.random() * PRAISE_MESSAGES.length)];
+}
 
 interface StepContainerProps {
   title: string;
@@ -38,10 +52,60 @@ export function StepContainer({
   nextLabel,
   isPending = false,
 }: StepContainerProps) {
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [praise, setPraise] = useState("");
+
   // Scroll to top when step mounts
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  const handleNext = useCallback(() => {
+    if (isFirst || isLast) {
+      // No celebration for welcome and last step
+      onNext();
+      return;
+    }
+
+    // Show celebration before transitioning
+    setPraise(getRandomPraise());
+    setShowCelebration(true);
+
+    setTimeout(() => {
+      setShowCelebration(false);
+      onNext();
+    }, 900);
+  }, [onNext, isFirst, isLast]);
+
+  // Celebration overlay
+  if (showCelebration) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <style>{`
+          @keyframes celebrateIn {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+        <div style={{ animation: "celebrateIn 0.4s ease-out" }}>
+          <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 mx-auto">
+            <CheckCircle2 size={40} className="text-green-500" />
+          </div>
+        </div>
+        <p
+          className="text-2xl font-bold text-green-600 dark:text-green-400"
+          style={{ animation: "fadeUp 0.3s ease-out 0.2s both" }}
+        >
+          {praise}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[60vh]" style={{ animation: "fadeSlideIn 0.3s ease-out" }}>
@@ -86,8 +150,8 @@ export function StepContainer({
             </Button>
           )}
           <Button
-            onClick={onNext}
-            disabled={!canProceed || isPending}
+            onClick={handleNext}
+            disabled={!canProceed || isPending || showCelebration}
             className="h-11 min-w-[140px]"
           >
             {isPending

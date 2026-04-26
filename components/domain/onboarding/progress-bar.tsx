@@ -11,30 +11,43 @@ export function OnboardingProgressBar({
   totalSteps,
   stepName,
 }: OnboardingProgressBarProps) {
+  const percentage = Math.round(((currentStep + 1) / totalSteps) * 100);
+
   return (
     <div className="w-full space-y-2">
-      {stepName && (
-        <p className="text-xs font-semibold text-foreground text-center">
-          {stepName}
+      {/* Step name + percentage */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-foreground">
+          {stepName || `Krok ${currentStep + 1}`}
         </p>
-      )}
-      <div className="flex gap-1.5 justify-center">
+        <p className="text-xs font-mono text-muted-foreground">
+          {currentStep + 1}/{totalSteps}
+        </p>
+      </div>
+
+      {/* Smooth progress bar */}
+      <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
+      {/* Dot indicators */}
+      <div className="flex gap-1 justify-center">
         {Array.from({ length: totalSteps }).map((_, i) => (
           <div
             key={i}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`rounded-full transition-all duration-300 ${
               i < currentStep
-                ? "bg-primary/50 w-6"
+                ? "bg-primary w-2 h-2"
                 : i === currentStep
-                  ? "bg-primary w-8 scale-y-110"
-                  : "bg-muted w-6"
+                  ? "bg-primary w-3 h-3 ring-2 ring-primary/20"
+                  : "bg-muted w-2 h-2"
             }`}
           />
         ))}
       </div>
-      <p className="text-[10px] font-mono text-muted-foreground text-center">
-        Krok {currentStep + 1} z {totalSteps}
-      </p>
     </div>
   );
 }
