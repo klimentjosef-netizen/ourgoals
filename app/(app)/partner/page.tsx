@@ -1,13 +1,18 @@
 import { getAuthUser } from "@/lib/auth";
 import { FAMILY_MODULE_ENABLED } from "@/lib/flags";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Lock, MessageCircle, ShoppingCart } from "lucide-react";
+import { Heart, Lock, MessageCircle, ShoppingCart, Target, CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/domain/page-header";
 import {
   getHousehold,
   getGottmanScore,
   getPartnerNotes,
   getSharedLists,
+  getHouseholdTasks,
+  getQualityTimeThisWeek,
+  getRelationshipHealth,
+  getSharedChallenges,
+  getPartnerMood,
 } from "@/app/(app)/partner/actions";
 import { PartnerDashboard } from "./partner-dashboard";
 import { SetupHousehold } from "./setup-household";
@@ -19,43 +24,15 @@ export default async function PartnerPage() {
   if (!FAMILY_MODULE_ENABLED) {
     return (
       <div className="space-y-6">
-        <PageHeader icon={Heart} title="Partner" />
-
+        <PageHeader icon={Heart} title="Partner & rodina" />
         <Card>
           <CardContent className="pt-6 text-center space-y-4">
             <Lock size={48} className="mx-auto text-muted-foreground/30" />
-            <h2 className="text-lg font-semibold">
-              Tento modul zatím není aktivní
-            </h2>
+            <h2 className="text-lg font-semibold">Tento modul zatím není aktivní</h2>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Rodinný modul umožní sdílení kalendáře, partnerské vzkazy
-              (vděčnost, přání), sdílené nákupní seznamy a společné cíle.
-              Aktivuje se po rozhovoru s partnerem.
+              Rodinný modul umožní sdílení kalendáře, partnerské vzkazy,
+              sdílené úkoly a společné cíle.
             </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50">
-                <Heart size={20} className="text-pink-500" />
-                <p className="text-xs font-medium">Partnerské vzkazy</p>
-                <p className="text-[10px] text-muted-foreground">
-                  Vděčnost, přání, oslavy (Gottman 5:1)
-                </p>
-              </div>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50">
-                <MessageCircle size={20} className="text-blue-500" />
-                <p className="text-xs font-medium">Sdílený kalendář</p>
-                <p className="text-[10px] text-muted-foreground">
-                  Společné eventy, dětské dny, plánování
-                </p>
-              </div>
-              <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50">
-                <ShoppingCart size={20} className="text-green-500" />
-                <p className="text-xs font-medium">Sdílené seznamy</p>
-                <p className="text-[10px] text-muted-foreground">
-                  Nákupy, úkoly, nápady – společně
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -69,14 +46,13 @@ export default async function PartnerPage() {
   if (!householdData) {
     return (
       <div className="space-y-6">
-        <PageHeader icon={Heart} title="Partner" />
+        <PageHeader icon={Heart} title="Partner & rodina" />
         <SetupHousehold />
       </div>
     );
   }
 
   const { household: rawHousehold, members, invites } = householdData;
-  // Supabase join may return array or object
   const household = Array.isArray(rawHousehold) ? rawHousehold[0] : rawHousehold;
   const partnerMembers = members.filter((m: Record<string, unknown>) => m.profile_id !== user.id);
   const hasPartner = partnerMembers.length > 0;
@@ -85,7 +61,7 @@ export default async function PartnerPage() {
   if (!hasPartner) {
     return (
       <div className="space-y-6">
-        <PageHeader icon={Heart} title="Partner" />
+        <PageHeader icon={Heart} title="Partner & rodina" />
         <InvitePartner
           householdName={household?.name ?? "Domácnost"}
           invites={invites}
@@ -96,14 +72,17 @@ export default async function PartnerPage() {
 
   // State 3: Full relationship dashboard
   const householdId = household?.id;
-  if (!householdId) {
-    return null;
-  }
+  if (!householdId) return null;
 
-  const [gottmanScore, notes, sharedLists] = await Promise.all([
+  const [gottmanScore, notes, sharedLists, tasks, qualityTimeMinutes, relationshipHealth, challenges, partnerMood] = await Promise.all([
     getGottmanScore(householdId),
     getPartnerNotes(householdId, 20),
     getSharedLists(householdId),
+    getHouseholdTasks(householdId),
+    getQualityTimeThisWeek(householdId),
+    getRelationshipHealth(householdId),
+    getSharedChallenges(householdId),
+    getPartnerMood(householdId, user.id),
   ]);
 
   const partnerName =
@@ -112,7 +91,7 @@ export default async function PartnerPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Heart} title="Partner">
+      <PageHeader icon={Heart} title="Partner & rodina">
         <span className="text-xs text-muted-foreground font-medium">
           s {partnerName}
         </span>
@@ -124,6 +103,12 @@ export default async function PartnerPage() {
         sharedLists={sharedLists}
         currentUserId={user.id}
         householdId={householdId}
+        tasks={tasks}
+        qualityTimeMinutes={qualityTimeMinutes}
+        relationshipHealth={relationshipHealth}
+        challenges={challenges}
+        partnerMood={partnerMood}
+        partnerName={partnerName}
       />
     </div>
   );

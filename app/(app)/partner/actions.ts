@@ -364,6 +364,291 @@ export async function deletePartnerNote(noteId: string): Promise<{ error?: strin
 
 // LIST ITEM CATEGORIES
 
+// ==================== HOUSEHOLD TASKS ====================
+
+export interface HouseholdTask {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  priority: number;
+  due_date: string | null;
+  due_time: string | null;
+  status: string;
+  assigned_to: string | null;
+  created_by: string;
+  completed_at: string | null;
+  completed_by: string | null;
+  created_at: string;
+  assigned_profile?: { display_name: string } | null;
+  creator_profile?: { display_name: string } | null;
+}
+
+export async function getHouseholdTasks(householdId: string): Promise<HouseholdTask[]> {
+  if (DEV_MODE) return [];
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("household_tasks")
+    .select("*, assigned_profile:profiles!household_tasks_assigned_to_fkey(display_name), creator_profile:profiles!household_tasks_created_by_fkey(display_name)")
+    .eq("household_id", householdId)
+    .order("priority", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as HouseholdTask[];
+}
+
+export async function createHouseholdTask(
+  householdId: string,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const title = formData.get("title") as string;
+  const category = (formData.get("category") as string) || "general";
+  const assignedTo = (formData.get("assigned_to") as string) || null;
+  const dueDate = (formData.get("due_date") as string) || null;
+  const dueTime = (formData.get("due_time") as string) || null;
+  const priority = Number(formData.get("priority")) || 3;
+
+  if (!title.trim()) return { error: "Název je povinný" };
+
+  const { error } = await supabase.from("household_tasks").insert({
+    household_id: householdId,
+    created_by: userId,
+    assigned_to: assignedTo,
+    title: title.trim(),
+    category,
+    priority,
+    due_date: dueDate || null,
+    due_time: dueTime || null,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function completeHouseholdTask(taskId: string): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("household_tasks")
+    .update({
+      status: "done",
+      completed_at: new Date().toISOString(),
+      completed_by: userId,
+    })
+    .eq("id", taskId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function deleteHouseholdTask(taskId: string): Promise<{ error?: string }> {
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("household_tasks").delete().eq("id", taskId);
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+// ==================== QUALITY TIME ====================
+
+export async function logQualityTime(
+  householdId: string,
+  minutes: number,
+  activity: string,
+  notes?: string
+): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("quality_time_logs").insert({
+    household_id: householdId,
+    logged_by: userId,
+    minutes,
+    activity,
+    notes: notes || null,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function getQualityTimeThisWeek(householdId: string): Promise<number> {
+  if (DEV_MODE) return 0;
+  const supabase = await createClient();
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const mondayStr = monday.toISOString().split("T")[0];
+
+  const { data } = await supabase
+    .from("quality_time_logs")
+    .select("minutes")
+    .eq("household_id", householdId)
+    .gte("date", mondayStr);
+
+  return (data ?? []).reduce((sum, r) => sum + ((r as { minutes: number }).minutes ?? 0), 0);
+}
+
+// ==================== RELATIONSHIP CHECK-IN ====================
+
+export async function saveRelationshipCheckin(
+  householdId: string,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  const weekStart = monday.toISOString().split("T")[0];
+
+  const { error } = await supabase.from("relationship_checkins").upsert({
+    household_id: householdId,
+    profile_id: userId,
+    week_start: weekStart,
+    connection_score: Number(formData.get("connection")) || null,
+    communication_score: Number(formData.get("communication")) || null,
+    support_score: Number(formData.get("support")) || null,
+    quality_time_score: Number(formData.get("quality_time")) || null,
+    grateful_for: (formData.get("grateful_for") as string) || null,
+    wish_for: (formData.get("wish_for") as string) || null,
+    highlight: (formData.get("highlight") as string) || null,
+  }, { onConflict: "household_id,profile_id,week_start" });
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function getRelationshipHealth(householdId: string) {
+  if (DEV_MODE) return { avgScore: null, trend: null, lastCheckin: null };
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("relationship_checkins")
+    .select("connection_score, communication_score, support_score, quality_time_score, week_start")
+    .eq("household_id", householdId)
+    .order("week_start", { ascending: false })
+    .limit(8);
+
+  if (!data || data.length === 0) return { avgScore: null, trend: null, lastCheckin: null };
+
+  const latest = data[0];
+  const scores = [latest.connection_score, latest.communication_score, latest.support_score, latest.quality_time_score].filter((s): s is number => s != null);
+  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length * 10) / 10 : null;
+
+  // Trend: compare last 2 weeks
+  let trend: "up" | "down" | "same" | null = null;
+  if (data.length >= 2) {
+    const prev = data[1];
+    const prevScores = [prev.connection_score, prev.communication_score, prev.support_score, prev.quality_time_score].filter((s): s is number => s != null);
+    const prevAvg = prevScores.length > 0 ? prevScores.reduce((a, b) => a + b, 0) / prevScores.length : null;
+    if (avgScore != null && prevAvg != null) {
+      const diff = avgScore - prevAvg;
+      trend = Math.abs(diff) < 0.3 ? "same" : diff > 0 ? "up" : "down";
+    }
+  }
+
+  return { avgScore, trend, lastCheckin: latest.week_start };
+}
+
+// ==================== SHARED CHALLENGES ====================
+
+export async function createSharedChallenge(
+  householdId: string,
+  title: string,
+  durationDays: number,
+  description?: string
+): Promise<{ error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("shared_challenges").insert({
+    household_id: householdId,
+    created_by: userId,
+    title,
+    description: description || null,
+    duration_days: durationDays,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/partner");
+  return {};
+}
+
+export async function getSharedChallenges(householdId: string) {
+  if (DEV_MODE) return [];
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("shared_challenges")
+    .select("*, shared_challenge_days(profile_id, date, completed)")
+    .eq("household_id", householdId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+
+  return data ?? [];
+}
+
+// ==================== PARTNER MOOD SHARING ====================
+
+export async function getPartnerMood(householdId: string, currentUserId: string) {
+  if (DEV_MODE) return null;
+  const supabase = await createClient();
+  const today = new Date().toISOString().split("T")[0];
+
+  // Find partner's profile_id
+  const { data: members } = await supabase
+    .from("household_members")
+    .select("profile_id")
+    .eq("household_id", householdId)
+    .neq("profile_id", currentUserId);
+
+  if (!members || members.length === 0) return null;
+  const partnerId = members[0].profile_id;
+
+  // Get partner's today's checkin
+  const { data: checkin } = await supabase
+    .from("daily_checkins")
+    .select("mood_1_10, energy_1_10, morning_ritual_done")
+    .eq("profile_id", partnerId)
+    .eq("date", today)
+    .single();
+
+  if (!checkin) return null;
+
+  // Get partner name
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", partnerId)
+    .single();
+
+  return {
+    name: profile?.display_name ?? "Partner",
+    mood: checkin.mood_1_10,
+    energy: checkin.energy_1_10,
+    hasCheckedIn: checkin.morning_ritual_done ?? false,
+  };
+}
+
 export async function addListItemWithCategory(
   listId: string,
   text: string,
