@@ -649,6 +649,75 @@ export async function getPartnerMood(householdId: string, currentUserId: string)
   };
 }
 
+// ==================== INVITE LINK ====================
+
+export async function createInviteLink(householdId: string): Promise<{ link?: string; error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  // Generate unique token
+  const token = crypto.randomUUID();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+  const { error } = await supabase.from("household_invites").insert({
+    household_id: householdId,
+    email: `link_invite_${token}@ourgoals.app`,
+    role: "adult",
+    token,
+    expires_at: expiresAt.toISOString(),
+  });
+
+  if (error) return { error: error.message };
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://ourgoals.vercel.app";
+  return { link: `${baseUrl}/join/${token}` };
+}
+
+export async function acceptInviteByToken(token: string): Promise<{ householdId?: string; error?: string }> {
+  const userId = await getUserId();
+  if (DEV_MODE) return { error: "Dev mode" };
+  const supabase = await createClient();
+
+  // Find invite by token
+  const { data: invite } = await supabase
+    .from("household_invites")
+    .select("id, household_id, accepted_at, expires_at")
+    .eq("token", token)
+    .single();
+
+  if (!invite) return { error: "Pozvánka nenalezena nebo vypršela" };
+  if (invite.accepted_at) return { error: "Pozvánka již byla přijata" };
+  if (new Date(invite.expires_at) < new Date()) return { error: "Pozvánka vypršela" };
+
+  // Check if user is already member
+  const { data: existing } = await supabase
+    .from("household_members")
+    .select("profile_id")
+    .eq("household_id", invite.household_id)
+    .eq("profile_id", userId)
+    .single();
+
+  if (existing) return { error: "Už jsi členem této domácnosti" };
+
+  // Add user as member
+  await supabase.from("household_members").insert({
+    household_id: invite.household_id,
+    profile_id: userId,
+    role: "adult",
+  });
+
+  // Mark invite as accepted
+  await supabase
+    .from("household_invites")
+    .update({ accepted_at: new Date().toISOString() })
+    .eq("id", invite.id);
+
+  revalidatePath("/partner");
+  return { householdId: invite.household_id };
+}
+
 export async function addListItemWithCategory(
   listId: string,
   text: string,

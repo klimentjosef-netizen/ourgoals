@@ -1,7 +1,7 @@
 import { getAuthUser } from "@/lib/auth";
 import { FAMILY_MODULE_ENABLED } from "@/lib/flags";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Lock, MessageCircle, ShoppingCart, Target, CalendarDays } from "lucide-react";
+import { Heart, Lock } from "lucide-react";
 import { PageHeader } from "@/components/domain/page-header";
 import {
   getHousehold,
@@ -64,6 +64,7 @@ export default async function PartnerPage() {
         <PageHeader icon={Heart} title="Partner & rodina" />
         <InvitePartner
           householdName={household?.name ?? "Domácnost"}
+          householdId={household?.id ?? ""}
           invites={invites}
         />
       </div>
