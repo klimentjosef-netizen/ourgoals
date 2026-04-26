@@ -64,17 +64,17 @@ export default async function DashboardPage() {
       />
 
       {/* 3. Gamification row: Level + Streak + Day counter */}
-      <div className="flex overflow-x-auto gap-3 pb-1 -mx-1 px-1 sm:grid sm:grid-cols-3 sm:overflow-visible">
-        <div className="min-w-[180px] sm:min-w-0 flex-1">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="min-w-0">
           <LevelCard totalXP={data.gamification?.total_xp ?? 0} />
         </div>
-        <div className="min-w-[150px] sm:min-w-0 flex-1">
+        <div className="min-w-0">
           <StreakCard
             currentStreak={data.gamification?.current_streak ?? 0}
             longestStreak={data.gamification?.longest_streak ?? 0}
           />
         </div>
-        <div className="min-w-[140px] sm:min-w-0 flex-1">
+        <div className="min-w-0">
           <DayCounter
             registeredAt={data.registeredAt}
             goalDeadline={

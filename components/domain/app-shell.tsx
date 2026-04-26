@@ -11,7 +11,6 @@ import {
   Target,
   Moon,
   Briefcase,
-  BookOpen,
   ClipboardCheck,
   Heart,
   Plus,
@@ -39,8 +38,8 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { href: "/nutrition", label: "Jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
   { href: "/calendar", label: "Kalendář", icon: CalendarDays, moduleId: "calendar" },
   { href: "/wellbeing", label: "Wellbeing", icon: Moon, moduleId: "sleep_wellbeing" },
+  { href: "/work", label: "Práce", icon: Briefcase, moduleId: "work_focus" },
   { href: "/partner", label: "Partner", icon: Heart, moduleId: "family" },
-  { href: "/founder-log", label: "Founder Log", icon: BookOpen, moduleId: "work_focus" },
   { href: "/profile", label: "Profil", icon: User, alwaysVisible: true },
 ];
 
@@ -57,6 +56,7 @@ const ALL_QUICK_ACTIONS: QuickAction[] = [
   { href: "/training?action=start", label: "Začni trénink", icon: Dumbbell, moduleId: "training" },
   { href: "/nutrition?action=log", label: "Zaloguj jídlo", icon: UtensilsCrossed, moduleId: "nutrition" },
   { href: "/calendar?action=new", label: "Nový event", icon: CalendarDays, moduleId: "calendar" },
+  { href: "/partner", label: "Partner & rodina", icon: Heart, moduleId: "family" },
 ];
 
 export function AppShell({
@@ -85,12 +85,16 @@ export function AppShell({
     );
   }, [activeModules]);
 
-  // Mobile: pick first 2 + last 2 for bottom nav (max 4 + FAB)
-  const mobileNavLeft = navItems.slice(0, 2);
-  const mobileNavRight = navItems.length > 2 ? navItems.slice(-2) : [];
+  // Mobile: scrollable bottom nav with all items
+  const mobileNavItems = navItems.filter((item) => {
+    // Skip wellbeing (check-in covers it) and work (in FAB)
+    if (item.href === "/wellbeing") return false;
+    if (item.href === "/work") return false;
+    return true;
+  });
 
   return (
-    <div className="flex h-full min-h-screen">
+    <div className="flex h-full min-h-screen overflow-x-hidden">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex md:flex-col md:w-56 border-r border-border bg-sidebar p-4 fixed h-full">
         <Link href="/dashboard" className="mb-8">
@@ -139,14 +143,14 @@ export function AppShell({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 md:ml-56 pb-20 md:pb-0">
+      <main className="flex-1 md:ml-56 pb-20 md:pb-0 overflow-x-hidden">
         <div className="max-w-2xl mx-auto p-4 md:p-6">{children}</div>
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — scrollable */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border z-40">
-        <div className="flex items-center justify-around h-16 px-2">
-          {mobileNavLeft.map((item) => {
+        <div className="flex items-center h-16 px-1 overflow-x-auto scrollbar-none">
+          {mobileNavItems.map((item) => {
             const isActive =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
@@ -155,12 +159,12 @@ export function AppShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
+                className={`flex flex-col items-center gap-0.5 min-w-[60px] px-2 py-1 shrink-0 ${
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <item.icon size={20} />
-                <span className="text-[10px] font-mono">{item.label}</span>
+                <span className="text-[9px] font-medium leading-tight">{item.label}</span>
               </Link>
             );
           })}
@@ -169,27 +173,11 @@ export function AppShell({
           {quickActions.length > 0 && (
             <button
               onClick={() => setFabOpen(!fabOpen)}
-              className="relative -mt-6 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+              className="ml-auto mr-1 shrink-0 w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg active:scale-95 transition-transform"
             >
-              {fabOpen ? <X size={24} /> : <Plus size={24} />}
+              {fabOpen ? <X size={22} /> : <Plus size={22} />}
             </button>
           )}
-
-          {mobileNavRight.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <item.icon size={20} />
-                <span className="text-[10px] font-mono">{item.label}</span>
-              </Link>
-            );
-          })}
         </div>
       </nav>
 
@@ -200,15 +188,15 @@ export function AppShell({
             className="md:hidden fixed inset-0 bg-black/50 z-40"
             onClick={() => setFabOpen(false)}
           />
-          <div className="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3 items-center">
+          <div className="md:hidden fixed bottom-20 left-4 right-4 z-50 flex flex-col gap-2">
             {quickActions.map((action) => (
               <Link
                 key={action.href}
                 href={action.href}
                 onClick={() => setFabOpen(false)}
-                className="flex items-center gap-3 bg-card text-card-foreground px-5 py-3 rounded-lg shadow-lg border border-border min-w-[200px]"
+                className="flex items-center gap-3 bg-card text-card-foreground px-4 py-3 rounded-xl shadow-lg border border-border"
               >
-                <action.icon size={18} className="text-primary" />
+                <action.icon size={18} className="text-primary shrink-0" />
                 <span className="text-sm font-medium">{action.label}</span>
               </Link>
             ))}

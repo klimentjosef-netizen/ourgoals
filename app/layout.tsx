@@ -52,7 +52,7 @@ export default function RootLayout({
       lang="cs"
       className={`${sora.variable} ${dmMono.variable} ${heading.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         <ThemeLoader />
         {children}
       </body>

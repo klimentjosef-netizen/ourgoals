@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +38,11 @@ export function StepContainer({
   nextLabel,
   isPending = false,
 }: StepContainerProps) {
+  // Scroll to top when step mounts
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   return (
     <div className="flex flex-col min-h-[60vh]" style={{ animation: "fadeSlideIn 0.3s ease-out" }}>
       <style>{`
