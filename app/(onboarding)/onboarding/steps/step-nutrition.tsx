@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useOnboarding } from "@/lib/hooks/use-onboarding";
 import { StepContainer } from "@/components/domain/onboarding/step-container";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UtensilsCrossed, Check, Zap } from "lucide-react";
+import { UtensilsCrossed, Check, Zap, Pill } from "lucide-react";
 import type { NutritionSetupData, TrainingSetupData } from "@/types/onboarding";
 
 const TRACKING_LEVELS = [
@@ -89,6 +89,38 @@ export function StepNutrition() {
   );
 
   const isTracking = data.trackingLevel !== "none";
+
+  // Auto-apply recommended on first render if no user-set values
+  const didAutoApply = useRef(false);
+  useEffect(() => {
+    if (!didAutoApply.current && recommended && isTracking && !data.targetKcal && !data.proteinG) {
+      update({
+        targetKcal: recommended.kcal,
+        proteinG: recommended.protein,
+        carbsG: recommended.carbs,
+        fatG: recommended.fat,
+      });
+      didAutoApply.current = true;
+    }
+  }, [recommended, isTracking]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Supplement recommendations based on goal
+  const supplements = useMemo(() => {
+    const list: { name: string; reason: string }[] = [];
+    const goal = trainingData.trainingGoal;
+    if (goal === "bulk" || goal === "recomp") {
+      list.push({ name: "Kreatin (5g/den)", reason: "Zvyšuje sílu a objem svalů" });
+    }
+    if (recommended && recommended.protein > 120) {
+      list.push({ name: "Protein (whey/isolát)", reason: "Pomůže dosáhnout proteinového cíle" });
+    }
+    if (goal === "cut") {
+      list.push({ name: "Kofein před tréninkem", reason: "Zvyšuje výkon při deficitu" });
+    }
+    list.push({ name: "Omega-3 (rybí olej)", reason: "Podpora kloubů a regenerace" });
+    list.push({ name: "Vitamin D (2000 IU)", reason: "Většina populace má deficit" });
+    return list;
+  }, [trainingData.trainingGoal, recommended]);
 
   function applyRecommended() {
     if (!recommended) return;
@@ -356,6 +388,33 @@ export function StepNutrition() {
             </div>
           </div>
         </div>
+
+        {/* Section 4: Doporučené doplňky */}
+        {isTracking && supplements.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Pill size={14} />
+              Doporučené doplňky
+            </h3>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Na základě tvého cíle a tréninku.
+            </p>
+            <div className="space-y-2">
+              {supplements.map((s, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-primary font-bold text-sm mt-0.5">+</span>
+                  <div>
+                    <p className="text-sm font-medium">{s.name}</p>
+                    <p className="text-xs text-muted-foreground">{s.reason}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground/60">
+              Pouze informativní. Konzultuj s lékařem.
+            </p>
+          </div>
+        )}
       </div>
     </StepContainer>
   );
