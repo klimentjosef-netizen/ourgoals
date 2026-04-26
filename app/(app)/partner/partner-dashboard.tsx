@@ -52,7 +52,8 @@ interface SharedList {
   id: string;
   name: string;
   kind: string;
-  items: unknown[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  items: any[];
 }
 
 interface PartnerMood {
