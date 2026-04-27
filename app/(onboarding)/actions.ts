@@ -492,7 +492,56 @@ export async function completeOnboarding(
       }
     }
 
-    // 8. Award XP for onboarding
+    // 8. Auto-create household if user has partner
+    if (familySetup?.hasPartner && !DEV_MODE) {
+      try {
+        const householdName = (familySetup as { householdName?: string }).householdName
+          || `${data.profile.displayName} & partner`;
+
+        // Check if user already has a household
+        const { data: existingMembership } = await supabase
+          .from("household_members")
+          .select("household_id")
+          .eq("profile_id", userId)
+          .limit(1)
+          .single();
+
+        if (!existingMembership) {
+          // Create household
+          const { data: household } = await supabase
+            .from("households")
+            .insert({ name: householdName, created_by: userId })
+            .select()
+            .single();
+
+          if (household) {
+            // Add creator as owner
+            await supabase.from("household_members").insert({
+              household_id: household.id,
+              profile_id: userId,
+              role: "owner",
+            });
+
+            // Generate invite link for partner
+            const token = crypto.randomUUID();
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30); // 30 days for onboarding invite
+
+            await supabase.from("household_invites").insert({
+              household_id: household.id,
+              email: `onboarding_invite_${token}@ourgoals.app`,
+              role: "adult",
+              token,
+              expires_at: expiresAt.toISOString(),
+            });
+          }
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+
+    // 9. Award XP for onboarding
     try {
       await awardXP(
         supabase,
